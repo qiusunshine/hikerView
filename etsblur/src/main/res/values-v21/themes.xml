@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="EtsyBlurDialogTheme" parent="Theme.AppCompat.Light.Dialog">
+        <!-- forces Dialog view to be expanded to full screen -->
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowAnimationStyle">@style/DialogSlideAnimation</item>
+        <item name="android:windowCloseOnTouchOutside">false</item>
+        <!-- only available after v21 -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+</resources>

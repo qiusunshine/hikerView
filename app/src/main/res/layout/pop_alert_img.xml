@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_round"
+    android:id="@+id/bg"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_round">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/item_video_card"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="8dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp">
+
+            <ImageView
+                android:id="@+id/item_video"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@drawable/ripple_white"
+                android:padding="4dp"
+                android:src="@drawable/close_circle" />
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/item_video_card"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:padding="10dp"
+            android:lines="1"
+            android:text="新手引导"
+            android:textColor="#000"
+            android:textSize="20sp" />
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/img_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</LinearLayout>

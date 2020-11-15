@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#333333"
+    android:fitsSystemWindows="true">
+
+    <com.example.hikerview.ui.view.ZoomCodeTextPaneView
+        android:id="@+id/js_edit_code_pane_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/js_edit_dom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/shape_top_border_dark"
+            android:hint="域名（全局用global）_描述"
+            android:maxLines="3"
+            android:padding="3dp"
+            android:textSize="14sp"
+            android:imeOptions="actionDone"
+            android:textColor="@color/white"
+            android:textColorHint="@color/white" />
+
+        <com.example.hikerview.ui.js.editor.CodeTextViewPane
+            android:id="@+id/js_edit_code_pane"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <RelativeLayout
+            android:id="@+id/search_bg"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_gravity="bottom">
+
+            <ImageView
+                android:id="@+id/search_close"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="5dp"
+                android:padding="4dp"
+                android:src="@drawable/ic_close" />
+
+            <ImageView
+                android:id="@+id/search_forward"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@id/search_close"
+                android:padding="4dp"
+                android:src="@drawable/ic_forward" />
+
+            <ImageView
+                android:id="@+id/search_back"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:layout_toStartOf="@id/search_forward"
+                android:padding="4dp"
+                android:src="@drawable/ic_back" />
+
+            <TextView
+                android:id="@+id/search_count"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@id/search_back"
+                android:gravity="center_vertical"
+                android:text="0/0"
+                android:textColor="@color/grey_black"
+                android:textSize="15sp" />
+
+            <ImageView
+                android:id="@+id/search_ok"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="8dp"
+                android:layout_toStartOf="@id/search_count"
+                android:padding="4dp"
+                android:src="@drawable/ic_main_nav_search" />
+
+            <EditText
+                android:id="@+id/search_edit"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_toStartOf="@id/search_ok"
+                android:background="@null"
+                android:gravity="center_vertical"
+                android:hint="搜索"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:lines="1"
+                android:maxLines="1"
+                android:textColor="@color/little_white"
+                android:textColorHint="@color/little_white"
+                android:textCursorDrawable="@drawable/et_cursor"
+                android:textSize="14sp" />
+        </RelativeLayout>
+    </com.example.hikerview.ui.view.ZoomCodeTextPaneView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+

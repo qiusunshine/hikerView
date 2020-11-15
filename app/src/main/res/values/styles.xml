@@ -1,0 +1,184 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:statusBarColor">@android:color/white</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColorPrimary">@color/text_color_primary</item>
+        <item name="android:textColorSecondary">@color/text_color_grey_600</item>
+        <item name="android:textColorTertiary">@color/text_color_tertiary</item>
+    </style>
+
+    <style name="HomeTheme" parent="AppTheme">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="NoActionTheme2" parent="AppTheme">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+
+    <!-- 全屏 theme. -->
+    <style name="NoActionFullScreenTheme" parent="AppTheme">
+        <item name="android:actionBarStyle">@style/FullScreenActionBarStyle</item>
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <!-- 全屏 theme. -->
+    <style name="FullScreenTheme" parent="Theme.AppCompat.Light">
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:actionBarStyle">@style/FullScreenActionBarStyle</item>
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="actionOverflowMenuStyle">@style/OverflowMenu</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColorPrimary">@color/text_color_primary</item>
+        <item name="android:textColorSecondary">@color/text_color_grey_600</item>
+        <item name="android:textColorTertiary">@color/text_color_grey_600</item>
+    </style>
+
+    <style name="TranslucentFullScreenTheme" parent="FullScreenTheme">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
+
+    <style name="TranslucentSearchTheme" parent="@android:style/Theme.Translucent.NoTitleBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="actionOverflowMenuStyle">@style/OverflowMenu</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:statusBarColor">@android:color/white</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+        <item name="android:textColorPrimary">@color/text_color_primary</item>
+        <item name="android:textColorSecondary">@color/text_color_grey_600</item>
+        <item name="android:textColorTertiary">@color/text_color_grey_600</item>
+    </style>
+
+    <style name="TranslucentTheme" parent="FullScreenTheme">
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
+
+    <style name="OverflowMenu" parent="Widget.AppCompat.PopupMenu.Overflow">
+        <!--<item name="overlapAnchor">false</item>  &lt;!&ndash;设置不覆盖锚点&ndash;&gt;-->
+        <item name="android:dropDownVerticalOffset">4dp</item>
+        <item name="android:layout_marginRight">4dp</item>
+        <item name="android:popupBackground">@color/white</item> <!--更改背景颜色-->
+    </style>
+
+    <style name="FullScreenActionBarStyle" parent="Widget.AppCompat.ActionBar">
+        <item name="android:background">@color/colorPrimaryDark</item>
+    </style>
+
+    <style name="TabLayoutStyle" parent="android:Widget">
+        <item name="tabBackground">@color/white</item>
+        <item name="tabIndicatorColor">@color/colorAccent</item>
+        <item name="tabIndicatorHeight">2dp</item>
+        <item name="tabSelectedTextColor">@color/black_666</item>
+        <item name="tabTextColor">@color/tabText</item>
+        <item name="tabGravity">center</item>
+        <item name="tabMode">scrollable</item>
+    </style>
+
+    <style name="TabLayoutTextStyle">
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="alert_dialog" parent="android:Theme.Dialog">
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowBackground">@color/z_transparent</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.4</item>
+    </style>
+
+    <style name="animate_dialog">
+        <item name="android:windowEnterAnimation">@anim/dialog_enter</item>
+        <item name="android:windowExitAnimation">@anim/dialog_out</item>
+    </style>
+
+    <style name="home_setting_top_dialog">
+        <item name="android:windowEnterAnimation">@anim/top_dialog_enter</item>
+        <item name="android:windowExitAnimation">@anim/top_dialog_out</item>
+    </style>
+
+    <style name="home_setting_bottom_dialog">
+        <item name="android:windowEnterAnimation">@anim/bottom_dialog_enter</item>
+        <item name="android:windowExitAnimation">@anim/bottom_dialog_out</item>
+    </style>
+
+    <style name="home_splash_dialog">
+        <item name="android:windowEnterAnimation">@anim/bottom_dialog_enter</item>
+        <item name="android:windowExitAnimation">@anim/splash_dialog_out</item>
+    </style>
+
+    <style name="AppBar_dark_theme" parent="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="colorControlNormal">@color/white</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="color_dialog" parent="android:Theme.Dialog">
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.4</item>
+    </style>
+
+    <style name="DarkAppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/dark_edit</item>
+        <item name="colorPrimaryDark">@color/dark_edit</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="LightAppTheme" parent="Theme.AppCompat.Light">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimaryDark">@color/white</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+
+    <style name="AppPreferenceTheme" parent="Theme.AppCompat.Light">
+        <!-- Customize your Preferences theme here -->
+    </style>
+
+    <style name="recy_vertical_style">
+        <item name="android:scrollbarSize">10dp</item>
+        <item name="android:scrollbars">vertical</item>
+        <item name="android:scrollbarThumbVertical">@drawable/recy_vertical_scrollbar</item>
+        <item name="android:scrollbarTrackVertical">@drawable/recy_vertical_scrollbar_bg</item>
+    </style>
+
+    <style name="button_dark_style">
+        <item name="android:textColor">@color/little_white</item>
+        <item name="android:background">@drawable/button_dark_background</item>
+    </style>
+</resources>

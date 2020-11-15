@@ -1,0 +1,23 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+
+# Project exclude paths
+/adblock-android-settings/build/
+/adblock-android-settings/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/
+/ffmpeg/build/
+/ffmpeg/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/
+/ima/build/
+/ima/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/
+/VideoUi/build/
+/VideoUi/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/

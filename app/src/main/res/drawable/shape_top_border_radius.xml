@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 连框颜色值 -->
+    <item android:drawable="@drawable/shape_corners_top_grey" />
+    <!-- 主体背景颜色值 -->
+    <item
+        android:drawable="@drawable/shape_corners_top"
+        android:top="1.2dp" />
+</layer-list>

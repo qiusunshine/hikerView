@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/view_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:background="@drawable/background_radius"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="10dp">
+
+                <LinearLayout
+                    android:id="@+id/bf1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:padding="11dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/favor_web_2" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center"
+                        android:text="加入收藏" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/bf2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:padding="11dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/link_web_2" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center"
+                        android:text="加入书签" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/bf3"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:padding="11dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/explore_web_2" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center"
+                        android:text="网络日志" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="10dp">
+
+                <LinearLayout
+                    android:id="@+id/bf4"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:padding="11dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/copy_web_2" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center"
+                        android:text="复制链接" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/bf5"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:padding="11dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ua_web_2" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center"
+                        android:text="设置UA" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/bf6"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:padding="11dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/fing_set_web2" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center"
+                        android:text="嗅探设置" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="10dp">
+
+                <LinearLayout
+                    android:id="@+id/bf8"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:padding="11dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/attention_web_2" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center"
+                        android:text="书签收藏" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/bf9"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:padding="11dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/source" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center"
+                        android:text="查看源码" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/bf10"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:padding="11dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/refresh_web_5" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center"
+                        android:text="刷新网页" />
+
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="10dp">
+
+
+                <LinearLayout
+                    android:id="@+id/bf11"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:padding="11dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/circle" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center"
+                        android:text="元素拦截" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/bf12"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:padding="11dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/settings_web_2" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center"
+                        android:text="页内查找" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/bf7"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:tag="网页翻译"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:padding="11dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/forward_web_2" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center"
+                        android:id="@+id/back_home_text"
+                        android:text="网页翻译" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

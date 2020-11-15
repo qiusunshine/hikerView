@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/title_start"
+            android:textSize="17sp"
+            android:layout_marginBottom="10dp"
+            android:textColor="@color/black_666"
+            android:text="跳过片头：0秒"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="4dp"
+                android:id="@+id/start_img_start"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_arrow_start"/>
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="4dp"
+                android:layout_alignParentEnd="true"
+                android:id="@+id/start_img_end"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_arrow_end"/>
+
+            <SeekBar
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/start_progress_bar"
+                android:layout_toEndOf="@id/start_img_start"
+                android:layout_toStartOf="@id/start_img_end"
+                android:layout_centerVertical="true"
+                android:max="300"
+                android:progress="50"/>
+
+        </RelativeLayout>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="20dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/title_end"
+            android:textSize="17sp"
+            android:layout_marginBottom="10dp"
+            android:textColor="@color/black_666"
+            android:text="跳过片尾：0秒"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="4dp"
+                android:id="@+id/end_img_start"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_arrow_start"/>
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="4dp"
+                android:layout_alignParentEnd="true"
+                android:id="@+id/end_img_end"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_arrow_end"/>
+
+            <SeekBar
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/end_progress_bar"
+                android:layout_toEndOf="@id/end_img_start"
+                android:layout_toStartOf="@id/end_img_end"
+                android:layout_centerVertical="true"
+                android:max="300"
+                android:progress="50"/>
+
+        </RelativeLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,619 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:id="@+id/ll_bg"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/art_list_rule_edit_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/toolbar_height"
+            app:theme="@style/ThemeOverlay.AppCompat.Light" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:id="@+id/scroll_view"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/al_rule_edit_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="规则名称（title）" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/al_rule_edit_author"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="规则作者（author）" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <ImageView
+                        android:id="@+id/set_author_view"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="10dp"
+                        android:src="@drawable/sign" />
+                </RelativeLayout>
+
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/al_rule_edit_version"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="规则版本（version）"
+                            android:inputType="number" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:id="@+id/version_increase_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:text=" + 1 " />
+                </RelativeLayout>
+
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/al_rule_edit_group"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="频道分组（名称前加①、②等序号可排序）" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <ImageView
+                        android:id="@+id/group_img_view"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:src="@drawable/ic_action_menu_drop_bar" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/al_rule_edit_title_color"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="频道名称字体颜色（可不填）" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <ImageView
+                        android:id="@+id/color_img_view"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:src="@drawable/ic_action_menu_drop_bar" />
+                </RelativeLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/al_rule_edit_url"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="频道链接（可不填，可只填搜索相关内容）" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/al_rule_edit_col_type"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:editable="false"
+                            android:focusable="false"
+                            android:focusableInTouchMode="false"
+                            android:hint="显示样式（col_type）"
+                            android:text="movie_3"
+                            android:textIsSelectable="false" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <ImageView
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:src="@drawable/ic_action_menu_drop_bar" />
+
+                    <View
+                        android:id="@+id/col_type_img_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_centerVertical="true" />
+                </RelativeLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/al_rule_edit_class_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="分类名称（class_name）" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/al_rule_edit_class_url"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="分类替换词（class_url）" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/al_rule_edit_area_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="地区名称（area_name）" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/al_rule_edit_area_url"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="地区替换词（area_url）" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/al_rule_edit_year_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="年代名称（year_name）" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/al_rule_edit_year_url"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="年代替换词（year_url）" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/al_rule_edit_sort_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="排序名称（sort_name）" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/al_rule_edit_sort_url"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="排序替换词（sort_url）" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <androidx.appcompat.widget.AppCompatEditText
+                                android:id="@+id/al_rule_edit_find_rule"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="解析规则（列表;标题;图片;描述;链接）" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:padding="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:gravity="center"
+                        android:textSize="16sp"
+                        android:text="@string/code"
+                        android:id="@+id/find_rule_highlight"
+                        android:textColor="@color/greenAction"/>
+                </RelativeLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/al_rule_edit_search_url"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="搜索链接（search_url，用**作为关键词占位符）" />
+                </com.google.android.material.textfield.TextInputLayout>
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/al_rule_edit_search_rule"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="搜索解析规则（列表;标题;链接;描述;详情;图片）" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:padding="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:gravity="center"
+                        android:textSize="16sp"
+                        android:text="@string/code"
+                        android:id="@+id/s_find_rule_highlight"
+                        android:textColor="@color/greenAction"/>
+                </RelativeLayout>
+
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/al_rule_edit_detail_col_type"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:editable="false"
+                            android:focusable="false"
+                            android:focusableInTouchMode="false"
+                            android:hint="二级列表显示样式（detail_col_type）"
+                            android:text="movie_1"
+                            android:textIsSelectable="false" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <ImageView
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:src="@drawable/ic_action_menu_drop_bar" />
+
+                    <View
+                        android:id="@+id/detail_col_type_img_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_centerVertical="true" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/al_rule_edit_detail_find_rule"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="二级列表解析规则（列表;标题;图片;描述;链接）" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:padding="5dp"
+                    android:layout_marginEnd="5dp"
+                    android:gravity="center"
+                    android:textSize="16sp"
+                    android:text="@string/code"
+                    android:id="@+id/detail_rule_highlight"
+                    android:textColor="@color/greenAction"/>
+            </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/al_rule_edit_sdetail_col_type"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:editable="false"
+                            android:focusable="false"
+                            android:focusableInTouchMode="false"
+                            android:hint="搜索二级列表显示样式（sdetail_col_type）"
+                            android:text="movie_1"
+                            android:textIsSelectable="false" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <ImageView
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:src="@drawable/ic_action_menu_drop_bar" />
+
+                    <View
+                        android:id="@+id/sdetail_col_type_img_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_centerVertical="true" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/al_rule_edit_sdetail_find_rule"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="搜索二级列表解析规则（列表;标题;图片;描述;链接）" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:padding="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:gravity="center"
+                        android:textSize="16sp"
+                        android:text="@string/code"
+                        android:id="@+id/s_detail_rule_highlight"
+                        android:textColor="@color/greenAction"/>
+                </RelativeLayout>
+
+
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/al_rule_edit_ua"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:editable="false"
+                            android:focusable="false"
+                            android:focusableInTouchMode="false"
+                            android:hint="规则全局UA（以url里面的ua优先）"
+                            android:text="auto"
+                            android:textIsSelectable="false" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <ImageView
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:src="@drawable/ic_action_menu_drop_bar" />
+
+                    <View
+                        android:id="@+id/ua_img_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_centerVertical="true" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/al_rule_edit_pre_rule"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="JS预处理（在解析规则和搜索解析规则执行前执行）" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:padding="5dp"
+                    android:layout_marginEnd="5dp"
+                    android:gravity="center"
+                    android:textSize="16sp"
+                    android:text="@string/code"
+                    android:id="@+id/pre_rule_highlight"
+                    android:textColor="@color/greenAction"/>
+            </RelativeLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/bottom_bar"
+                    android:padding="6dp"
+                    android:layout_marginStart="5dp"
+                    android:text="  "
+                    android:layout_marginBottom="5dp"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </ScrollView>
+
+    </LinearLayout>
+
+
+    <ImageView
+        android:id="@+id/float_btn_debug"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:padding="7dp"
+        android:layout_gravity="end|bottom"
+        android:layout_marginEnd="3dp"
+        android:layout_marginBottom="230dp"
+        android:src="@drawable/main_menu_go" />
+
+    <ImageView
+        android:id="@+id/float_btn"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:padding="7dp"
+        android:layout_gravity="end|bottom"
+        android:layout_marginEnd="3dp"
+        android:layout_marginBottom="180dp"
+        android:src="@drawable/main_menu_home" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+

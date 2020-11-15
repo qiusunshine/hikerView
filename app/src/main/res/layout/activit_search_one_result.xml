@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ad_list_window"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/transparent">
+
+    <LinearLayout
+        android:id="@+id/ad_list_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="90dp"
+        android:background="@drawable/shape_top_border_radius"
+        android:orientation="vertical"
+        android:paddingTop="15dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp">
+
+            <TextView
+                android:id="@+id/ad_list_title_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:ellipsize="end"
+                android:lines="1"
+                android:maxLines="1"
+                android:textColor="@color/black_666"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+        </RelativeLayout>
+
+        <FrameLayout
+            android:id="@+id/frame_bg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        </FrameLayout>
+
+    </LinearLayout>
+</RelativeLayout>

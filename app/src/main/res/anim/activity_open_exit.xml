@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@anim/fast_out_slow_in"
+    android:duration="250"
+    android:shareInterpolator="true"
+    android:fillBefore="false"
+    android:fillAfter="true"
+    android:background="@color/white"
+    android:zAdjustment="normal"
+    android:fillEnabled="false">
+    <alpha
+        android:fromAlpha="1.0"
+        android:toAlpha="0.5" />
+</set>

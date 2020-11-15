@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/item_ad_bg"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp"
+    app:cardCornerRadius="6dp"
+    app:cardElevation="2dp">
+
+    <RelativeLayout
+        android:id="@+id/item_bg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ripple_white"
+        android:padding="5dp">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/item_video_card"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            app:cardCornerRadius="5dp"
+            app:cardElevation="0dp">
+
+            <TextView
+                android:id="@+id/item_video"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/redColor"
+                android:padding="3dp"
+                android:text="mp4"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:id="@+id/item_ad_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/item_video_card"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:ellipsize="end"
+            android:maxLines="3"
+            android:textColor="@color/text"
+            android:textSize="15sp" />
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

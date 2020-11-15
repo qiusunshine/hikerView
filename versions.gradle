@@ -1,0 +1,56 @@
+//App
+def app_version = [:]
+app_version.versionCode = 14 //androidx 14
+app_version.versionName = "1.0.8-androidx"
+ext.app_version = app_version
+
+//build version
+def build_versions = [:]
+build_versions.minSdk = 15
+build_versions.targetSdk = 28
+build_versions.compileSdk = 28
+build_versions.buildTools = "28.0.3"
+ext.build_versions = build_versions
+
+// App dependencies
+def versions = [:]
+//support
+versions.supportLibrary = "1.1.0"
+versions.constraintLayout = "1.1.3"
+
+//test
+versions.junit = "1.1.0"
+versions.test = "1.2.0"
+versions.runner = "1.2.0"
+versions.espresso = "3.2.0"
+
+versions.okhttp = "4.2.2"
+
+ext.versions = versions
+
+ext.deps = [:]
+
+//support
+def support = [:]
+support.appcompat = "androidx.appcompat:appcompat:$versions.supportLibrary"
+support.constraintlayout = "androidx.constraintlayout:constraintlayout:$versions.constraintLayout"
+deps.support = support
+
+//test
+def test = [:]
+test.junit = "androidx.test.ext:junit:$versions.junit"
+test.test = "androidx.test:core:$versions.test"
+test.runner = "androidx.test:runner:$versions.runner"
+test.espresso = "androidx.test.espresso:espresso-core:$versions.espresso"
+deps.test = test
+
+//okHttp
+deps.okhttp = "com.squareup.okhttp3:okhttp:$versions.okhttp"
+
+ext.deps = deps
+
+def addRepos(RepositoryHandler handler) {
+    handler.google()
+    handler.jcenter()
+}
+ext.addRepos = this.&addRepos

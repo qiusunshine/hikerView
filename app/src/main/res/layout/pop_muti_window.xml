@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#444444"
+    android:orientation="vertical">
+
+
+    <com.yanzhenjie.recyclerview.SwipeRecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView2"
+        android:layout_width="wrap_content"
+        android:layout_height="66dp"
+        android:layout_below="@id/recyclerView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp" />
+
+    <ImageView
+        android:id="@+id/add"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_below="@id/recyclerView2"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:padding="5dp"
+        android:src="@drawable/add" />
+</RelativeLayout>

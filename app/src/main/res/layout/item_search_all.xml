@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp"
+    app:cardCornerRadius="5dp"
+    app:cardElevation="2dp">
+
+    <RelativeLayout
+        android:id="@+id/chooseitem_all_RelativeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ripple_white">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/chooseitem_all_img_bg"
+            android:layout_width="72dp"
+            android:layout_height="100dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:visibility="gone"
+            app:cardCornerRadius="5dp"
+            app:cardElevation="0dp">
+
+            <ImageView
+                android:id="@+id/chooseitem_all_img"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@color/gray_rice" />
+        </androidx.cardview.widget.CardView>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/chooseitem_all_img_bg"
+            android:padding="5dp">
+
+            <TextView
+                android:id="@+id/chooseitem_all_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:ellipsize="end"
+                android:maxLines="3"
+                android:textSize="17sp" />
+
+            <TextView
+                android:id="@+id/search_all_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/chooseitem_all_title"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="5dp"
+                android:ellipsize="end"
+                android:maxLines="3"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <RelativeLayout
+                android:id="@+id/desc_bg"
+                android:layout_width="match_parent"
+                android:layout_height="29dp"
+                android:layout_below="@id/search_all_content">
+
+
+                <TextView
+                    android:id="@+id/chooseitem_all_desc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="5dp"
+                    android:gravity="center_vertical"
+                    android:lines="1"
+                    android:maxLines="1"
+                    android:textColor="@color/green"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/choose_item_all_notice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_toEndOf="@id/chooseitem_all_desc"
+                    android:layout_marginTop="5dp"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical"
+                    android:maxLength="10"
+                    android:lines="1"
+                    android:maxLines="1"
+                    android:textColor="@color/gray_text"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/choose_item_all_desc_more"
+                    android:layout_width="wrap_content"
+                    android:layout_height="24dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_toEndOf="@id/choose_item_all_notice"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="10dp"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical"
+                    android:lines="1"
+                    android:maxLines="1"
+                    android:textColor="@color/gray_text"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
+            </RelativeLayout>
+        </RelativeLayout>
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>

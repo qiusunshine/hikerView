@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+  <color name="exo_edit_mode_background_color">#FFF4F3F0</color>
+  <color name="simple_exo_style_Accent">#FF4081</color>
+  <color name="simple_exo_style_color">#005fff</color>
+  <color name="simple_exo_color_33">#33000000</color>
+  <color name="primary_dark">#3d3b3b</color>
+  <color name="simple_exo_color_switch_item">#FF6E0B</color>
+  <color name="timeBar_buffered_color">@android:color/white</color>
+  <color name="timeBar_played_color">#FF7000</color>
+  <color name="timeBar_unplayed_color">#a5ffffff</color>
+  <color name="timeBar_scrubber_color">@color/simple_exo_color_switch_item</color>
+  <color name="exo_error_message_background_color">#AA000000</color>
+  <color name="exo_player_background_color">#000000</color>
+</resources>

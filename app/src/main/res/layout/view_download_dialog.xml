@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="100dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/shape_bottom_border"
+        android:gravity="center"
+        android:id="@+id/number_title"
+        android:text="格式检测中，请耐心等待" />
+
+    <com.daimajia.numberprogressbar.NumberProgressBar
+        android:id="@+id/number_progress_bar"
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
+</LinearLayout>

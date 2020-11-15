@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--     这里是设置距离顶部和底部的高度-->
+    <!--    android:height="@dimen/dp_10"-->
+    <!--    android:bottom="@dimen/dp_10"-->
+    <item>
+        <shape>
+            <corners android:radius="5dp" />
+            <solid android:color="#555555" />
+        </shape>
+    </item>
+
+</layer-list>

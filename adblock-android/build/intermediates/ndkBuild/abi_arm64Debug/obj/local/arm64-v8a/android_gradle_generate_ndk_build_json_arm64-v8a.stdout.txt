@@ -1,0 +1,10 @@
+[Configuration] Pass LIBABP_INCLUDE_DIR to set libadblockplus headers directory, using default value.
+[Configuration] Using libadblockplus headers directory D:/develop/android/libadblockplus-android/adblock-android/src/main/jni/../../../../libadblockplus/include
+[Configuration] Pass LIBABP_LIB_DIR to set static libadblockplus library directory, using default value.
+[Configuration] Using static libadblockplus library D:/develop/android/libadblockplus-android/adblock-android/src/main/jni/../../../../libadblockplus/build/local/arm64-v8a/libadblockplus.a
+[Configuration] Pass V8_INCLUDE_DIR to set V8 headers directory, using default value.
+[Configuration] Using V8 headers directory D:/develop/android/libadblockplus-android/adblock-android/src/main/jni/../../../../libadblockplus/third_party/prebuilt-v8/include
+[Configuration] Pass STATIC_V8_LIB_DIR to set static V8 libraries directory, using default value.
+[Configuration] Using static v8 library D:/develop/android/libadblockplus-android/adblock-android/src/main/jni/../../../../libadblockplus/third_party/prebuilt-v8/android-arm64-release/libv8_monolith.a
+Android NDK: ERROR:D:\develop\android\libadblockplus-android\adblock-android\src\main\jni\Android.mk:v8_monolith: LOCAL_SRC_FILES points to a missing file    
+Android NDK: Check that D:/develop/android/libadblockplus-android/adblock-android/src/main/jni/../../../../libadblockplus/third_party/prebuilt-v8/android-arm64-release/libv8_monolith.a exists  or that its path is correct   

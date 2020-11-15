@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/bg"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        app:cardCornerRadius="6dp"
+        app:cardElevation="0dp">
+
+        <RelativeLayout
+            android:id="@+id/clickBg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/ripple_grey"
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp">
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_margin="5dp"
+                android:gravity="center"
+                android:ellipsize="end"
+                android:layout_centerInParent="true"
+                android:lines="1"
+                android:maxLines="1"
+                android:textColor="@color/black"
+                android:textSize="13sp" />
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="15dp"
+                    android:layout_marginStart="10dp"
+                    android:id="@+id/imageView"/>
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+</FrameLayout>

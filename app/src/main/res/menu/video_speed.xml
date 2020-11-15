@@ -1,0 +1,20 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/player_speed_two"
+        android:title="x2" />
+    <item
+        android:id="@+id/player_speed_one5"
+        android:title="x1.5" />
+    <item
+        android:id="@+id/player_speed_one2"
+        android:title="x1.2" />
+    <item
+        android:id="@+id/player_speed_dian_ba"
+        android:title="x0.8" />
+    <item
+        android:id="@+id/player_speed_dian_wu"
+        android:title="x0.5" />
+    <item
+        android:id="@+id/player_speed_one"
+        android:title="默认" />
+</menu>

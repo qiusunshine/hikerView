@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/movie_one_title"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="5dp"
+    android:layout_marginTop="10dp"
+    android:layout_marginEnd="5dp"
+    android:layout_marginBottom="10dp"
+    android:textIsSelectable="false"
+    android:lineSpacingExtra="10dp"
+    android:paddingStart="4dp"
+    android:paddingTop="12dp"
+    android:paddingEnd="4dp"
+    android:paddingBottom="5dp"
+    android:textColor="@color/blackText"
+    android:textSize="16sp" />

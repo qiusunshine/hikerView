@@ -1,0 +1,159 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rel"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <com.ms_square.etsyblur.BlurringView
+        android:id="@id/blurring_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:overlayColor="#66eeeeee"
+        app:radius="17" />
+
+    <LinearLayout
+        android:id="@+id/lin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        android:paddingLeft="30dp"
+        android:paddingRight="30dp"
+        android:layout_marginBottom="180dp">
+
+        <LinearLayout
+            android:id="@+id/lin1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_sbs"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="50dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:drawableTop="@mipmap/collection"
+                android:drawablePadding="10dp"
+                android:focusable="true"
+                android:gravity="center_horizontal"
+                android:text="收藏"
+                android:tag="收藏"
+                android:textColor="@color/black"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tv_search"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="50dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:drawableTop="@mipmap/bookmark"
+                android:drawablePadding="10dp"
+                android:focusable="true"
+                android:gravity="center_horizontal"
+                android:text="书签"
+                android:tag="书签"
+                android:textColor="@color/black"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tv_course"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="50dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:drawableTop="@mipmap/download_1"
+                android:drawablePadding="10dp"
+                android:focusable="true"
+                android:gravity="center_horizontal"
+                android:text="下载"
+                android:tag="下载"
+                android:textColor="@color/black"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/lin2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_search2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="50dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:drawableTop="@mipmap/history"
+                android:drawablePadding="10dp"
+                android:focusable="true"
+                android:gravity="center_horizontal"
+                android:text="历史"
+                android:tag="历史"
+                android:textColor="@color/black"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tv_course2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="50dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:drawableTop="@mipmap/js"
+                android:drawablePadding="10dp"
+                android:focusable="true"
+                android:gravity="center_horizontal"
+                android:text="搜索"
+                android:tag="引擎"
+                android:textColor="@color/black"
+                android:textSize="15sp" />
+
+
+            <TextView
+                android:id="@+id/tv_task"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="50dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:drawableTop="@mipmap/setting"
+                android:drawablePadding="10dp"
+                android:focusable="true"
+                android:gravity="center_horizontal"
+                android:text="设置"
+                android:tag="设置"
+                android:textColor="@color/black"
+                android:textSize="15sp" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/rel_close"
+        android:layout_width="wrap_content"
+        android:layout_height="55dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="50dp">
+
+        <ImageView
+            android:id="@+id/iv_close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="15dp"
+            android:src="@mipmap/ic_more_close" />
+    </RelativeLayout>
+
+
+</RelativeLayout>

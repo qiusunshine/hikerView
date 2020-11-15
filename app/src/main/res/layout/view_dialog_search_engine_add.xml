@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_margin="10dp">
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="44dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:hint="搜索引擎名称（必填）"
+        android:id="@+id/engine_title"
+        android:layout_margin="5dp"
+        android:inputType="text"
+        android:gravity="center_vertical"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="44dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:hint="搜索引擎链接（用**代替关键词）"
+        android:layout_margin="5dp"
+        android:id="@+id/engine_url"
+        android:inputType="textUri"
+        android:gravity="center_vertical"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="44dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:hint="标题字体颜色（可不填）"
+        android:layout_margin="5dp"
+        android:id="@+id/engine_title_color"
+        android:inputType="text"
+        android:gravity="center_vertical"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="44dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:hint="解析规则（可不填）"
+        android:layout_margin="5dp"
+        android:id="@+id/engine_rule"
+        android:inputType="text"
+        android:gravity="center_vertical"/>
+</LinearLayout>

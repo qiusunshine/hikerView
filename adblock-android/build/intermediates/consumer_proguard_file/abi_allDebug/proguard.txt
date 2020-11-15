@@ -1,0 +1,2 @@
+-keepclassmembers class org.adblockplus.libadblockplus.** { *; }
+-keep class org.adblockplus.libadblockplus.** { *; }

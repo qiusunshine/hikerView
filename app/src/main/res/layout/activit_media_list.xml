@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/media_list_window"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/transparent">
+
+    <LinearLayout
+        android:id="@+id/media_list_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="90dp"
+        android:background="@drawable/shape_top_border_radius"
+        android:orientation="vertical"
+        android:paddingStart="5dp"
+        android:paddingTop="20dp"
+        android:paddingEnd="5dp">
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/media_list_all"
+                    android:layout_width="66dp"
+                    android:layout_height="28dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/button_layer_red"
+                    android:text="全部" />
+
+                <Button
+                    android:id="@+id/media_list_video"
+                    android:layout_width="66dp"
+                    android:layout_height="28dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/button_layer"
+                    android:text="视频" />
+
+                <Button
+                    android:id="@+id/media_list_music"
+                    android:layout_width="66dp"
+                    android:layout_height="28dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/button_layer"
+                    android:text="音乐" />
+
+                <Button
+                    android:id="@+id/media_list_image"
+                    android:layout_width="66dp"
+                    android:layout_height="28dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/button_layer"
+                    android:text="图片" />
+
+                <Button
+                    android:id="@+id/media_list_html"
+                    android:layout_width="66dp"
+                    android:layout_height="28dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/button_layer"
+                    android:text="网页" />
+
+                <Button
+                    android:id="@+id/media_list_other"
+                    android:layout_width="66dp"
+                    android:layout_height="28dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/button_layer"
+                    android:text="其它" />
+
+                <Button
+                    android:id="@+id/media_list_block"
+                    android:layout_width="66dp"
+                    android:layout_height="28dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/button_layer"
+                    android:text="拦截" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="6dp"
+            android:text="当加载的网址域名与原网站域名不一致时字体为黄色（可作为广告网址的判断依据），红色则表示该链接被拦截" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/media_list_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+</RelativeLayout>
+

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+
+    <aapt:attr name="android:drawable">
+        <vector
+            android:width="360dp"
+            android:height="10dp"
+            android:viewportHeight="10"
+            android:viewportWidth="360">
+            <group
+                android:name="progress_group"
+                android:translateX="180"
+                android:translateY="5">
+                <path
+                    android:name="background_track"
+                    android:fillAlpha="0.4"
+                    android:fillColor="#b6d0c9"
+                    android:pathData="M -180,-1 l 360,0 l 0,2 l -360,0 Z" />
+                <group
+                    android:name="rect2_grp"
+                    android:scaleX="0.1"
+                    android:translateX="-197.60001">
+                    <path
+                        android:name="rect2"
+                        android:fillColor="#00a0e9"
+                        android:pathData="M -144,-1 l 288,0 l 0,2 l -288,0 Z" />
+                </group>
+                <group
+                    android:name="rect1_grp"
+                    android:scaleX="0.1"
+                    android:translateX="-522.59998">
+                    <path
+                        android:name="rect1"
+                        android:fillColor="#00a0e9"
+                        android:pathData="M -144,-1 l 288,0 l 0,2 l -288,0 Z" />
+                </group>
+            </group>
+        </vector>
+    </aapt:attr>
+
+    <target
+        android:name="rect1_grp"
+        android:animation="@anim/anim_apih_rect1_grp" />
+
+    <target
+        android:name="rect2_grp"
+        android:animation="@anim/anim_apih_rect2_grp" />
+
+</animated-vector>

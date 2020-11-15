@@ -1,0 +1,24 @@
+{
+  "files": {
+    "antd.js": "/static/js/antd.d49e9b3b.chunk.js",
+    "main.js": "/static/js/main.ec7fbc8e.chunk.js",
+    "moment.js": "/static/js/moment.02405ea3.chunk.js",
+    "react.js": "/static/js/react.e670e9cd.chunk.js",
+    "runtime-main.js": "/static/js/runtime-main.09edc5f3.js",
+    "vendor.js": "/static/js/vendor.ce90b067.chunk.js",
+    "index.html": "/index.html",
+    "precache-manifest.f7e75ce8da8d1c62a3a384104bd2c949.js": "/precache-manifest.f7e75ce8da8d1c62a3a384104bd2c949.js",
+    "service-worker.js": "/service-worker.js",
+    "static/js/moment.02405ea3.chunk.js.LICENSE.txt": "/static/js/moment.02405ea3.chunk.js.LICENSE.txt",
+    "static/js/react.e670e9cd.chunk.js.LICENSE.txt": "/static/js/react.e670e9cd.chunk.js.LICENSE.txt",
+    "static/js/vendor.ce90b067.chunk.js.LICENSE.txt": "/static/js/vendor.ce90b067.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.09edc5f3.js",
+    "static/js/moment.02405ea3.chunk.js",
+    "static/js/antd.d49e9b3b.chunk.js",
+    "static/js/react.e670e9cd.chunk.js",
+    "static/js/vendor.ce90b067.chunk.js",
+    "static/js/main.ec7fbc8e.chunk.js"
+  ]
+}

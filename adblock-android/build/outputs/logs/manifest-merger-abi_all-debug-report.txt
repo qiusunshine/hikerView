@@ -1,0 +1,37 @@
+-- Merging decision tree log ---
+manifest
+ADDED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml:2:1-9:12
+INJECTED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml:2:1-9:12
+INJECTED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml:2:1-9:12
+	package
+		ADDED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml:3:5-45
+		INJECTED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml
+		INJECTED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml:2:11-69
+uses-permission#android.permission.ACCESS_NETWORK_STATE
+ADDED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml:5:5-78
+	android:name
+		ADDED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml:5:22-76
+uses-permission#android.permission.ACCESS_WIFI_STATE
+ADDED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml:6:5-75
+	android:name
+		ADDED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml:6:22-73
+uses-permission#android.permission.INTERNET
+ADDED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml:7:5-66
+	android:name
+		ADDED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml:7:22-64
+uses-sdk
+INJECTED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml
+INJECTED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml
+INJECTED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml
+INJECTED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml
+		ADDED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml
+		INJECTED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml
+		ADDED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml
+		INJECTED from D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml

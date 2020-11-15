@@ -1,0 +1,116 @@
+<head>
+    <title>查看源码</title>
+    <style>
+    .hljs {
+          display: block;
+          overflow-x: auto;
+          padding: 0.5em;
+          color: #333;
+        }
+
+        .hljs-comment,
+        .hljs-quote {
+          color: #998;
+          font-style: italic;
+        }
+
+        .hljs-keyword,
+        .hljs-selector-tag,
+        .hljs-subst {
+          color: #333;
+          font-weight: bold;
+        }
+
+        .hljs-number,
+        .hljs-literal,
+        .hljs-variable,
+        .hljs-template-variable,
+        .hljs-tag .hljs-attr {
+          color: #008080;
+        }
+
+        .hljs-string,
+        .hljs-doctag {
+          color: #d14;
+        }
+
+        .hljs-title,
+        .hljs-section,
+        .hljs-selector-id {
+          color: #900;
+          font-weight: bold;
+        }
+
+        .hljs-subst {
+          font-weight: normal;
+        }
+
+        .hljs-type,
+        .hljs-class .hljs-title {
+          color: #458;
+          font-weight: bold;
+        }
+
+        .hljs-tag,
+        .hljs-name,
+        .hljs-attribute {
+          color: #000080;
+          font-weight: normal;
+        }
+
+        .hljs-regexp,
+        .hljs-link {
+          color: #009926;
+        }
+
+        .hljs-symbol,
+        .hljs-bullet {
+          color: #990073;
+        }
+
+        .hljs-built_in,
+        .hljs-builtin-name {
+          color: #0086b3;
+        }
+
+        .hljs-meta {
+          color: #999;
+          font-weight: bold;
+        }
+
+        .hljs-deletion {
+          background: #fdd;
+        }
+
+        .hljs-addition {
+          background: #dfd;
+        }
+
+        .hljs-emphasis {
+          font-style: italic;
+        }
+
+        .hljs-strong {
+          font-weight: bold;
+        }
+</style>
+
+</head>
+
+<body>
+<pre>
+    <code id="code_area" class="html">
+    </code>
+</pre>
+<script>
+        const codeText = fy_bridge_app.getCode();
+        document.getElementById("code_area").innerText=codeText;
+        document.addEventListener('DOMContentLoaded', (event) => {
+          const code = document.querySelector('#code_area');
+          const worker = new Worker('worker.js');
+          const js = fy_bridge_app.fetch('hiker://files/highlight.min.js', "");
+          worker.onmessage = (event) => { code.innerHTML = event.data;}
+          worker.postMessage(codeText + "%%%%555%%%%" + js);
+        });
+</script>
+</body>

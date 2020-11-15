@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/item_ad_bg"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp"
+    app:cardCornerRadius="6dp"
+    app:cardElevation="2dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/item_bg"
+        android:background="@drawable/ripple_white">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/item_result_img_bg"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            app:cardElevation="0dp"
+            app:cardCornerRadius="5dp">
+
+            <ImageView
+                android:id="@+id/item_reult_img"
+                android:layout_width="80dp"
+                android:layout_height="110dp"
+                android:background="@drawable/ripple_white"
+                android:scaleType="centerCrop"
+                android:src="@color/gray_rice" />
+        </androidx.cardview.widget.CardView>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/title_bg"
+            android:layout_toEndOf="@id/item_result_img_bg"
+            android:layout_alignBottom="@id/item_result_img_bg"
+            android:layout_alignTop="@id/item_result_img_bg"
+            android:padding="5dp">
+
+            <TextView
+                android:id="@+id/item_ad_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:ellipsize="end"
+                android:maxLines="3"
+                android:textColor="@color/text"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/item_ad_url"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/item_ad_title"
+                android:layout_centerVertical="true"
+                android:ellipsize="end"
+                android:padding="3dp"
+                android:maxLines="2" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/item_video_card"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                app:cardCornerRadius="5dp"
+                app:cardElevation="0dp">
+
+                <TextView
+                    android:id="@+id/item_video"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="5dp"
+                    android:maxLines="1"
+                    android:lines="1"
+                    android:ellipsize="end"
+                    android:paddingTop="3dp"
+                    android:paddingEnd="5dp"
+                    android:paddingBottom="3dp"/>
+            </androidx.cardview.widget.CardView>
+        </RelativeLayout>
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView android:layout_width="wrap_content"
+    android:layout_height="54dp"
+    android:id="@+id/res_header_item_text"
+    android:background="@drawable/ripple_white"
+    android:maxLines="1"
+    android:gravity="center"
+    android:textSize="16sp"
+    android:layout_marginStart="5dp"
+    android:layout_marginEnd="5dp"
+    android:paddingStart="5dp"
+    android:paddingEnd="5dp"
+    xmlns:android="http://schemas.android.com/apk/res/android" />

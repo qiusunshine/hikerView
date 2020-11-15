@@ -1,0 +1,45 @@
+/*
+object-assign
+(c) Sindre Sorhus
+@license MIT
+*/
+
+/*!
+   * Sizzle CSS Selector Engine v2.2.1
+   * http://sizzlejs.com/
+   *
+   * Copyright jQuery Foundation and other contributors
+   * Released under the MIT license
+   * http://jquery.org/license
+   *
+   * Date: 2015-10-17
+   */
+
+/*!
+  Copyright (c) 2017 Jed Watson.
+  Licensed under the MIT License (MIT), see
+  http://jedwatson.github.io/classnames
+*/
+
+/*!
+ * jQuery JavaScript Library v1.12.4
+ * http://jquery.com/
+ *
+ * Includes Sizzle.js
+ * http://sizzlejs.com/
+ *
+ * Copyright jQuery Foundation and other contributors
+ * Released under the MIT license
+ * http://jquery.org/license
+ *
+ * Date: 2016-05-20T17:17Z
+ */
+
+/** @license React v0.19.1
+ * scheduler.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */

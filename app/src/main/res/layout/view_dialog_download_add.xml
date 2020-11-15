@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/download_add_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:gravity="start"
+        android:hint="文件名称（不支持后缀）"
+        android:inputType="textMultiLine"
+        android:maxLines="3"
+        android:minHeight="44dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp" />
+
+    <EditText
+        android:id="@+id/download_add_url"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:gravity="start"
+        android:hint="文件所在网址（支持m3u8格式）"
+        android:inputType="textMultiLine"
+        android:maxLines="3"
+        android:minHeight="44dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="44dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/download_add_last"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/button_layer_red"
+            android:text="内置下载器" />
+
+        <Button
+            android:id="@+id/download_add_others"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/button_layer"
+            android:text="其它下载器" />
+    </LinearLayout>
+
+</LinearLayout>

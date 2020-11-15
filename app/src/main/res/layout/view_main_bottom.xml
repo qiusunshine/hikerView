@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:layout_gravity="bottom"
+    android:background="@drawable/shape_top_border"
+    android:gravity="center_vertical"
+    android:id="@+id/bottom_bg"
+    android:orientation="horizontal"
+    android:paddingTop="0.8dp">
+
+    <ImageView
+        android:id="@+id/bottom_home"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/ripple_white"
+        android:paddingTop="11dp"
+        android:paddingBottom="11dp"
+        android:src="@drawable/home_solid" />
+
+    <ImageView
+        android:id="@+id/bottom_bbs"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/ripple_white"
+        android:paddingTop="11dp"
+        android:paddingBottom="11dp"
+        android:src="@drawable/bbs_line" />
+
+    <ImageView
+        android:id="@+id/bottom_dis"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/ripple_white"
+        android:paddingTop="11dp"
+        android:paddingBottom="11dp"
+        android:src="@drawable/discory" />
+
+    <ImageView
+        android:id="@+id/bottom_setting"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/ripple_white"
+        android:paddingTop="11dp"
+        android:paddingBottom="11dp"
+        android:src="@drawable/account" />
+</LinearLayout>
+

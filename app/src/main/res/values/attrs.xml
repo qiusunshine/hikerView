@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ZLoadingView">
+        <attr name="z_type">
+            <enum name="CircleBuilder" value="0" />
+            <enum name="ClockBuilder" value="1" />
+            <enum name="StarBuilder" value="2" />
+            <enum name="LeafBuilder" value="3" />
+            <enum name="DoubleCircleBuilder" value="4" />
+            <enum name="PacManBuilder" value="5" />
+            <enum name="ElasticBallBuilder" value="6" />
+            <enum name="InfectionBallBuilder" value="7" />
+            <enum name="IntertwineBuilder" value="8" />
+            <enum name="TextBuilder" value="9" />
+            <enum name="SearchPathBuilder" value="10" />
+            <enum name="RotateCircleBuilder" value="11" />
+            <enum name="SingleCircleBuilder" value="12" />
+
+            <enum name="SnakeCircleBuilder" value="13" />
+            <enum name="StairsPathBuilder" value="14" />
+            <enum name="MusicPathBuilder" value="15" />
+            <enum name="StairsRectBuilder" value="16" />
+            <enum name="ChartRectBuilder" value="17" />
+        </attr>
+        <attr name="z_color" format="color" />
+        <attr name="z_duration_percent" format="float" />
+    </declare-styleable>
+    <declare-styleable name="ZLoadingTextView">
+        <attr name="z_text" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="EnhanceTabLayout">
+        <attr name="tab_Mode" format="enum">
+            <enum name="mode_fixed" value="1" />
+            <enum name="mode_scrollable" value="2" />
+        </attr>
+        <attr name="tabIndicatorColor" format="color" />
+        <attr name="tabSelectTextColor" format="color" />
+        <attr name="tabRippleColor" format="color" />
+        <attr name="tabTextColor" format="color" />
+        <attr name="tabIndicatorHeight" format="dimension" />
+        <attr name="tabIndicatorWidth" format="dimension" />
+        <attr name="tabTextSize" format="dimension" />
+        <attr name="tabSelectedTextSize" format="dimension" />
+    </declare-styleable>
+
+    <declare-styleable name="DrawableTextView">
+        <attr name="drawableSrc" format="reference" />
+        <attr name="drawableWidth" format="dimension" />
+        <attr name="text" format="string" />
+    </declare-styleable>
+</resources>

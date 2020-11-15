@@ -1,0 +1,6 @@
+[Configuration] Pass LIBABP_INCLUDE_DIR to set libadblockplus headers directory, using default value.
+[Configuration] Using libadblockplus headers directory D:/develop/android/projects/hikerView/adblock-android/src/main/jni/../../../../libadblockplus/include
+[Configuration] Pass LIBABP_LIB_DIR to set static libadblockplus library directory, using default value.
+[Configuration] Using static libadblockplus library D:/develop/android/projects/hikerView/adblock-android/src/main/jni/../../../../libadblockplus/build/local/armeabi-v7a/libadblockplus.a
+Android NDK: ERROR:D:\develop\android\projects\hikerView\adblock-android\src\main\jni\Android.mk:adblockplus: LOCAL_SRC_FILES points to a missing file    
+Android NDK: Check that D:/develop/android/projects/hikerView/adblock-android/src/main/jni/../../../../libadblockplus/build/local/armeabi-v7a/libadblockplus.a exists  or that its path is correct   

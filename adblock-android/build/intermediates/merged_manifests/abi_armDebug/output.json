@@ -1,0 +1,1 @@
+[{"outputType":{"type":"MERGED_MANIFESTS"},"apkData":{"type":"MAIN","splits":[],"versionCode":-1,"enabled":true,"outputFile":"adblock-android-abi_arm-debug.aar","fullName":"abi_armDebug","baseName":"abi_arm-debug"},"path":"..\\..\\library_manifest\\abi_armDebug\\AndroidManifest.xml","properties":{"packageId":"org.adblockplus.libadblockplus","split":""}}]

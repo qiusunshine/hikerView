@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "records": [
+    {
+      "date": "首页合集",
+      "records": [
+        "标识：home_rule_url",
+        "示例：海阔视界，首页频道合集￥home_rule_url￥https://bbs.fy-sys.cn/rule"
+      ]
+    },
+    {
+      "date": "首页频道",
+      "records": [
+        "标识：home_rule",
+        "示例：海阔视界，首页频道￥home_rule￥{'title':'VIP'}"
+      ]
+    },
+    {
+      "date": "搜索引擎合集",
+      "records": [
+        "标识：search_engine_url",
+        "示例：海阔视界，搜索引擎合集￥search_engine_url￥https://bbs.fy-sys.cn/rule"
+      ]
+    },
+    {
+      "date": "搜索引擎",
+      "records": [
+        "标识：search_engine_v2",
+        "示例：海阔视界，搜索引擎￥search_engine_v2￥{'title':'VIP'}"
+      ]
+    },
+    {
+      "date": "网页插件",
+      "records": [
+        "标识：js_url",
+        "示例：海阔视界，网页插件￥js_url￥global_movie@https://bbs.fy-sys.cn/rule",
+        "说明1：@前面的是插件名称，global是全局的意思，可以是别的域名比如k.baidu.com_1_去广告@https://bbs.fy-sys.cn/rule",
+        "说明2：插件'k.baidu.com_1_去污垢'加载时间会早于'k.baidu.com_2_去牛皮藓'插件，也就是根据域名后的名称排序来加载的"
+      ]
+    },
+    {
+      "date": "广告网址拦截",
+      "records": [
+        "标识：ad_url_rule",
+        "示例：海阔视界，广告网址拦截￥ad_url_rule￥https://bbs.baidu.cn/rule&&xn--"
+      ]
+    },
+    {
+      "date": "书签规则",
+      "records": [
+        "标识：bookmark",
+        "示例：海阔视界，书签规则￥bookmark￥{'title':'VIP'}"
+      ]
+    },
+    {
+      "date": "书签合集",
+      "records": [
+        "标识：bookmark_url",
+        "示例：海阔视界，书签规则￥bookmark_url￥hiker://files/share/share-bookmarks.json"
+      ]
+    },
+    {
+      "date": "本地文件",
+      "records": [
+        "标识：file_url",
+        "示例：海阔视界，本地文件￥file_url￥hiker://files/a.txt@https://bbs.fy-sys.cn/rule"
+      ]
+    },
+    {
+      "date": "快速播放白名单",
+      "records": [
+        "标识：fast_play_urls",
+        "示例：海阔视界，快速播放白名单￥fast_play_urls￥https://bbs.fy-sys.cn/rule"
+      ]
+    },
+    {
+      "date": "嗅探弹窗黑名单",
+      "records": [
+        "标识：xt_dialog_rules",
+        "示例：海阔视界，嗅探弹窗黑名单￥xt_dialog_rules￥bbs.fy-sys.com"
+      ]
+    },
+    {
+      "date": "广告拦截订阅",
+      "records": [
+        "标识：ad_subscribe_url",
+        "示例：海阔视界，广告拦截订阅￥ad_subscribe_url￥https://gitee.com/qiusunshine233/hikerView/raw/master/adSub.json"
+      ]
+    }
+  ]
+}

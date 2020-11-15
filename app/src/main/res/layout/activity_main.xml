@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.example.hikerview.ui.view.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_bg"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:fitsSystemWindows="true"
+    tools:context=".ui.home.MainActivity"
+    tools:openDrawer="start">
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/main">
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/main_header_tab"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:elevation="0.5dp">
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/home_header_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:contentInsetStart="10dp">
+
+                <!--<androidx.appcompat.widget.Toolbar-->
+                <!--android:id="@+id/home_header_toolbar"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--app:layout_scrollFlags="scroll|enterAlways">-->
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical">
+
+                    <!--<RelativeLayout-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="@dimen/toolbar_height"-->
+                    <!--android:layout_marginTop="5dp"-->
+                    <!--android:layout_marginBottom="5dp"-->
+                    <!--android:orientation="horizontal">-->
+
+                    <!--<androidx.cardview.widget.CardView-->
+                    <!--android:id="@+id/search_bar_logo_bg"-->
+                    <!--android:layout_width="30dp"-->
+                    <!--android:layout_height="30dp"-->
+                    <!--android:layout_centerVertical="true"-->
+                    <!--app:cardCornerRadius="16dp"-->
+                    <!--app:cardElevation="0dp">-->
+
+                    <!--<ImageButton-->
+                    <!--android:id="@+id/search_bar_logo"-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="match_parent"-->
+                    <!--android:background="@drawable/ripple_white"-->
+                    <!--android:scaleType="centerCrop"-->
+                    <!--android:src="@drawable/account_home" />-->
+                    <!--</androidx.cardview.widget.CardView>-->
+
+                    <!--<ImageButton-->
+                    <!--android:id="@+id/home_header_bookmark"-->
+                    <!--android:layout_width="32dp"-->
+                    <!--android:layout_height="32dp"-->
+                    <!--android:layout_alignParentEnd="true"-->
+                    <!--android:layout_centerVertical="true"-->
+                    <!--android:layout_marginEnd="10dp"-->
+                    <!--android:background="@drawable/ripple_white"-->
+                    <!--android:padding="2.5dp"-->
+                    <!--android:scaleType="centerCrop"-->
+                    <!--android:src="@drawable/top_notice" />-->
+
+                    <!--<androidx.cardview.widget.CardView-->
+                    <!--android:id="@+id/home_header_input"-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="32dp"-->
+                    <!--android:layout_centerVertical="true"-->
+                    <!--android:layout_marginStart="10dp"-->
+                    <!--android:layout_marginEnd="10dp"-->
+                    <!--android:layout_toStartOf="@id/home_header_bookmark"-->
+                    <!--android:layout_toEndOf="@id/search_bar_logo_bg"-->
+                    <!--app:cardCornerRadius="16dp"-->
+                    <!--app:cardElevation="0dp">-->
+
+                    <!--<RelativeLayout-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:background="@color/gray_rice">-->
+
+                    <!--<ImageView-->
+                    <!--android:id="@+id/home_header_icon"-->
+                    <!--android:layout_width="18dp"-->
+                    <!--android:layout_height="18dp"-->
+                    <!--android:layout_centerVertical="true"-->
+                    <!--android:layout_marginStart="10dp"-->
+                    <!--android:layout_marginEnd="10dp"-->
+                    <!--android:src="@drawable/ic_main_nav_search" />-->
+
+                    <!--<TextView-->
+                    <!--android:id="@+id/home_header_title"-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="match_parent"-->
+                    <!--android:layout_toEndOf="@id/home_header_icon"-->
+                    <!--android:gravity="center_vertical"-->
+                    <!--android:maxLines="1"-->
+                    <!--android:text="Search"-->
+                    <!--android:textColor="@color/black_666"-->
+                    <!--android:textSize="16sp" />-->
+                    <!--</RelativeLayout>-->
+
+                    <!--</androidx.cardview.widget.CardView>-->
+                    <!--</RelativeLayout>-->
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="2dp">
+
+                        <ImageView
+                            android:id="@+id/home_header_tab_left"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_centerVertical="true"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp"
+                            android:paddingBottom="6dp"
+                            android:paddingTop="2dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/home_search" />
+
+                        <ImageButton
+                            android:id="@+id/home_header_tab_menu"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginStart="5dp"
+                            android:layout_marginEnd="10dp"
+                            android:background="@drawable/ripple_white"
+                            android:paddingTop="2dp"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp"
+                            android:paddingBottom="6dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/all_home" />
+
+                        <com.example.hikerview.ui.view.TabRecyclerView
+                            android:id="@+id/home_header_tab"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_toStartOf="@id/home_header_tab_menu"
+                            android:layout_toEndOf="@id/home_header_tab_left"
+                            />
+                    </RelativeLayout>
+                </LinearLayout>
+            </androidx.appcompat.widget.Toolbar>
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <!--<androidx.viewpager.widget.ViewPager-->
+        <!--android:id="@+id/home_view_pager"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layArticleListRuleMagActivityout_marginBottom="50dp"-->
+        <!--app:layout_behavior="@string/appbar_scrolling_view_behavior" />-->
+
+        <com.example.hikerview.ui.view.EnhanceViewPager
+            android:id="@+id/home_view_pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="44dp"
+            android:layout_marginBottom="50dp" />
+
+        <com.example.hikerview.ui.view.SmartRefreshLayout
+            android:id="@+id/setting_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="50dp"
+            android:visibility="gone"
+            app:srlEnablePureScrollMode="true">
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+                <include layout="@layout/view_setting" />
+            </ScrollView>
+        </com.example.hikerview.ui.view.SmartRefreshLayout>
+
+        <RelativeLayout
+            android:id="@+id/main_bottom_input"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="70dp"
+            android:background="@drawable/button_layer"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="80dp"
+                android:layout_marginEnd="80dp"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="搜索该频道"
+                android:textColor="@color/black_666"
+                android:textSize="16sp" />
+
+            <ImageView
+                android:id="@+id/article_list_icon"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/ic_main_nav_search" />
+        </RelativeLayout>
+
+        <include layout="@layout/view_main_bottom" />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/home_float_expand_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="17dp"
+            android:layout_marginBottom="180dp"
+            android:visibility="invisible"
+            app:cardCornerRadius="21dp"
+            app:cardElevation="1.5dp">
+
+            <ImageButton
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@color/white"
+                android:scaleType="center"
+                android:src="@drawable/top_home" />
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/home_float_expand_icon_search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="17dp"
+            android:layout_marginBottom="180dp"
+            android:visibility="invisible"
+            app:cardCornerRadius="21dp"
+            app:cardElevation="1.5dp">
+
+            <ImageButton
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@color/white"
+                android:scaleType="center"
+                android:src="@drawable/top_notice" />
+        </androidx.cardview.widget.CardView>
+
+        <com.example.hikerview.ui.view.RelativeListenLayout
+            android:id="@+id/home_float_bg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="180dp">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="2dp"
+                app:cardCornerRadius="21dp"
+                app:cardElevation="0dp">
+
+                <ImageButton
+                    android:id="@+id/home_float_btn"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:background="#FFC152"
+                    android:scaleType="center"
+                    android:src="@drawable/search" />
+            </androidx.cardview.widget.CardView>
+        </com.example.hikerview.ui.view.RelativeListenLayout>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
+    <include layout="@layout/layout_main_menu" />
+</com.example.hikerview.ui.view.DrawerLayout>

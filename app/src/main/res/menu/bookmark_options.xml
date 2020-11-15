@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_group"
+        android:title="标签分组"
+        android:icon="@drawable/ic_action_group"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/action_add_bookmark"
+        android:title="新增书签"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_sort_bookmark"
+        android:title="拖拽排序"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_share"
+        android:title="分享该分组"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_import_local"
+        android:title="从本地导入"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_delete_all"
+        android:title="删除全部"
+        app:showAsAction="never"/>
+</menu>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.example.hikerview.ui.view.DrawableTextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/bg"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_horizontal"
+    android:textColor="@color/black"
+    android:textSize="15sp"
+    app:drawableWidth="42dp" />

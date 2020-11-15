@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/result_bg"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp">
+
+        <RelativeLayout
+            android:id="@+id/reult_tools_RelativeLayout"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:background="@drawable/ripple_white">
+
+            <ImageView
+                android:id="@+id/item_reult_img"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/ripple_white"
+                android:scaleType="centerCrop"
+                android:src="@color/gray_rice" />
+
+            <TextView
+                android:id="@+id/reult_tools_desc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:background="@color/whiteblack"
+                android:gravity="center"
+                android:maxLines="1"
+                android:padding="4dp"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <TextView
+        android:id="@+id/reult_tools_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="4dp"
+        android:maxLines="1"/>
+</LinearLayout>

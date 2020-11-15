@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ad_list_window"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/transparent">
+
+    <LinearLayout
+        android:id="@+id/ad_list_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="90dp"
+        android:background="@drawable/shape_top_border_radius"
+        android:orientation="vertical"
+        android:paddingStart="5dp"
+        android:paddingTop="15dp"
+        android:paddingEnd="5dp"
+        android:paddingBottom="10dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp">
+
+            <TextView
+                android:id="@+id/js_list_title_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="5dp"
+                android:ellipsize="end"
+                android:lines="1"
+                android:maxLines="1"
+                android:text="我的规则"
+                android:textColor="@color/text"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <com.example.hikerview.ui.view.SmartRefreshLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:srlEnablePureScrollMode="true">
+        <ScrollView
+            android:id="@+id/scroll_view"
+            android:scrollbars="none"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <LinearLayout
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                tools:showIn="@layout/layout_main_menu">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="12dp"
+                    android:text="规则总览"/>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginBottom="12dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp">
+
+                    <RelativeLayout
+                        android:id="@+id/main_menu_head_collection"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/gradient_black_ripple"
+                        android:tag="总规则">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="25dp"
+                            android:gravity="center_vertical"
+                            android:text="总规则"
+                            android:textColor="@color/greenAction"
+                            android:textSize="20sp" />
+
+                        <TextView
+                            android:id="@+id/main_menu_head_collection_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginEnd="25dp"
+                            android:gravity="center_vertical"
+                            android:text="0"
+                            android:textColor="@color/greenAction"
+                            android:textSize="20sp" />
+                    </RelativeLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginBottom="12dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp">
+
+                    <RelativeLayout
+                        android:id="@+id/main_menu_head_bookmark"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/gradient_red_ripple"
+                        android:tag="含首页">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="25dp"
+                            android:gravity="center_vertical"
+                            android:text="含首页"
+                            android:textColor="@color/redAction"
+                            android:textSize="20sp" />
+
+                        <TextView
+                            android:id="@+id/main_menu_head_bookmark_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginEnd="25dp"
+                            android:gravity="center_vertical"
+                            android:text="0"
+                            android:textColor="@color/redAction"
+                            android:textSize="20sp" />
+                    </RelativeLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginBottom="12dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp">
+
+                    <RelativeLayout
+                        android:id="@+id/main_menu_head_history"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/gradient_violet_ripple"
+                        android:tag="可搜索">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="25dp"
+                            android:gravity="center_vertical"
+                            android:text="可搜索"
+                            android:textColor="@color/color_text_vo"
+                            android:textSize="20sp" />
+
+                        <TextView
+                            android:id="@+id/main_menu_head_history_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginEnd="25dp"
+                            android:gravity="center_vertical"
+                            android:text="0"
+                            android:textColor="@color/color_text_vo"
+                            android:textSize="20sp" />
+                    </RelativeLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginBottom="12dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp">
+
+                    <RelativeLayout
+                        android:id="@+id/main_menu_head_download"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/gradient_yellow_ripple"
+                        android:tag="分组数">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="25dp"
+                            android:gravity="center_vertical"
+                            android:text="分组数"
+                            android:textColor="@color/yellowAction2"
+                            android:textSize="20sp" />
+
+                        <TextView
+                            android:id="@+id/main_menu_head_download_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginEnd="25dp"
+                            android:gravity="center_vertical"
+                            android:text="0"
+                            android:textColor="@color/yellowAction2"
+                            android:textSize="20sp" />
+                    </RelativeLayout>
+                </androidx.cardview.widget.CardView>
+
+
+
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="12dp"
+                    android:text="非客观分类"/>
+
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginBottom="12dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp">
+
+                    <RelativeLayout
+                        android:id="@+id/main_menu_head_super"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/gradient_black_ripple">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="25dp"
+                            android:gravity="center_vertical"
+                            android:text="超级规则（纯JS）"
+                            android:textColor="@color/greenAction"
+                            android:textSize="20sp" />
+
+                        <TextView
+                            android:id="@+id/main_menu_head_super_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginEnd="25dp"
+                            android:gravity="center_vertical"
+                            android:text="0"
+                            android:textColor="@color/greenAction"
+                            android:textSize="20sp" />
+                    </RelativeLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginBottom="12dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp">
+
+                    <RelativeLayout
+                        android:id="@+id/main_menu_head_monster"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/gradient_red_ripple">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="25dp"
+                            android:gravity="center_vertical"
+                            android:text="怪兽级（动态解析）"
+                            android:textColor="@color/redAction"
+                            android:textSize="20sp" />
+
+                        <TextView
+                            android:id="@+id/main_menu_head_monster_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginEnd="25dp"
+                            android:gravity="center_vertical"
+                            android:text="0"
+                            android:textColor="@color/redAction"
+                            android:textSize="20sp" />
+                    </RelativeLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginBottom="12dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp">
+
+                    <RelativeLayout
+                        android:id="@+id/main_menu_head_js"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/gradient_violet_ripple">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="25dp"
+                            android:gravity="center_vertical"
+                            android:text="高级（含JS或二级）"
+                            android:textColor="@color/color_text_vo"
+                            android:textSize="20sp" />
+
+                        <TextView
+                            android:id="@+id/main_menu_head_js_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginEnd="25dp"
+                            android:gravity="center_vertical"
+                            android:text="0"
+                            android:textColor="@color/color_text_vo"
+                            android:textSize="20sp" />
+                    </RelativeLayout>
+                </androidx.cardview.widget.CardView>
+
+            </LinearLayout>
+        </ScrollView>
+        </com.example.hikerview.ui.view.SmartRefreshLayout>
+    </LinearLayout>
+</RelativeLayout>

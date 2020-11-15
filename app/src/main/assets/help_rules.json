@@ -1,0 +1,167 @@
+{
+  "version": 1,
+  "records": [
+    {
+      "date": "搜索引擎链接",
+      "records": [
+        "用**作为关键词的占位符",
+        "示例：网页内搜索'我'，网址变为：https://quark.sm.cn/s?q=%E6%88%91，'%'后面的即关键词'我'的编码后的关键词，因此规则为：https://quark.sm.cn/s?q=**"
+      ]
+    },
+    {
+      "date": "首页频道链接",
+      "records": [
+        "举例：https://movie.dban.com/j/new_search_subjects?range=0,10&start=fypage@-1@*20@&tags=fyclass&year_range=fyarea&year1=fyyear&sort=fysort",
+        "说明1：真正请求时会把fyclass替换为分类替换词，fyarea替换为地区替换词，fyyear替换为年代替换词，fysort替换为排序替换词，fypage为页数，从1，2，3一直递增，fypage@-1@*20@代表0，20，40递增",
+        "说明2：页数规则不可放最末尾，已经忘了会不会有影响，如果页数确实是最末尾比如：https://movie.douban.com/1，那么在后面加无效字符串，比如https://movie.dban.com/1?_t=0",
+        "说明3：如果类型并没有分为年代、地区、分类，只是一个类型比如地区，但是类型太多放一行不太爽，因此用fyAll，那么分类、年代和地区替换词都会去替换fyAll，有fyAll就不能有别的替换词，页数规则同上"
+      ]
+    },
+    {
+      "date": "首页频道链接增强",
+      "records": [
+        "举例：https://movie.dban.com/j/new_search_subjects?ra;get;GBK;{User-Agent@Windows&&Cookie@id}",
+        "说明1：第一个分号后面的都可以不要，但是要编码格式GBK，就必须有get或POST请求方式，依次类推",
+        "说明2：大括号内的为header，如果里面的内容原本有英文分号的，需要用两个中文分号代替，真正请求的时候会替换回英文分号，header里面的值支持用js处理，如Cookie@id.js:input"
+      ]
+    },
+    {
+      "date": "搜索链接增强",
+      "records": [
+        "同上一条规则"
+      ]
+    },
+    {
+      "date": "首页频道解析规则",
+      "records": [
+        "格式：列表;标题;图片;描述;链接",
+        "示例：body&&#post-list&&li;a&&title;img&&src;.index-intro&&Text;a&&href",
+        "说明：每个规则末尾的Text代表获取文字，Html代表获取包含标签的文本，其余的默认是获取属性",
+        "增强：获取文字或者属性后面可以用js来再处理，比如a&&href.js:'https://h5.vmovier.com/index.html?id='+input.spilt('?from')[0].replace('/','')"
+      ]
+    },
+    {
+      "date": "搜索解析规则",
+      "records": [
+        "格式：列表;标题;链接;描述;详情;图片",
+        "示例：.list-content&&.u-movie;h2&&Text;a&&href;.pingfen&&Text;.meta&&Text;img&&data-original",
+        "说明：前三个为必选，后三个可以不要，比如.list-content&&.u-movie;h2&&Text;a&&href",
+        "增强：也可以部分不要，比如.list-content&&.u-movie;h2&&Text;a&&href;*;*;img&&data-original"
+      ]
+    },
+    {
+      "date": "解析规则增强",
+      "records": [
+        "说明：可以全部用js来代替首页频道解析规则，或者搜索解析规则，那么规则以js:开头",
+        "示例：js: var s = getResCode(); var json={}; eval('json=' + s);\n\nvar next=json.nextPageUrl;\nvar s2 = fetch(next,{});\nvar j2={}; eval('j2=' + s2);\nfor(var i=0;i<j2.itemList.length;i++){\njson.itemList.push(j2.itemList[i]);\n}\n\nvar res={};var d=[];for(var i=0;i<json.itemList.length;i++){var j = json.itemList[i]; if(j.type!=\"followCard\")continue;var r = {};r.pic_url=j.data.content.data.cover.feed;r.title = j.data.content.data.title;r.desc=j.data.header.description;r.url='https://www.kaiyanapp.com/detail.html?vid=' + j.data.header.id+'&utm_source=eyepetizer-homepage&utm_medium=internal&utm_campaign=routine';d.push(r);}\nres.data = d;setHomeResult(res);",
+        "说明：setHomeResult返回内容为数组对象，格式为[{title:'标题',pic_url:'图片',desc:'描述',url:'链接'}]，（最新版也可以用img表示图片地址）",
+        "说明：setSearchResult返回内容为数组对象，格式为[{title:'标题',img:'图片',desc:'描述', content:'详情', url:'链接'}]，（最新版也可以用pic_url表示图片地址）",
+        "说明：setHomeResult返回首页结果，setSearchResult返回搜索结果，setError('111')返回报错信息（可用来调试），更多用法请参考现有规则"
+      ]
+    },
+    {
+      "date": "POST传参",
+      "records": [
+        "说明：POST传参和get一样，真正请求时会自动转到body里面，如果链接里面有问号的，用两个中文问号代替，真正请求时会自动转回英文问号",
+        "示例：http://www.google.com？？action=search?q=1&s=**;POST;gbk;{User-Agent@Windows&&Cookie@id}"
+      ]
+    },
+    {
+      "date": "POST请求传json",
+      "records": [
+        "说明：POST请求用一个参数JsonBody，代表json参数，注意引号的使用（不同类型）",
+        "示例：http://www.google.com?q=1&JsonBody={\"key1\":\"**\",\"key2\":233};POST;gbk;{User-Agent@Windows&&Cookie@id}"
+      ]
+    },
+    {
+      "date": "参数/header用JS处理",
+      "records": [
+        "说明：每一个url参数和header值都可以用js处理，比如生成时间戳，header里面的也可以，注意只能对值（value）进行处理，不能对键（key）用js处理",
+        "示例：http://www.google.com?q=**.js:decodeStr(input,'GBK');POST;gbk;{User-Agent@Windows&&Timestamp@.js:new Date().getTime()}",
+        "示例说明：网页内容会被GBK编码显示，但是url使用utf-8编码（默认会同样被GBK编码，.js:decodeStr(input,'GBK')会再把关键词解码，然后真正请求时会默认使用UTF-8编码）"
+      ]
+    },
+    {
+      "date": "url链接用JS处理",
+      "records": [
+        "说明：之前有url参数js处理，这次还可以对链接本身js处理，如http://a.com.js:input+'/'?a=b.js:input+'a'"
+      ]
+    },
+    {
+      "date": "自定义图片的Referer和UA和Cookie",
+      "records": [
+        "说明：自定义图片的Referer和UA和Cookie，比如http://a.jpg@Referer=http://haikuoshijie.cn/@User-Agent=Windows@Cookie=111111",
+        "注意：@Cookie必须在@Referer和@User-Agent后面",
+        "注意：首页规则和搜索规则默认会加上规则链接的首页地址作为Referer，默认会使用浏览器UA作为图片UA，链接里面的Referer和UA优先级最高"
+      ]
+    },
+    {
+      "date": "首页规则、二级列表动态解析",
+      "records": [
+        "即点击二级列表或者首页列表结果时，根据规则再次解析链接，获取真正要用网页访问的链接",
+        "示例：body&&.stui-content__playlist,fyIndex&&li;a&&Text;*;*;a&&href.js:input+'@lazyRule=body＆＆＆＆a＆＆＆＆href'",
+        "即链接后面加上@lazyRule=body＆＆＆＆a＆＆＆＆href（&&要用中文＆＆＆＆来代替），那么点击结果时就会请求链接然后用规则去解析获取真正的链接，然后视界再对真正的链接进行处理，比如检测为视频或者音乐则直接播放，检测为图片直接大图显示，否则用网页查看",
+        "注意：不能嵌套使用，只能用在最后一级解析规则"
+      ]
+    },
+    {
+      "date": "视频播放支持header",
+      "records": [
+        "如需要cookie和referer，链接为https://a.baid.com/2.mp4;{Cookie@aaa&&Referer@a.baid.com}，即和首页频道链接规则一致"
+      ]
+    },
+    {
+      "date": "视频播放位置记忆",
+      "records": [
+        "默认视界取链接无参数下的地址，比如http://1.m3u8?k=v和http://1.m3u8?k=b的播放位置会记忆为一样的，如果不希望这样就把链接变成http://1.m3u8?k=v&memoryPosition=full"
+      ]
+    },
+    {
+      "date": "首页规则、二级列表支持点击导入规则",
+      "records": [
+        "只要链接为rule://开头，并且后面接上由base64格式完整编码的规则，何为完整编码呢，就是海阔视界这几个字也要有，就是我们平时分享的口令，再base64编码一下"
+      ]
+    },
+    {
+      "date": "JS预处理",
+      "records": [
+        "方便规则快速获取cookie，在执行首页解析规则和搜索解析规则前都会执行一遍再执行对应规则，注意必须是JS代码，无需js:开头，该代码里面可以使用变量MY_RULE来获取当前规则，注意该变量是一个对象，比如用MY_RULE.find_rule来获取解析规则"
+      ]
+    },
+    {
+      "date": "text_1字体颜色混排",
+      "records": [
+        "首页样式text_1的标题和描述支持红色和橙色混排，比如标题设置为\"\"““小棉袄””\"\"''‘‘真帅’’''啊（这里用英文代替中文，实际使用要用中文引号），那么小棉袄三个字就是红色，真帅两个字是橙色，啊这个字还是原本的黑色"
+      ]
+    },
+    {
+      "date": "高级选择器语法",
+      "records": [
+        "或语法：body&&#app||#app2&&Text，即先找#app,找不到再找#app2",
+        "更多语法：比如根据有没有src属性来获取元素等，参考Jsoup原生的语法，https://www.open-open.com/jsoup/selector-syntax.htm，只要不和&&、||等视界自带的冲突就能使用"
+      ]
+    },
+    {
+      "date": "嗅探识别优化",
+      "records": [
+        "在二级、动态解析或者首页点击时，会自动根据链接判断是否为图片或者音视频，然后分别跳转图片查看器、视频播放器和网页",
+        "如果链接里面含有ignoreImg=true则不会被识别为图片，兼容部分链接含有jpg之类的关键词但是不是图片的情况",
+        "如果链接里面含有ignoreVideo=true则不会被识别为视频或者音乐，兼容部分链接含有mp4之类的关键词但是不是视频和音乐的情况"
+      ]
+    },
+    {
+      "date": "不要记录足迹",
+      "records": [
+        "在二级页面点击时默认会记录当前点击位置，除非文本字数超过25",
+        "但是有时候少于25个字符也期望不记录足迹，因此可以在页面url加上#noHistory#，请求时会自动删除该标识，仅做标识用",
+        "注意该功能是放在前一级上的，要想二级没足迹，那就要在一级跳二级的链接上加该标志"
+      ]
+    },
+    {
+      "date": "不要记录历史记录",
+      "records": [
+        "在页面url加上#noRecordHistory#，那么进入该页面就会不记录历史记录，该标识可以加在链接的任意位置，真正请求时会自动删除该标识"
+      ]
+    }
+  ]
+}

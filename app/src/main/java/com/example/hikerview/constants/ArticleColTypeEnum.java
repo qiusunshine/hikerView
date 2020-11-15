@@ -1,0 +1,107 @@
+package com.example.hikerview.constants;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 作者：By 15968
+ * 日期：On 2020/10/7
+ * 时间：At 10:35
+ */
+
+public enum ArticleColTypeEnum {
+    MOVIE_3(1, "movie_3", 12, 4),
+    HEADER(2, "header", 0, 12),
+    FOOTER(3, "footer", 0, 12),
+    MOVIE_1(4, "movie_1", 0, 12),
+    TEXT_1(5, "text_1", 0, 12),
+    TEXT_2(6, "text_2", 10, 6),
+    PIC_1(7, "pic_1", 0, 12),
+    PIC_2(8, "pic_2", 12, 6),
+    MOVIE_2(9, "movie_2", 12, 6),
+    PIC_3(10, "pic_3", 3, 4),
+    TEXT_3(11, "text_3", 10, 4),
+    TEXT_4(12, "text_4", 10, 3),
+    ICON_4(13, "icon_4", 10, 3),
+    ICON_4_SMALL(14, "icon_small_4", 10, 3),
+    ICON_4_ROUND(15, "icon_round_4", 10, 3),
+    ICON_4_ROUND_SMALL(16, "icon_round_small_4", 10, 3),
+    ICON_2(17, "icon_2", 10, 6),
+    TEXT_CENTER_1(18, "text_center_1", 0, 12),
+    PIC_1_FULL(19, "pic_1_full", 0, 12),
+    MOVIE_1_LEFT_PIC(20, "movie_1_left_pic", 0, 12),
+    MOVIE_1_VERTICAL_PIC(21, "movie_1_vertical_pic", 0, 12),
+    LONG_TEXT(22, "long_text", 0, 12),
+    LINE(23, "line", 0, 12),
+    RICH_TEXT(24, "rich_text", 0, 12),
+    ICON_3_SMALL(25, "icon_small_3", 10, 4),
+    LINE_BLANK(26, "line_blank", 0, 12),
+    MOVIE_3_MARQUEE(27, "movie_3_marquee", 12, 4),
+    AVATAR(28, "avatar", 0, 12);
+
+    private final int itemType;
+    private final String code;
+    private final int leftRight;
+    private final int spanCount;
+
+    ArticleColTypeEnum(int itemType, String code, int leftRight, int spanCount) {
+        this.itemType = itemType;
+        this.code = code;
+        this.leftRight = leftRight;
+        this.spanCount = spanCount;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public int getItemType() {
+        return itemType;
+    }
+
+    public static int getLeftRightByItemType(int itemType) {
+        for (ArticleColTypeEnum value : values()) {
+            if (value.getItemType() == itemType) {
+                return value.getLeftRight();
+            }
+        }
+        return 0;
+    }
+
+    public static int getSpanCountByItemType(int itemType) {
+        for (ArticleColTypeEnum value : values()) {
+            if (value.getItemType() == itemType) {
+                return value.getSpanCount();
+            }
+        }
+        return 12;
+    }
+
+    public static int getItemTypeByCode(String code) {
+        for (ArticleColTypeEnum value : values()) {
+            if (value.getCode().equals(code)) {
+                return value.getItemType();
+            }
+        }
+        return MOVIE_3.getItemType();
+    }
+
+    public static String[] getCodeArray() {
+        List<String> list = new ArrayList<>();
+        for (ArticleColTypeEnum value : values()) {
+            if (value != FOOTER && value != HEADER) {
+                list.add(value.getCode());
+            }
+        }
+        String[] array = new String[list.size()];
+        return list.toArray(array);
+    }
+
+    public int getLeftRight() {
+        return leftRight;
+    }
+
+    public int getSpanCount() {
+        return spanCount;
+    }
+}

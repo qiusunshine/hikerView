@@ -1,0 +1,21 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="org.adblockplus.libadblockplus" >
+4
+5    <uses-sdk
+6        android:minSdkVersion="16"
+6-->D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml
+7        android:targetSdkVersion="28" />
+7-->D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml
+8
+9    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+9-->D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml:5:5-78
+9-->D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml:5:22-76
+10    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+10-->D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml:6:5-75
+10-->D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml:6:22-73
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml:7:5-66
+11-->D:\develop\android\libadblockplus-android\adblock-android\src\main\AndroidManifest.xml:7:22-64
+12
+13</manifest>

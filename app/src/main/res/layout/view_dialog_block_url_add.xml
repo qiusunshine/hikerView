@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/block_add_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:gravity="center_vertical"
+        android:hint="请输入要拦截的网址"
+        android:inputType="text"
+        android:maxLines="3"
+        android:minHeight="44dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/block_add_dom"
+            android:layout_width="66dp"
+            android:layout_height="30dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/button_layer_red"
+            android:text="域名" />
+
+        <Button
+            android:id="@+id/block_add_url"
+            android:layout_width="66dp"
+            android:layout_height="30dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/button_layer"
+            android:text="网址" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="44dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/block_add_global"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/button_layer_red"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:text="全局生效" />
+
+        <Button
+            android:id="@+id/block_add_domain"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/button_layer"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:maxLines="1"
+            android:lines="1"
+            android:ellipsize="end"
+            android:text="仅当前网站生效" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:text="同时会存储该网站所有拦截规则，当分享首页规则、搜索引擎时会一起分享出去" />
+
+</LinearLayout>

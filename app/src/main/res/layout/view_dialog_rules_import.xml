@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:layout_marginBottom="10dp"
+        android:gravity="start"
+        android:minHeight="44dp"
+        android:padding="10dp"
+        android:text="建议保留原有规则导入。删除原有规则即导入后所有规则均变成合集中规则；保留原有规则也会覆盖规则，但不会删除已有规则"
+        android:textColor="@color/black_666"
+        android:textSize="16sp" />
+
+    <LinearLayout
+        android:id="@+id/check_bg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="10dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="10dp">
+
+        <ImageView
+            android:id="@+id/check_img"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@drawable/check_circle" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:lines="1"
+            android:maxLines="1"
+            android:text="自动备份所有规则"
+            android:textColor="@color/black_666"
+            android:textSize="16sp" />
+    </LinearLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:text="将自动备份在视界的backup文件夹内，在更多设置里面可以恢复备份"
+        android:textSize="12sp" />
+
+</LinearLayout>

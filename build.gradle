@@ -1,0 +1,63 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    apply from: 'versions.gradle'
+
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.2.0'
+        classpath files('plugin/output/plugin.jar')
+        classpath 'org.javassist:javassist:3.20.0-GA'
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        maven { url 'https://jitpack.io' }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url 'https://maven.google.com' }
+        maven { url 'https://dl.bintray.com/ycjiang/ycjiang' }
+        maven { url 'https://dl.bintray.com/hpdx/maven/' }
+    }
+
+    project.ext {
+        compileSdkVersion=29
+        targetSdkVersion=26
+        buildToolsVersion='29.0.0'
+        minSdkVersion=17
+        versionCode = 16
+        versionName = "3.0"
+        publish_version='2.1.91'
+    }
+}
+
+subprojects {
+    project.configurations.all {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'com.android.support'
+                    && details.requested.name == 'support-v4') {
+                details.useVersion "28.0.0"
+            }
+            if (details.requested.group == 'androidx.fragment'
+                    && details.requested.name == 'fragment') {
+                details.useVersion "1.2.4"
+            }
+            if (details.requested.group == 'androidx.media'
+                    && details.requested.name == 'media') {
+                details.useVersion "1.1.0"
+            }
+        }
+    }
+    task allDepInsight(type: DependencyInsightReportTask) << {}
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

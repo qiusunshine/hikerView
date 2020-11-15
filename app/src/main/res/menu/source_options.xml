@@ -1,0 +1,15 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/utf8"
+        android:title="编码：UTF-8"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/gbk"
+        android:title="编码：GBK"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/gb2312"
+        android:title="编码：GB2312"
+        app:showAsAction="never"/>
+</menu>

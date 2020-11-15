@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+    <!--直接子View-->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/home_recy"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/sort_ok_bg"
+        android:layout_width="wrap_content"
+        android:layout_height="44dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="15dp"
+        android:visibility="gone"
+        app:cardCornerRadius="25dp"
+        app:cardElevation="0dp">
+
+        <TextView
+            android:id="@+id/sort_ok_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:background="@drawable/gradient_black_ripple"
+            android:gravity="center"
+            android:padding="10dp"
+            android:maxLines="1"
+            android:lines="1"
+            android:text="排序完成"
+            android:ellipsize="end"
+            android:textColor="@color/greenAction"
+            android:textSize="16sp" />
+    </androidx.cardview.widget.CardView>
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
+        android:theme="@style/AppBar_dark_theme"
+        app:elevation="0.5dp">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/home_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/toolbar_height"
+            android:background="@color/white"
+            app:layout_scrollFlags="scroll|enterAlways"
+            app:theme="@style/ThemeOverlay.AppCompat.Light" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="10dp"
+            app:cardCornerRadius="22dp"
+            app:cardElevation="0dp"
+            app:layout_scrollFlags="scroll|enterAlways">
+
+            <EditText
+                android:id="@+id/search_edit"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/gray_rice"
+                android:gravity="center_vertical"
+                android:hint="搜索书签标题、链接"
+                android:paddingStart="12dp"
+                android:paddingEnd="37dp"
+                android:lines="1"
+                android:maxLines="1"
+                android:textColor="@color/black_666"
+                android:textColorHint="@color/black_666"
+                android:textCursorDrawable="@drawable/et_cursor"
+                android:textSize="14sp" />
+
+            <ImageView
+                android:id="@+id/search_clear"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:visibility="invisible"
+                android:layout_gravity="center_vertical|end"
+                android:layout_marginEnd="5dp"
+                android:padding="4dp"
+                android:src="@drawable/close_circle" />
+        </androidx.cardview.widget.CardView>
+    </com.google.android.material.appbar.AppBarLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+

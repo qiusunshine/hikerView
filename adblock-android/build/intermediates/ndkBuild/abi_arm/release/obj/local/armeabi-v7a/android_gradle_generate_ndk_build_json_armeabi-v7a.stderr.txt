@@ -1,0 +1,1 @@
+D:/develop/android/sdk/ndk-bundle/build//../build/core/prebuilt-library.mk:45: *** Android NDK: Aborting    .  Stop.

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_margin="10dp">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:text="如果要自动跳转电脑版的，请同时设置电脑版域名的UA为电脑UA，不然的话，如果该网站会识别UA跳转不同网址，那么可能会导致网站一直跳转不同版本的网址"/>
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="44dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:hint="网站名称"
+        android:id="@+id/web_add_title"
+        android:layout_margin="5dp"
+        android:inputType="text"
+        android:gravity="center_vertical"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="44dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:hint="网站地址"
+        android:layout_margin="5dp"
+        android:id="@+id/web_add_url"
+        android:inputType="textUri"
+        android:gravity="center_vertical"/>
+</LinearLayout>

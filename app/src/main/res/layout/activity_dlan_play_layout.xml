@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:clipToPadding="true"
+    android:fitsSystemWindows="true"
+    android:background="#000000"
+    tools:visibility="visible"
+    >
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@mipmap/cast_shap"
+        />
+
+    <!--播放部分-->
+    <LinearLayout
+        android:layout_width="300dp"
+        android:layout_centerHorizontal="true"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/play_status"
+            android:text="正在播放"
+            android:layout_marginTop="30dp"
+            android:layout_gravity="center_horizontal"
+            android:textColor="#3949AB"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/text_content_title"
+            android:layout_width="match_parent"
+            android:singleLine="true"
+            android:gravity="center"
+            android:ellipsize="marquee"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="@string/app_name"
+            android:textColor="#F7F6F6"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/text_content_url"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#F8F5F5"
+            android:visibility="invisible"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!--控制部分-->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <RelativeLayout
+            android:layout_width="42dp"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/volume_bg"
+            android:layout_marginEnd="20dp"
+            android:layout_above="@+id/bottom_control"
+            android:layout_marginBottom="30dp"
+            android:layout_height="130dp">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:background="@drawable/ic_plus"
+                android:id="@+id/plus_volume"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="20dp"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="音量"
+                android:textColor="#fff"
+                android:layout_centerInParent="true"
+                />
+            <ImageView
+                android:layout_width="18dp"
+                android:background="@drawable/ic_reduce"
+                android:layout_centerHorizontal="true"
+                android:id="@+id/reduce_volume"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="20dp"
+                android:layout_height="18dp" />
+        </RelativeLayout>
+        <!--音量-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="24dp">
+
+            <TextView
+                android:id="@+id/img_volume"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:text="声音"
+                android:visibility="invisible"
+                android:textColor="#fff"
+                android:gravity="center"/>
+
+
+            <SeekBar
+                android:id="@+id/seek_bar_volume"
+                android:layout_width="match_parent"
+                android:visibility="invisible"
+                android:layout_height="wrap_content"
+                android:progress="50"
+                android:progressBackgroundTint="@color/colorAccent" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:id="@+id/bottom_control"
+            android:orientation="vertical">
+
+            <!--进度-->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp">
+
+                <TextView
+                    android:id="@+id/text_play_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:text="00:00:00"
+                    android:textColor="#F8F6F6"
+                    android:textSize="10sp" />
+
+                <TextView
+                    android:id="@+id/text_play_max_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_margin="4dp"
+                    android:text="00:00:00"
+                    android:textColor="#FAF7F7"
+                    android:textSize="10sp" />
+
+                <androidx.appcompat.widget.AppCompatSeekBar
+                    android:id="@+id/seek_bar_progress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toStartOf="@id/text_play_max_time"
+                    android:layout_toEndOf="@id/text_play_time"
+                    android:progress="0"
+                    android:progressBackgroundTint="#fff" />
+            </RelativeLayout>
+
+            <!--播放控制-->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:padding="8dp">
+
+
+                <ImageView
+                    android:id="@+id/img_play"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_centerInParent="true"
+                    android:textColor="#fff"
+                    android:textSize="17sp"
+                    android:background="@drawable/play_center_selector"
+                    android:gravity="center"/>
+
+                <ImageView
+                    android:id="@+id/img_next"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="24dp"
+                    android:layout_toEndOf="@id/img_play"
+                    android:src="@mipmap/ic_launcher_round"
+                    android:visibility="invisible"
+                    />
+
+                <ImageView
+                    android:id="@+id/img_previous"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="24dp"
+                    android:layout_toStartOf="@id/img_play"
+                    android:src="@mipmap/ic_launcher_round"
+                    android:visibility="invisible"/>
+            </RelativeLayout>
+        </LinearLayout>
+    </RelativeLayout>
+
+
+    <ImageView
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_left_back"
+        android:id="@+id/backup"
+        android:layout_margin="10dp"
+        />
+</RelativeLayout>

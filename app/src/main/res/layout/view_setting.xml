@@ -1,0 +1,628 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        app:cardBackgroundColor="@color/gray_rice"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp">
+
+        <LinearLayout
+            android:id="@+id/lin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+            <com.example.hikerview.ui.view.DrawableTextView
+                android:id="@+id/tv_sbs"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:clickable="true"
+                app:drawableSrc="@drawable/home_collection"
+                app:drawableWidth="32dp"
+                android:focusable="true"
+                android:gravity="center_horizontal"
+                android:tag="收藏"
+                app:text="收藏"
+                android:textColor="@color/black"
+                android:textSize="15sp" />
+
+            <com.example.hikerview.ui.view.DrawableTextView
+                android:id="@+id/tv_search"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:clickable="true"
+                app:drawableSrc="@drawable/home_bookmark"
+                app:drawableWidth="32dp"
+                android:focusable="true"
+                android:gravity="center_horizontal"
+                android:tag="书签"
+                app:text="书签"
+                android:textColor="@color/black"
+                android:textSize="15sp" />
+
+            <com.example.hikerview.ui.view.DrawableTextView
+                android:id="@+id/tv_search2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:clickable="true"
+                app:drawableSrc="@drawable/home_history"
+                app:drawableWidth="32dp"
+                android:focusable="true"
+                android:gravity="center_horizontal"
+                android:tag="历史"
+                app:text="历史"
+                android:textColor="@color/black"
+                android:textSize="15sp" />
+
+            <com.example.hikerview.ui.view.DrawableTextView
+                android:id="@+id/tv_course"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:clickable="true"
+                app:drawableSrc="@drawable/home_video"
+                app:drawableWidth="32dp"
+                android:focusable="true"
+                android:gravity="center_horizontal"
+                android:tag="下载"
+                app:text="下载"
+                android:textColor="@color/black"
+                android:textSize="15sp" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
+        app:cardBackgroundColor="@color/gray_rice"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <RelativeLayout
+                android:id="@+id/set_bg_rule_import"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_gray_setting"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp">
+
+                <ImageView
+                    android:id="@+id/icon_search"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/icon_search" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_arrow_right" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="40dp"
+                    android:layout_toEndOf="@id/icon_search"
+                    android:text="剪贴板口令导入"
+                    android:textColor="@color/text"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/set_bg_home_default"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_gray_setting"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp">
+
+                <ImageView
+                    android:id="@+id/icon_home"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/icon_home" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_arrow_right" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="40dp"
+                    android:layout_toEndOf="@id/icon_home"
+                    android:text="网页主页设置"
+                    android:textColor="@color/text"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/set_bg_wechat"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_gray_setting"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp">
+
+                <ImageView
+                    android:id="@+id/icon_ad"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/icon_ad" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_arrow_right" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="40dp"
+                    android:layout_toEndOf="@id/icon_ad"
+                    android:text="首页规则管理"
+                    android:textColor="@color/text"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
+        app:cardBackgroundColor="@color/gray_rice"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <RelativeLayout
+                android:id="@+id/set_bg_search_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_gray_setting"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp">
+
+                <ImageView
+                    android:id="@+id/icon_search_row"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/tree1" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_arrow_right" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="40dp"
+                    android:layout_toEndOf="@id/icon_search_row"
+                    android:text="搜索引擎行数"
+                    android:textColor="@color/text"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/set_bg_clear_search_his"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_gray_setting"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp">
+
+                <ImageView
+                    android:id="@+id/clear_his"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/tree3" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_arrow_right" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="40dp"
+                    android:layout_toEndOf="@id/clear_his"
+                    android:text="清空搜索记录"
+                    android:textColor="@color/text"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/set_bg_search_sort"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_gray_setting"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp">
+
+                <ImageView
+                    android:id="@+id/icon_search_show"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/tree4" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_arrow_right" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="40dp"
+                    android:layout_toEndOf="@id/icon_search_show"
+                    android:text="首页悬浮图标隐藏"
+                    android:textColor="@color/text"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/home_float_left"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_gray_setting"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp">
+
+                <ImageView
+                    android:id="@+id/icon_home_float_left"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/tree5" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_arrow_right" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="40dp"
+                    android:layout_toEndOf="@id/icon_home_float_left"
+                    android:text="首页悬浮图标左移"
+                    android:textColor="@color/text"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/set_bg_search_home_show"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_gray_setting"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp">
+
+                <ImageView
+                    android:id="@+id/tree5"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/tree1" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_arrow_right" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="40dp"
+                    android:layout_toEndOf="@id/tree5"
+                    android:text="首页底部搜索框显示"
+                    android:textColor="@color/text"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
+        app:cardBackgroundColor="@color/gray_rice"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <RelativeLayout
+                android:id="@+id/set_bg_js_mag"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_gray_setting"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp">
+
+                <ImageView
+                    android:id="@+id/icon_js"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/icon_js" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_arrow_right" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="40dp"
+                    android:layout_toEndOf="@id/icon_js"
+                    android:text="网页插件管理"
+                    android:textColor="@color/text"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/set_bg_ad_filter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_gray_setting"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp">
+
+                <ImageView
+                    android:id="@+id/ad_filter"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ad_filter" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_arrow_right" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="40dp"
+                    android:layout_toEndOf="@id/ad_filter"
+                    android:text="网址过滤规则"
+                    android:textColor="@color/text"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/set_bg_rule_filter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_gray_setting"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp">
+
+                <ImageView
+                    android:id="@+id/rule_filter"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/rule_filter" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_arrow_right" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="40dp"
+                    android:layout_toEndOf="@id/rule_filter"
+                    android:text="网页元素拦截"
+                    android:textColor="@color/text"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/set_bg_ad_subscribe"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_gray_setting"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp">
+
+                <ImageView
+                    android:id="@+id/ad_subscribe"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ad_subscribe" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_arrow_right" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="40dp"
+                    android:layout_toEndOf="@id/ad_subscribe"
+                    android:text="广告拦截订阅"
+                    android:textColor="@color/text"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/set_bg_abp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_gray_setting"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp">
+
+                <ImageView
+                    android:id="@+id/abp_image"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ad_subscribe" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_arrow_right" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="40dp"
+                    android:layout_toEndOf="@id/abp_image"
+                    android:text="Adblock Plus 订阅"
+                    android:textColor="@color/text"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
+        app:cardBackgroundColor="@color/gray_rice"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <RelativeLayout
+                android:id="@+id/set_bg_night_mode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_gray_setting"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp">
+
+                <ImageView
+                    android:id="@+id/rat_zi"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/rat_zi" />
+
+                <ImageView
+                    android:id="@+id/set_night_checkbox"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_check_gray" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="40dp"
+                    android:layout_toEndOf="@id/rat_zi"
+                    android:text="夜间模式"
+                    android:textColor="@color/text"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/set_bg_more_setting"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_gray_setting"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp">
+
+                <ImageView
+                    android:id="@+id/setting_more"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/setting_more" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_arrow_right" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="40dp"
+                    android:layout_toEndOf="@id/setting_more"
+                    android:text="更多设置"
+                    android:textColor="@color/text"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+</LinearLayout>
+

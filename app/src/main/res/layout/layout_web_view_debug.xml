@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/element_bg"
+    android:layout_width="match_parent"
+    android:layout_height="320dp"
+    android:layout_gravity="bottom"
+    android:background="@color/white"
+    android:visibility="gone"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:background="@drawable/shape_bottom_border"
+        android:paddingBottom="1dp">
+
+        <TextView
+            android:id="@+id/debug_rule_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:background="@drawable/ripple_white"
+            android:gravity="center_vertical"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:text="拦截规则"
+            android:textColor="@color/black_666"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/debug_node_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_toEndOf="@id/debug_rule_btn"
+            android:background="@drawable/ripple_white"
+            android:gravity="center_vertical"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:text="查看节点"
+            android:textColor="@color/black_666"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/debug_parent_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_toEndOf="@id/debug_node_btn"
+            android:background="@drawable/ripple_white"
+            android:gravity="center_vertical"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:text="父节点"
+            android:textColor="@color/black_666"
+            android:textSize="16sp" />
+
+        <ImageView
+            android:id="@+id/debug_close_btn"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/ripple_white"
+            android:padding="4dp"
+            android:src="@drawable/ic_close" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/debug_rule_text_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/debug_rule_bg_footer"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/debug_save_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:background="@drawable/button_layer_black"
+                android:gravity="center_vertical"
+                android:padding="5dp"
+                android:text="保存规则"
+                android:textColor="@color/black_666"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/debug_edit_rule_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:background="@drawable/button_layer_black"
+                android:gravity="center_vertical"
+                android:padding="5dp"
+                android:text="编辑规则"
+                android:textColor="@color/black_666"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@id/debug_rule_bg_footer"
+            android:layout_margin="5dp">
+
+            <TextView
+                android:id="@+id/debug_rule_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:enabled="true"
+                android:focusable="true"
+                android:longClickable="true"
+                android:textIsSelectable="true" />
+        </ScrollView>
+    </RelativeLayout>
+
+    <ScrollView
+        android:id="@+id/debug_node_text_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="5dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/debug_node_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="true"
+            android:focusable="true"
+            android:longClickable="true"
+            android:textIsSelectable="true" />
+    </ScrollView>
+</LinearLayout>

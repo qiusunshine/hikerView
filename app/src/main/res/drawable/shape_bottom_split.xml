@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:drawable="@drawable/ripple_white" />
+    <!-- 连框颜色值 -->
+    <item
+        android:left="15dp"
+        android:right="15dp">
+        <shape>
+            <solid android:color="#f2f4f9" />
+        </shape>
+    </item>
+
+    <!-- 主体背景颜色值 -->
+    <item
+        android:bottom="1.2dp"
+        android:drawable="@drawable/ripple_white" />
+</layer-list>

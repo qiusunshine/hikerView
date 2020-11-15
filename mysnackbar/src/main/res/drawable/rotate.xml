@@ -1,0 +1,10 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <rotate
+            android:drawable="@drawable/kprogresshud_spinner"
+            android:fromDegrees="0"
+            android:toDegrees="360"
+            android:pivotX="50%"
+            android:pivotY="50%"  />
+    </item>
+</layer-list>

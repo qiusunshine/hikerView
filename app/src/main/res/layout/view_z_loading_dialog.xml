@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/z_loading_lin3"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_gravity="center"
+              android:background="@drawable/z_dialog_background"
+              android:gravity="center"
+              android:minWidth="@dimen/alert_width"
+              android:orientation="vertical"
+              android:padding="10dp">
+
+    <com.example.hikerview.ui.view.ZLoadingDialog.ZLoadingView
+        android:id="@+id/z_loading_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:contentDescription="@string/app_name"
+        android:scaleType="fitCenter"/>
+
+    <com.example.hikerview.ui.view.ZLoadingDialog.ZLoadingTextView
+        android:id="@+id/z_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/z_custom_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="5dp"
+        android:paddingBottom="10dp"
+        android:lines="1"
+        android:visibility="gone"/>
+
+</LinearLayout>

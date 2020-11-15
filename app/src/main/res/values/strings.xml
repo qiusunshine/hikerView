@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">海阔视界</string>
+    <string name="hiker">HIKER</string>
+    <string name="loading">loading</string>
+    <string name="chooseOtherBrowser">选择其它播放器</string>
+    <string name="remotePlay">网页投屏</string>
+    <string name="useWebToPlay">嗅探</string>
+    <string name="chooseOperation">选择操作</string>
+    <string name="choosePlayer">选择播放器</string>
+    <string name="chooseUrl">选择链接</string>
+    <string name="downloadTheVideo">下载</string>
+    <string name="douban_query_url">https://m.douban.com/search/?query=</string>
+    <string name="help_url">http://blog.fy-sys.cn/archives/fang-yuan-ying-shi-chang-jian-wen-ti</string>
+    <string name="bbs_url">http://bbs.fy-sys.cn/</string>
+    <string name="bbs_new_url">https://haikuoshijie.cn/</string>
+    <string name="search_engine">https://www.dogedoge.com/</string>
+    <string name="andand">&amp;&amp;</string>
+    <string name="code"><![CDATA[</>]]></string>
+    <string name="input_rule_body_li"><![CDATA[列表规则（如body&&li)]]></string>
+    <string name="input_rule_body_text"><![CDATA[节点规则（如body&&a,0&&href)]]></string>
+    <string name="n_n_n_n_n_n_body_li_li_a_href_n_n"><![CDATA[当前没有源码。\n\n获取源码前请自行修改**为要搜索的内容。\n\n列表规则基于源码，只有点击获取源码才会修改列表规则解析的内容。\n\n节点规则基于底部显示的源码，一旦显示的内容修改，其解析的内容就改变，并且因为显示的源码含有列表节点本身，因此规则需要加上列表节点本身（比如列表规则：body&&li，那么节点规则：li&&a&&href）。\n\n查找也是基于显示的源码。]]></string>
+</resources>

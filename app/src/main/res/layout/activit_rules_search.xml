@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ad_list_window"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/transparent">
+
+    <LinearLayout
+        android:id="@+id/ad_list_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="90dp"
+        android:background="@drawable/shape_top_border_radius"
+        android:orientation="vertical"
+        android:paddingStart="5dp"
+        android:paddingTop="15dp"
+        android:paddingEnd="5dp"
+        android:paddingBottom="10dp">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="10dp"
+            app:cardCornerRadius="22dp"
+            app:cardElevation="0dp">
+
+            <EditText
+                android:id="@+id/rules_search_edit"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/gray_rice"
+                android:gravity="center_vertical"
+                android:hint="搜索频道标题、链接、规则"
+                android:paddingStart="12dp"
+                android:paddingEnd="37dp"
+                android:lines="1"
+                android:maxLines="1"
+                android:textColor="@color/black_666"
+                android:textColorHint="@color/black_666"
+                android:textCursorDrawable="@drawable/et_cursor"
+                android:textSize="14sp" />
+
+            <ImageView
+                android:id="@+id/search_clear"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center_vertical|end"
+                android:layout_marginEnd="5dp"
+                android:padding="4dp"
+                android:src="@drawable/close_circle"
+                android:visibility="invisible" />
+        </androidx.cardview.widget.CardView>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/ad_list_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+</RelativeLayout>

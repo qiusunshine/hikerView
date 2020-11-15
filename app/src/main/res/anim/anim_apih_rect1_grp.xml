@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <objectAnimator
+        android:duration="1500"
+        android:pathData="M -522.59998,0 c 48.89972,0 166.02656,0 301.21729,0 c 197.58128,0 420.9827,0 420.9827,0"
+        android:propertyXName="translateX"
+        android:repeatCount="infinite">
+        <aapt:attr name="android:interpolator">
+            <pathInterpolator android:pathData="M 0,0 L 0.2 0 C 0.3958333333336,0 0.474845090492,0.206797621729 0.5916666666664,0.417082932942 C 0.7151610251224,0.639379624869 0.81625,0.974556908664 1,1" />
+        </aapt:attr>
+    </objectAnimator>
+    <objectAnimator
+        android:duration="1500"
+        android:pathData="M 0 0.1 L 1 0.826849212646 L 2 0.1"
+        android:propertyYName="scaleX"
+        android:repeatCount="infinite">
+        <aapt:attr name="android:interpolator">
+            <pathInterpolator android:pathData="M 0 0 L 0.3665 0 C 0.47252618112021,0.062409910275 0.61541608570164,0.5 0.68325,0.5 C 0.75475061236836,0.5 0.75725829093844,0.814510098964 1,1" />
+        </aapt:attr>
+    </objectAnimator>
+</set>

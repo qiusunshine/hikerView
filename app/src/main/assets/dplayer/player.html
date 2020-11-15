@@ -1,0 +1,96 @@
+<html>
+  <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1">
+      <meta http-equiv="X-UA-Compatible" content="IE=9">
+      <title>新方圆影视</title>
+      <link rel="stylesheet" type="text/css" href="./DPlayer.min.css">
+      <link rel="stylesheet" type="text/css" href="./share.css">
+  </head>
+  <body>
+  <div id="a1"></div>
+  <script type="text/javascript" src="./jquery.min.js"></script>
+  <script type="text/javascript" src="./share.js"></script>
+  <script type="text/javascript" src="./hls.min.js"></script>
+  <script type="text/javascript" src="./DPlayer.min.js"></script>
+  <script type="text/javascript">
+        function checkUrl(){
+			$.get("playUrl", function(result){
+				if(obj.url!=result && result.indexOf('http')==0){
+					obj.url = result;
+				}
+			});
+		}
+		function initPlayer(url){
+		    player = new DPlayer({
+	            container: document.getElementById('a1'),
+	            video: {
+	                url: url,
+	                type: 'auto',
+	                autoplay: true,
+	                preload: 'auto'
+	            }
+	        });
+	        player.on('canplay', function () {
+                console.log('player canplay');
+                player.play();
+                player.fullScreen.request();
+                player.notice('新方圆影视竭诚为您服务');
+                if(!hasShow){
+                    var lastUrl = localStorage.getItem('last_url');
+                    var lastPos = localStorage.getItem('last_pos');
+                    if (lastUrl != null && lastPos != null && obj.url == lastUrl) {
+                        var r=confirm("是否跳转上次播放的进度继续播放？");
+                        if (r==true){
+                            player.seek(lastPos);
+                            currentPos = lastPos;
+                        }else{
+                            currentPos = 0;
+                        }
+                    }else{
+                          localStorage.setItem('last_url', url);
+                          currentPos = 0;
+                    }
+                    hasShow = true;
+                }
+            });
+          player.on('timeupdate', function () {
+	          	var time = parseInt(player.video.currentTime);
+                if(hasShow && currentPos >= 0){
+                    currentPos = time;
+                    localStorage.setItem('last_pos', time);
+                    localStorage.setItem('last_url', obj.url);
+                }
+          });
+		}
+		function switchPlayer(url){
+		    if(currentPos >= 0){
+                localStorage.setItem('last_url', url);
+            }
+		    player.switchVideo({
+	            url: url,
+	            type: 'auto',
+	            autoplay: true,
+	            preload: 'auto'
+	        }, {});
+		}
+		var player;
+	    var currentPos = -1;
+		initPlayer("");
+		var obj = {};
+		var hasShow = false;
+		Object.defineProperty(obj, 'url', {
+			get: function () {
+				return url;
+			},
+			set: function (newValue) {
+				url = newValue;
+				try{switchPlayer(newValue)}catch(e){};
+			}
+		});
+		obj.url="";
+		window.setInterval(checkUrl,1000);
+  </script>
+ </body>
+</html>

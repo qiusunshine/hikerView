@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rl_menu"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="start"
+    android:fitsSystemWindows="true"
+    tools:showIn="@layout/activity_main">
+
+    <RelativeLayout
+        android:id="@+id/menu_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="vertical">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="12dp"
+                app:cardBackgroundColor="@color/gray_rice"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="15dp">
+
+                    <ImageView
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/ic_launcher"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/blackText"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:id="@+id/main_menu_head_title"
+                        android:maxLines="1"
+                        android:text="海 阔 视 界"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/black_666"
+                        android:textSize="14sp"
+                        android:layout_marginTop="10dp"
+                        android:maxLines="1"
+                        android:textStyle="italic"
+                        android:layout_below="@id/main_menu_head_title"
+                        android:text="不一样的视界，不一样的精彩！"/>
+                </RelativeLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <ViewStub
+                android:id="@+id/main_menu_head"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout="@layout/layout_main_menu_head" />
+
+            <!--<include layout="@layout/layout_main_menu_head" />-->
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="12dp"
+                app:cardBackgroundColor="@color/gray_rice"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp">
+
+                        <com.example.hikerview.ui.view.DrawableTextView
+                            android:id="@+id/main_menu_collection"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_horizontal"
+                            android:tag="新版"
+                            android:textColor="@color/black"
+                            android:textSize="15sp"
+                            app:drawableSrc="@drawable/home_collection"
+                            app:drawableWidth="32dp"
+                            app:text="新版" />
+
+                        <com.example.hikerview.ui.view.DrawableTextView
+                            android:id="@+id/main_menu_bookmark"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_horizontal"
+                            android:tag="手册"
+                            android:textColor="@color/black"
+                            android:textSize="15sp"
+                            app:drawableSrc="@drawable/home_bookmark"
+                            app:drawableWidth="32dp"
+                            app:text="手册" />
+
+                        <com.example.hikerview.ui.view.DrawableTextView
+                            android:id="@+id/main_menu_history"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_horizontal"
+                            android:tag="当前"
+                            android:textColor="@color/black"
+                            android:textSize="15sp"
+                            app:drawableSrc="@drawable/home_history"
+                            app:drawableWidth="32dp"
+                            app:text="当前" />
+
+                        <com.example.hikerview.ui.view.DrawableTextView
+                            android:id="@+id/main_menu_download"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_horizontal"
+                            android:tag="搜索"
+                            android:textColor="@color/black"
+                            android:textSize="15sp"
+                            app:drawableSrc="@drawable/home_video"
+                            app:drawableWidth="32dp"
+                            app:text="搜索" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp">
+
+                        <com.example.hikerview.ui.view.DrawableTextView
+                            android:id="@+id/main_menu_home"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_horizontal"
+                            android:tag="频道"
+                            android:textColor="@color/black"
+                            android:textSize="15sp"
+                            app:drawableSrc="@drawable/main_menu_home"
+                            app:drawableWidth="32dp"
+                            app:text="频道" />
+
+                        <com.example.hikerview.ui.view.DrawableTextView
+                            android:id="@+id/main_menu_clear"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_horizontal"
+                            android:tag="清洁"
+                            android:textColor="@color/black"
+                            android:textSize="15sp"
+                            app:drawableSrc="@drawable/main_menu_go"
+                            app:drawableWidth="32dp"
+                            app:text="清洁" />
+
+                        <com.example.hikerview.ui.view.DrawableTextView
+                            android:id="@+id/main_menu_backup"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_horizontal"
+                            android:tag="备份"
+                            android:textColor="@color/black"
+                            android:textSize="15sp"
+                            app:drawableSrc="@drawable/main_menu_backup"
+                            app:drawableWidth="32dp"
+                            app:text="备份" />
+
+                        <com.example.hikerview.ui.view.DrawableTextView
+                            android:id="@+id/main_menu_go"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_horizontal"
+                            android:tag="离开"
+                            android:textColor="@color/black"
+                            android:textSize="15sp"
+                            app:drawableSrc="@drawable/main_menu_clear"
+                            app:drawableWidth="32dp"
+                            app:text="离开" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+        </LinearLayout>
+        </ScrollView>
+    </RelativeLayout>
+</LinearLayout>

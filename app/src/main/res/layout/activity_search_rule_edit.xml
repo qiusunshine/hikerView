@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/art_list_rule_edit_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/toolbar_height"
+            app:theme="@style/ThemeOverlay.AppCompat.Light" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/al_rule_edit_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="引擎名称（title）" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/al_rule_edit_group"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="引擎分组（group）" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <ImageView
+                        android:id="@+id/group_img_view"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:src="@drawable/ic_action_menu_drop_bar" />
+                </RelativeLayout>
+
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <androidx.appcompat.widget.AppCompatEditText
+                            android:id="@+id/al_rule_edit_title_color"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="搜索引擎字体颜色（可不填）" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <ImageView
+                        android:id="@+id/color_img_view"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:src="@drawable/ic_action_menu_drop_bar" />
+                </RelativeLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/al_rule_edit_search_url"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="搜索链接（search_url）" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/al_rule_edit_find_rule"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="搜索解析规则（列表;标题;链接;描述;详情;图片）" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+        </ScrollView>
+
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+

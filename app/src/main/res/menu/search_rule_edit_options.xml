@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/al_rule_edit_save"
+        android:title="保存"
+        android:icon="@drawable/save_file"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/al_rule_edit_save_clip"
+        android:title="剪贴板导入"
+        app:showAsAction="never"/>
+</menu>

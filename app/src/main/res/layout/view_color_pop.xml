@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="0dp">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="10dp">
+
+                <RelativeLayout
+                    android:id="@+id/color1_bg"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:tag="@color/color_text_blue">
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/color1"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_centerHorizontal="true"
+                        app:cardBackgroundColor="@color/color_text_blue"
+                        app:cardCornerRadius="5dp"
+                        app:cardElevation="0dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/color1"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="10dp"
+                        android:text="海阔视界"
+                        android:textColor="@color/color_text_blue"
+                        android:textSize="16sp" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/color2_bg"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:tag="@color/color_text_green">
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/color2"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_centerHorizontal="true"
+                        app:cardBackgroundColor="@color/color_text_green"
+                        app:cardCornerRadius="5dp"
+                        app:cardElevation="0dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/color2"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="10dp"
+                        android:text="海阔视界"
+                        android:textColor="@color/color_text_green"
+                        android:textSize="16sp" />
+                </RelativeLayout>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="10dp">
+
+                <RelativeLayout
+                    android:id="@+id/color3_bg"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:tag="@color/color_text_green2">
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/color3"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_centerHorizontal="true"
+                        app:cardBackgroundColor="@color/color_text_green2"
+                        app:cardCornerRadius="5dp"
+                        app:cardElevation="0dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/color3"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="10dp"
+                        android:text="海阔视界"
+                        android:textColor="@color/color_text_green2"
+                        android:textSize="16sp" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/color4_bg"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:tag="@color/color_text_red1">
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/color4"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_centerHorizontal="true"
+                        app:cardBackgroundColor="@color/color_text_red1"
+                        app:cardCornerRadius="5dp"
+                        app:cardElevation="0dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/color4"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="10dp"
+                        android:text="海阔视界"
+                        android:textColor="@color/color_text_red1"
+                        android:textSize="16sp" />
+                </RelativeLayout>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="10dp">
+
+                <RelativeLayout
+                    android:id="@+id/color5_bg"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:tag="@color/color_text_orange">
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/color5"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_centerHorizontal="true"
+                        app:cardBackgroundColor="@color/color_text_orange"
+                        app:cardCornerRadius="5dp"
+                        app:cardElevation="0dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/color5"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="10dp"
+                        android:text="海阔视界"
+                        android:textColor="@color/color_text_orange"
+                        android:textSize="16sp" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/color6_bg"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:tag="@color/color_text_vo">
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/color6"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_centerHorizontal="true"
+                        app:cardBackgroundColor="@color/color_text_vo"
+                        app:cardCornerRadius="5dp"
+                        app:cardElevation="0dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/color6"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="10dp"
+                        android:text="海阔视界"
+                        android:textColor="@color/color_text_vo"
+                        android:textSize="16sp" />
+                </RelativeLayout>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="10dp">
+
+                <RelativeLayout
+                    android:id="@+id/color7_bg"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:tag="@color/color_text_red">
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/color7"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_centerHorizontal="true"
+                        app:cardBackgroundColor="@color/color_text_red"
+                        app:cardCornerRadius="5dp"
+                        app:cardElevation="0dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/color7"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="10dp"
+                        android:text="海阔视界"
+                        android:textColor="@color/color_text_red"
+                        android:textSize="16sp" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/color8_bg"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:tag="@color/color_text_pink2">
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/color8"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_centerHorizontal="true"
+                        app:cardBackgroundColor="@color/color_text_pink2"
+                        app:cardCornerRadius="5dp"
+                        app:cardElevation="0dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/color8"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="10dp"
+                        android:text="海阔视界"
+                        android:textColor="@color/color_text_pink2"
+                        android:textSize="16sp" />
+                </RelativeLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</androidx.cardview.widget.CardView>
+

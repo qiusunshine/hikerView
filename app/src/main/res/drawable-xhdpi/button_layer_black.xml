@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+    <!-- 连框颜色值 -->
+    <item>
+        <shape
+            android:shape="rectangle"><!-- 填充的颜色 -->
+            <solid android:color="@color/black_666"/><!-- 设置按钮的四个角为弧形 --><!-- android:radius 弧形的半径 -->
+            <corners
+                android:radius="4dp"/><!-- padding：Button里面的文字与Button边界的间隔 -->
+        </shape>
+    </item>
+    <!-- 主体背景颜色值 -->
+    <item android:top="1.2dp"
+        android:left="1.2dp"
+        android:bottom="1.2dp"
+        android:right="1.2dp"> <!--设置只有底部有边框-->
+        <shape
+            android:shape="rectangle"><!-- 填充的颜色 -->
+            <solid android:color="#ffffff"/><!-- 设置按钮的四个角为弧形 --><!-- android:radius 弧形的半径 -->
+            <corners
+                android:radius="2.8dp"/><!-- padding：Button里面的文字与Button边界的间隔 -->
+        </shape>
+    </item>
+</layer-list>

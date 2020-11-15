@@ -1,0 +1,26 @@
+[Configuration] Pass LIBABP_INCLUDE_DIR to set libadblockplus headers directory, using default value.
+[Configuration] Using libadblockplus headers directory D:/develop/android/libadblockplus-android/adblock-android/src/main/jni/../../../../libadblockplus/include
+[Configuration] Pass LIBABP_LIB_DIR to set static libadblockplus library directory, using default value.
+[Configuration] Using static libadblockplus library D:/develop/android/libadblockplus-android/adblock-android/src/main/jni/../../../../libadblockplus/build/local/armeabi-v7a/libadblockplus.a
+[Configuration] Pass V8_INCLUDE_DIR to set V8 headers directory, using default value.
+[Configuration] Using V8 headers directory D:/develop/android/libadblockplus-android/adblock-android/src/main/jni/../../../../libadblockplus/third_party/prebuilt-v8/include
+[Configuration] Pass STATIC_V8_LIB_DIR to set static V8 libraries directory, using default value.
+[Configuration] Using static v8 library D:/develop/android/libadblockplus-android/adblock-android/src/main/jni/../../../../libadblockplus/third_party/prebuilt-v8/android-arm-release/libv8_monolith.a
+[armeabi-v7a] Compile++ thumb: adblockplus-jni <= JniLibrary.cpp
+[armeabi-v7a] Compile++ thumb: adblockplus-jni <= JniPlatform.cpp
+[armeabi-v7a] Compile++ thumb: adblockplus-jni <= JniJsEngine.cpp
+[armeabi-v7a] Compile++ thumb: adblockplus-jni <= JniFilterEngine.cpp
+[armeabi-v7a] Compile++ thumb: adblockplus-jni <= JniJsValue.cpp
+[armeabi-v7a] Compile++ thumb: adblockplus-jni <= JniFilter.cpp
+[armeabi-v7a] Compile++ thumb: adblockplus-jni <= JniSubscription.cpp
+[armeabi-v7a] Compile++ thumb: adblockplus-jni <= JniEventCallback.cpp
+[armeabi-v7a] Compile++ thumb: adblockplus-jni <= JniLogSystem.cpp
+[armeabi-v7a] Compile++ thumb: adblockplus-jni <= JniWebRequest.cpp
+[armeabi-v7a] Compile++ thumb: adblockplus-jni <= JniFilterChangeCallback.cpp
+[armeabi-v7a] Compile++ thumb: adblockplus-jni <= JniCallbacks.cpp
+[armeabi-v7a] Compile++ thumb: adblockplus-jni <= Utils.cpp
+[armeabi-v7a] Compile++ thumb: adblockplus-jni <= JniNotification.cpp
+[armeabi-v7a] Compile++ thumb: adblockplus-jni <= JniShowNotificationCallback.cpp
+[armeabi-v7a] Compile++ thumb: adblockplus-jni <= JniIsAllowedConnectionTypeCallback.cpp
+[armeabi-v7a] Compile++ thumb: adblockplus-jni <= JniFileSystem.cpp
+[armeabi-v7a] SharedLibrary  : libadblockplus-jni.so

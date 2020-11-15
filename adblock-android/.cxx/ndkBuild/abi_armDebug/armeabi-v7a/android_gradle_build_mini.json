@@ -1,0 +1,18 @@
+{
+  "buildFiles": [
+    "D:\\develop\\android\\libadblockplus-android\\adblock-android\\src\\main\\jni\\Android.mk",
+    "D:\\develop\\android\\libadblockplus-android\\adblock-android\\src\\main\\jni\\Application.mk"
+  ],
+  "cleanCommands": [
+    "D:\\develop\\android\\sdk\\ndk\\21.3.6528147\\ndk-build.cmd NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003dD:\\develop\\android\\libadblockplus-android\\adblock-android\\src\\main\\jni\\Android.mk NDK_APPLICATION_MK\u003dD:\\develop\\android\\libadblockplus-android\\adblock-android\\src\\main\\jni\\Application.mk APP_ABI\u003darmeabi-v7a NDK_ALL_ABIS\u003darmeabi-v7a NDK_DEBUG\u003d1 APP_PLATFORM\u003dandroid-16 NDK_OUT\u003dD:/develop/android/libadblockplus-android/adblock-android/build/intermediates/ndkBuild/abi_armDebug/obj NDK_LIBS_OUT\u003dD:\\develop\\android\\libadblockplus-android\\adblock-android\\build\\intermediates\\ndkBuild\\abi_armDebug\\lib APP_ABI\u003darmeabi-v7a clean"
+  ],
+  "buildTargetsCommand": "D:\\develop\\android\\sdk\\ndk\\21.3.6528147\\ndk-build.cmd NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003dD:\\develop\\android\\libadblockplus-android\\adblock-android\\src\\main\\jni\\Android.mk NDK_APPLICATION_MK\u003dD:\\develop\\android\\libadblockplus-android\\adblock-android\\src\\main\\jni\\Application.mk APP_ABI\u003darmeabi-v7a NDK_ALL_ABIS\u003darmeabi-v7a NDK_DEBUG\u003d1 APP_PLATFORM\u003dandroid-16 NDK_OUT\u003dD:/develop/android/libadblockplus-android/adblock-android/build/intermediates/ndkBuild/abi_armDebug/obj NDK_LIBS_OUT\u003dD:\\develop\\android\\libadblockplus-android\\adblock-android\\build\\intermediates\\ndkBuild\\abi_armDebug\\lib APP_ABI\u003darmeabi-v7a {LIST_OF_TARGETS_TO_BUILD}",
+  "libraries": {
+    "adblockplus-jni-abi_armDebug-armeabi-v7a": {
+      "artifactName": "adblockplus-jni",
+      "buildCommand": "D:\\develop\\android\\sdk\\ndk\\21.3.6528147\\ndk-build.cmd NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003dD:\\develop\\android\\libadblockplus-android\\adblock-android\\src\\main\\jni\\Android.mk NDK_APPLICATION_MK\u003dD:\\develop\\android\\libadblockplus-android\\adblock-android\\src\\main\\jni\\Application.mk APP_ABI\u003darmeabi-v7a NDK_ALL_ABIS\u003darmeabi-v7a NDK_DEBUG\u003d1 APP_PLATFORM\u003dandroid-16 NDK_OUT\u003dD:/develop/android/libadblockplus-android/adblock-android/build/intermediates/ndkBuild/abi_armDebug/obj NDK_LIBS_OUT\u003dD:\\develop\\android\\libadblockplus-android\\adblock-android\\build\\intermediates\\ndkBuild\\abi_armDebug\\lib APP_ABI\u003darmeabi-v7a D:/develop/android/libadblockplus-android/adblock-android/build/intermediates/ndkBuild/abi_armDebug/obj/local/armeabi-v7a/libadblockplus-jni.so",
+      "abi": "armeabi-v7a",
+      "output": "D:\\develop\\android\\libadblockplus-android\\adblock-android\\build\\intermediates\\ndkBuild\\abi_armDebug\\obj\\local\\armeabi-v7a\\libadblockplus-jni.so"
+    }
+  }
+}

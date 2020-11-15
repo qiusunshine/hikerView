@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="testRunner" value="PLATFORM" />
+        <option name="distributionType" value="DEFAULT_WRAPPED" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/VideoPlayModule" />
+            <option value="$PROJECT_DIR$/VideoPlayModule-Lite" />
+            <option value="$PROJECT_DIR$/VideoUi" />
+            <option value="$PROJECT_DIR$/adblock-android-settings" />
+            <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/app-updater" />
+            <option value="$PROJECT_DIR$/clinglibrary" />
+            <option value="$PROJECT_DIR$/dropDown" />
+            <option value="$PROJECT_DIR$/etsblur" />
+            <option value="$PROJECT_DIR$/fastscroller" />
+            <option value="$PROJECT_DIR$/ffmpeg" />
+            <option value="$PROJECT_DIR$/ima" />
+            <option value="$PROJECT_DIR$/mysnackbar" />
+            <option value="$PROJECT_DIR$/refresh-footer" />
+            <option value="$PROJECT_DIR$/refresh-header" />
+            <option value="$PROJECT_DIR$/refresh-layout" />
+            <option value="$PROJECT_DIR$/richtext" />
+            <option value="$PROJECT_DIR$/status-util" />
+            <option value="$PROJECT_DIR$/xpermission" />
+          </set>
+        </option>
+        <option name="resolveModulePerSourceSet" value="false" />
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>

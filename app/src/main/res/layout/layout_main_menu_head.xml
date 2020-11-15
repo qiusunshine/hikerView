@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:showIn="@layout/layout_main_menu">
+
+    <androidx.cardview.widget.CardView
+        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp">
+
+        <RelativeLayout
+            android:id="@+id/main_menu_head_collection"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/gradient_black_ripple"
+            android:tag="收藏">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="25dp"
+                android:gravity="center_vertical"
+                android:text="收藏"
+                android:textColor="@color/greenAction"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/main_menu_head_collection_text"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="25dp"
+                android:gravity="center_vertical"
+                android:text="0"
+                android:textColor="@color/greenAction"
+                android:textSize="20sp" />
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp">
+
+        <RelativeLayout
+            android:id="@+id/main_menu_head_bookmark"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/gradient_red_ripple"
+            android:tag="书签">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="25dp"
+                android:gravity="center_vertical"
+                android:text="书签"
+                android:textColor="@color/redAction"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/main_menu_head_bookmark_text"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="25dp"
+                android:gravity="center_vertical"
+                android:text="0"
+                android:textColor="@color/redAction"
+                android:textSize="20sp" />
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp">
+
+        <RelativeLayout
+            android:id="@+id/main_menu_head_history"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/gradient_violet_ripple"
+            android:tag="历史">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="25dp"
+                android:gravity="center_vertical"
+                android:text="历史"
+                android:textColor="@color/color_text_vo"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/main_menu_head_history_text"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="25dp"
+                android:gravity="center_vertical"
+                android:text="0"
+                android:textColor="@color/color_text_vo"
+                android:textSize="20sp" />
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp">
+
+        <RelativeLayout
+            android:id="@+id/main_menu_head_download"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/gradient_yellow_ripple"
+            android:tag="下载">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="25dp"
+                android:gravity="center_vertical"
+                android:text="下载"
+                android:textColor="@color/yellowAction2"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/main_menu_head_download_text"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="25dp"
+                android:gravity="center_vertical"
+                android:text="0"
+                android:textColor="@color/yellowAction2"
+                android:textSize="20sp" />
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+</LinearLayout>

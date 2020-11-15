@@ -1,0 +1,60 @@
+{
+  "variant": {
+    "module": {
+      "rootBuildGradleFolder": "D:\\develop\\android\\libadblockplus-android",
+      "sdkFolder": "D:\\develop\\android\\sdk",
+      "isNativeCompilerSettingsCacheEnabled": false,
+      "isBuildOnlyTargetAbiEnabled": true,
+      "splitsAbiFilterSet": [],
+      "intermediatesFolder": "D:\\develop\\android\\libadblockplus-android\\adblock-android\\build\\intermediates",
+      "gradleModulePathName": ":adblock-android",
+      "moduleRootFolder": "D:\\develop\\android\\libadblockplus-android\\adblock-android",
+      "makeFile": "D:\\develop\\android\\libadblockplus-android\\adblock-android\\src\\main\\jni\\Android.mk",
+      "buildSystem": "NDK_BUILD",
+      "compilerSettingsCacheFolder": "D:\\develop\\android\\libadblockplus-android\\.cxx",
+      "cxxFolder": "D:\\develop\\android\\libadblockplus-android\\adblock-android\\.cxx",
+      "ndkFolder": "D:\\develop\\android\\sdk\\ndk\\21.3.6528147",
+      "ndkVersion": "21.3.6528147",
+      "ndkSupportedAbiList": [
+        "ARMEABI_V7A",
+        "ARM64_V8A",
+        "X86",
+        "X86_64"
+      ],
+      "ndkDefaultAbiList": [
+        "ARMEABI_V7A",
+        "ARM64_V8A",
+        "X86",
+        "X86_64"
+      ],
+      "cmakeToolchainFile": "."
+    },
+    "buildSystemArgumentList": [],
+    "cFlagList": [],
+    "cppFlagsList": [],
+    "variantName": "abi_allDebug",
+    "soFolder": "D:\\develop\\android\\libadblockplus-android\\adblock-android\\build\\intermediates\\ndkBuild\\abi_allDebug\\lib",
+    "objFolder": "D:\\develop\\android\\libadblockplus-android\\adblock-android\\build\\intermediates\\ndkBuild\\abi_allDebug\\obj\\local",
+    "jsonFolder": "D:\\develop\\android\\libadblockplus-android\\adblock-android\\.cxx\\ndkBuild\\abi_allDebug",
+    "gradleBuildOutputFolder": "D:\\develop\\android\\libadblockplus-android\\adblock-android\\.cxx\\cxx\\abi_allDebug",
+    "isDebuggableEnabled": true,
+    "validAbiList": [
+      "ARMEABI_V7A",
+      "ARM64_V8A",
+      "X86",
+      "X86_64"
+    ],
+    "buildTargetSet": []
+  },
+  "abi": "ARM64_V8A",
+  "abiPlatformVersion": 16,
+  "cxxBuildFolder": "D:\\develop\\android\\libadblockplus-android\\adblock-android\\.cxx\\ndkBuild\\abi_allDebug\\arm64-v8a",
+  "jsonFile": "D:\\develop\\android\\libadblockplus-android\\adblock-android\\.cxx\\ndkBuild\\abi_allDebug\\arm64-v8a\\android_gradle_build.json",
+  "gradleBuildOutputFolder": "D:\\develop\\android\\libadblockplus-android\\adblock-android\\.cxx\\cxx\\abi_allDebug\\arm64-v8a",
+  "objFolder": "D:\\develop\\android\\libadblockplus-android\\adblock-android\\build\\intermediates\\ndkBuild\\abi_allDebug\\obj\\local\\arm64-v8a",
+  "buildCommandFile": "D:\\develop\\android\\libadblockplus-android\\adblock-android\\.cxx\\ndkBuild\\abi_allDebug\\arm64-v8a\\build_command.txt",
+  "buildOutputFile": "D:\\develop\\android\\libadblockplus-android\\adblock-android\\.cxx\\ndkBuild\\abi_allDebug\\arm64-v8a\\build_output.txt",
+  "modelOutputFile": "D:\\develop\\android\\libadblockplus-android\\adblock-android\\.cxx\\ndkBuild\\abi_allDebug\\arm64-v8a\\build_model.json",
+  "jsonGenerationLoggingRecordFile": "D:\\develop\\android\\libadblockplus-android\\adblock-android\\.cxx\\ndkBuild\\abi_allDebug\\arm64-v8a\\json_generation_record.json",
+  "compileCommandsJsonFile": "D:\\develop\\android\\libadblockplus-android\\adblock-android\\.cxx\\ndkBuild\\abi_allDebug\\arm64-v8a\\compile_commands.json"
+}

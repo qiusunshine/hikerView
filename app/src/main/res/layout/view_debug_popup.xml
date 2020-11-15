@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/debug_bg"
+    android:background="@drawable/bg_round_black"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_round_black">
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/ic_expand_close"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="15dp"
+            android:layout_centerVertical="true"
+            android:textSize="18sp"
+            android:id="@+id/code"
+            android:textColor="#fff"
+            />
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_toStartOf="@id/code"
+            android:src="@drawable/ic_notice"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="10dp"
+            android:layout_centerVertical="true"
+            android:textSize="18sp"
+            android:id="@+id/notice_icon"
+            android:textColor="#fff"
+            />
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/notice_icon"
+            android:ellipsize="end"
+            android:lines="1"
+            android:maxLines="1"
+            android:padding="15dp"
+            android:text="开发助手"
+            android:textColor="#fff"
+            android:textSize="18sp" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <com.example.hikerview.ui.view.ZoomCodeTextPaneView
+            android:id="@+id/js_edit_code_pane_bg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <com.example.hikerview.ui.js.editor.CodeTextViewPane
+                android:id="@+id/js_edit_code_pane"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <LinearLayout
+                android:layout_gravity="bottom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp">
+
+                    <Button
+                        android:id="@+id/get_html_btn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minHeight="28dp"
+                        android:textSize="13sp"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentEnd="true"
+                        style="@style/button_dark_style"
+                        android:gravity="center"
+                        android:text="获取源码" />
+
+                    <EditText
+                        android:id="@+id/get_html_edit"
+                        android:layout_width="match_parent"
+                        android:textColor="@color/little_white"
+                        android:textColorHint="@color/little_white"
+                        android:layout_height="wrap_content"
+                        android:maxHeight="80dp"
+                        android:textSize="13sp"
+                        android:layout_toStartOf="@id/get_html_btn"
+                        android:hint="请输入网址（支持;post;GB2312的形式）" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp">
+
+                    <Button
+                        android:id="@+id/parse"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minHeight="28dp"
+                        android:textSize="13sp"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentEnd="true"
+                        style="@style/button_dark_style"
+                        android:gravity="center"
+                        android:text="执行规则" />
+
+                    <EditText
+                        android:id="@+id/parse_edit"
+                        android:layout_width="match_parent"
+                        android:textSize="13sp"
+                        android:textColor="@color/little_white"
+                        android:textColorHint="@color/little_white"
+                        android:layout_height="wrap_content"
+                        android:maxHeight="80dp"
+                        android:layout_toStartOf="@id/parse"
+                        android:hint="@string/input_rule_body_li" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <Button
+                        android:id="@+id/parse_node"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minHeight="28dp"
+                        android:textSize="13sp"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentEnd="true"
+                        style="@style/button_dark_style"
+                        android:gravity="center"
+                        android:text="执行规则" />
+
+                    <EditText
+                        android:id="@+id/parse_node_edit"
+                        android:layout_width="match_parent"
+                        android:textSize="13sp"
+                        android:textColor="@color/little_white"
+                        android:textColorHint="@color/little_white"
+                        android:layout_height="wrap_content"
+                        android:maxHeight="80dp"
+                        android:layout_toStartOf="@id/parse_node"
+                        android:hint="@string/input_rule_body_text" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/search_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp">
+
+                    <ImageView
+                        android:id="@+id/search_close"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="5dp"
+                        android:padding="4dp"
+                        android:src="@drawable/ic_close" />
+
+                    <ImageView
+                        android:id="@+id/search_forward"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_centerVertical="true"
+                        android:layout_toStartOf="@id/search_close"
+                        android:padding="4dp"
+                        android:src="@drawable/ic_forward" />
+
+                    <ImageView
+                        android:id="@+id/search_back"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:layout_toStartOf="@id/search_forward"
+                        android:padding="4dp"
+                        android:src="@drawable/ic_back" />
+
+                    <TextView
+                        android:id="@+id/search_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_centerVertical="true"
+                        android:layout_toStartOf="@id/search_back"
+                        android:gravity="center_vertical"
+                        android:text="0/0"
+                        android:textSize="15sp" />
+
+                    <ImageView
+                        android:id="@+id/search_ok"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_toStartOf="@id/search_count"
+                        android:padding="4dp"
+                        android:src="@drawable/ic_main_nav_search" />
+
+                    <EditText
+                        android:id="@+id/search_edit"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_toStartOf="@id/search_ok"
+                        android:background="@null"
+                        android:gravity="center_vertical"
+                        android:hint="搜索"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:lines="1"
+                        android:maxLines="1"
+                        android:textColor="@color/little_white"
+                        android:textColorHint="@color/little_white"
+                        android:textCursorDrawable="@drawable/et_cursor"
+                        android:textSize="12sp" />
+                </RelativeLayout>
+            </LinearLayout>
+        </com.example.hikerview.ui.view.ZoomCodeTextPaneView>
+
+    </LinearLayout>
+</LinearLayout>

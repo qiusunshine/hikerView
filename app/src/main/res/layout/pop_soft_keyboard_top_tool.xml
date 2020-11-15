@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/keyboard_top_view_tip_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:padding="5dp"
+    android:background="@color/background_card"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <HorizontalScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/keyboard_top_view_scroll"
+        android:scrollbars="none"
+        tools:ignore="UselessParent">
+
+        <LinearLayout
+            android:id="@+id/ll_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="我的模板"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="@string/andand"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="＆＆"
+                tools:ignore="HardcodedText"
+                android:textSize="14sp" />
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="Text"
+                android:textSize="14sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="Html"
+                android:textSize="14sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="href"
+                android:textSize="14sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="title"
+                android:textSize="14sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="保存"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="getResCode()"
+                android:textSize="14sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="fetch(,{})"
+                android:textSize="14sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="parseDomForHtml"
+                android:textSize="14sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="MY_URL"
+                android:textSize="14sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="eval()"
+                android:textSize="14sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="setHomeResult()"
+                android:textSize="14sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="setSearchResult()"
+                android:textSize="14sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="==>"
+                android:textSize="14sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="\@rule="
+                android:textSize="14sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="\@lazyRule="
+                android:textSize="14sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="JSON.parse()"
+                android:textSize="14sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="MOBILE_UA"
+                android:textSize="14sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="PC_UA"
+                android:textSize="14sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginStart="5dp"
+                android:text="隐藏"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:ignore="HardcodedText" />
+
+        </LinearLayout>
+
+    </HorizontalScrollView>
+
+</FrameLayout>

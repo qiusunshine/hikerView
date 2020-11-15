@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <com.example.hikerview.ui.view.OverlyingView
+        android:id="@+id/home_view_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp">
+
+        <LinearLayout
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="10dp"
+            android:background="@drawable/background_white_radius"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/home_top_collection"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:tag="收藏"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:padding="7dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/top_collection" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_gravity="center_horizontal"
+                        android:text="收藏" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/home_top_bookmark"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:tag="书签"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:padding="7dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/top_bookmark" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_gravity="center_horizontal"
+                        android:text="书签" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/home_top_home"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:tag="下载"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:padding="7dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/top_home" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_gravity="center_horizontal"
+                        android:text="下载" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="10dp"
+            android:background="@drawable/background_white_radius"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/home_top_his"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:tag="历史"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="45dp"
+                    android:padding="7dp"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/top_his" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_gravity="center_horizontal"
+                    android:text="历史" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/home_top_js"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:tag="插件"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="45dp"
+                    android:padding="7dp"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/top_js" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_gravity="center_horizontal"
+                    android:text="插件" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/home_top_more"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:tag="设置"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="45dp"
+                    android:padding="7dp"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/top_more_setting" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_gravity="center_horizontal"
+                    android:text="设置" />
+
+            </LinearLayout>
+        </LinearLayout>
+    </com.example.hikerview.ui.view.OverlyingView>
+</FrameLayout>

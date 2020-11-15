@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ad_list_window"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/transparent">
+
+    <LinearLayout
+        android:id="@+id/ad_list_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="90dp"
+        android:background="@drawable/shape_top_border_radius"
+        android:orientation="vertical"
+        android:paddingTop="15dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp">
+
+            <TextView
+                android:id="@+id/dropDownMenu"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/button_layer"
+                android:drawableEnd="@mipmap/drop_down_unselected_icon"
+                android:gravity="center"
+                android:paddingStart="10dp"
+                android:paddingEnd="5dp"
+                android:text="分组" />
+
+            <TextView
+                android:id="@+id/ad_list_title_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_toStartOf="@id/dropDownMenu"
+                android:ellipsize="end"
+                android:lines="1"
+                android:maxLines="1"
+                android:textColor="@color/black_666"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/ad_list_desc_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/ad_list_title_text"
+                android:layout_marginStart="10dp"
+                android:layout_marginBottom="5dp"
+                android:ellipsize="end"
+                android:lines="1"
+                android:maxLines="1"
+                android:text=" " />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/article_list_rule_window"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="true">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/search_result_bottom_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp" />
+
+            <androidx.viewpager.widget.ViewPager
+                android:id="@+id/search_result_view_pager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/search_result_bottom_recycler_view"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp" />
+
+            <View
+                android:id="@+id/maskView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#88888888"
+                android:visibility="gone" />
+
+            <GridView
+                android:id="@+id/gridView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:horizontalSpacing="3dp"
+                android:numColumns="4"
+                android:padding="10dp"
+                android:verticalSpacing="3dp"
+                android:visibility="gone" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+</RelativeLayout>

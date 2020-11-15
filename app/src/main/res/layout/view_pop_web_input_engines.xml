@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/transparent">
+
+    <LinearLayout
+        android:id="@+id/bg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/top_bg"
+                android:layout_width="match_parent"
+                android:layout_height="69dp"
+                android:background="@drawable/shape_top_border_radius"
+                android:orientation="horizontal"
+                android:paddingStart="3dp"
+                android:paddingTop="20dp"
+                android:paddingEnd="3dp"
+                android:paddingBottom="5dp">
+
+                <TextView
+                    android:id="@+id/item_rect_wrap_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center"
+                    android:text="搜索分组："
+                    android:textColor="@color/black_666"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/pop_web_input_search_group_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:background="@color/white" />
+
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/pop_web_input_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="98dp"
+                android:background="@color/white"
+                android:paddingStart="3dp"
+                android:paddingEnd="3dp"
+                android:paddingBottom="10dp" />
+
+            <FrameLayout
+                android:id="@+id/pop_web_input_search_his_bg"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:background="@color/white">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/pop_web_input_search_his_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <RelativeLayout
+                    android:id="@+id/pop_web_input_search_his_clear"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/ripple_grey"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:text="清空搜索记录"
+                        android:textColor="@color/black_666" />
+                </RelativeLayout>
+            </FrameLayout>
+
+            <RelativeLayout
+                android:id="@+id/pop_input_url_bg"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:background="@drawable/shape_bottom_border"
+                android:orientation="horizontal"
+                android:paddingStart="3dp"
+                android:paddingEnd="3dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/pop_input_url_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:text="访问："
+                    android:textColor="@color/greenAction" />
+
+                <ImageView
+                    android:id="@+id/pop_input_url_copy"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/ripple_white"
+                    android:padding="10dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/copy_web_2" />
+
+                <TextView
+                    android:id="@+id/pop_input_url"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_toStartOf="@id/pop_input_url_copy"
+                    android:layout_toEndOf="@id/pop_input_url_title"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical"
+                    android:lines="1"
+                    android:maxLines="1"
+                    android:textColor="@color/black_666" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/pop_input_edit_bg"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:background="@drawable/shape_top_border"
+                android:paddingTop="5dp">
+
+                <TextView
+                    android:id="@+id/button"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginEnd="5dp"
+                    android:gravity="center"
+                    android:text="搜索"
+                    android:textSize="16sp"
+                    android:textColor="@color/black_666" />
+
+                <ImageView
+                    android:id="@+id/search_clear"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_toStartOf="@id/button"
+                    android:padding="6dp"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/round_close_black"
+                    android:visibility="invisible" />
+
+                <com.example.hikerview.ui.view.WhiteEditText
+                    android:id="@+id/url_edit"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="32dp"
+                    android:layout_toStartOf="@id/button"
+                    android:clickable="true"
+                    android:ellipsize="end"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical"
+                    android:hint="搜索或输入网址"
+                    android:imeOptions="actionDone"
+                    android:paddingStart="5dp"
+                    android:paddingEnd="5dp"
+                    android:selectAllOnFocus="true"
+                    android:lines="1"
+                    android:maxLines="1"
+                    android:textColor="@color/black_666"
+                    android:textCursorDrawable="@drawable/et_cursor"
+                    android:textSize="14sp" />
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>

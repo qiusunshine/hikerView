@@ -1,0 +1,104 @@
+html,body{
+	width:100%;
+	height:100%;
+}
+* {
+    margin: 0px;
+    padding: 0px;
+}
+
+.vlist {
+    width: 100%;
+}
+
+#a1 {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    bottom: 0px;
+	width:100%;
+	height:100%;
+}
+
+.yytf_2 {
+    position: absolute;
+    z-index: 100;
+    height: 280px;
+    width: 336px;
+    position: absolute;
+    left: 50%;
+    margin-left: -168px;
+    top: 50%;
+    margin-top: -140px;
+}
+
+#daojs {
+    text-align: right;
+    background-color: #000;
+    padding-right: 20px;
+    color: #FFF;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.adsense {
+    height: 280px;
+    width: 336px;
+    background-color: #FFFFFF;
+    position: absolute;
+    left: 50%;
+    margin-left: -168px;
+    top: 50%;
+    margin-top: -140px;
+}
+.gaog {
+    font-family: "微软雅黑";
+    position: absolute;
+    width: 100%;
+    height: auto;
+    left: 0;
+    bottom: 76px;
+    z-index: 9999;
+}
+
+.gaog-var {
+    text-align: center;
+}
+
+.gaog-var-kalt {
+    display: inline-block;
+    position: relative;
+}
+
+.gaog-var-kalt a {
+    display: block;
+}
+
+.gaog-var-kalt img {
+    display: block;
+    margin: 0 auto;
+    max-width: 80%;
+}
+
+.gaog-var-kalt b {
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    z-index: 1;
+    background: #333;
+    color: #FFF;
+    font-size: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: normal;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    overflow: hidden;
+    text-align: center;
+}
+
+.gaog-var-kalt b:hover {
+    background: #000;
+}

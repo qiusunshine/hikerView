@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/control_bottom_bg"
+        android:layout_width="match_parent"
+        android:layout_height="94dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/exo_bg_video_bottom"
+        android:paddingStart="5dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="5dp"
+        android:paddingBottom="8dp">
+
+        <LinearLayout
+            android:id="@+id/custom_lock_screen_bg"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_alignParentBottom="true"
+            android:orientation="vertical"
+            android:padding="4dp">
+
+            <ImageButton
+                android:id="@+id/custom_lock_screen"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:background="@null"
+                android:scaleType="centerCrop"
+                android:src="@drawable/screen_rotation" />
+        </LinearLayout>
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@id/exo_video_fullscreen"
+            style="@style/ExoMediaButton.Fullscreen"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginEnd="4dp"
+            android:gravity="center"
+            android:padding="3dp" />
+
+        <RelativeLayout
+            android:id="@+id/custom_control_bottom"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true">
+
+            <RelativeLayout
+                android:id="@+id/exo_play_bg"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_centerInParent="true"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp">
+
+                <ImageButton
+                    android:id="@id/exo_play"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@null"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/play_circle"
+                    android:visibility="visible" />
+
+                <ImageButton
+                    android:id="@id/exo_pause"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@null"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/time_out"
+                    android:visibility="gone" />
+            </RelativeLayout>
+
+            <ImageView
+                android:id="@+id/custom_last"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="center_vertical"
+                android:layout_toStartOf="@id/exo_play_bg"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_action_last_white" />
+
+            <ImageView
+                android:id="@+id/custom_next"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_toEndOf="@id/exo_play_bg"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_action_next_white" />
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@id/exo_controller_bottom"
+            style="@style/ExoMediaControllerBottom"
+            android:layout_height="30dp"
+            android:layout_above="@id/custom_control_bottom"
+            android:layout_alignParentBottom="false"
+            android:layout_marginBottom="5dp"
+            android:background="@color/transparent">
+
+            <TextView
+                android:id="@id/exo_position"
+                style="@style/ExoMediaCurrPosition"
+                android:layout_marginStart="10dp"
+                tools:text="06:21" />
+
+            <!--<TextView-->
+            <!--style="@style/ExoMediaSpan"-->
+            <!--android:layout_marginLeft="2dp"-->
+            <!--android:layout_marginRight="2dp"-->
+            <!--android:text="@string/exo_fenge"-->
+            <!--android:textSize="12sp" />-->
+
+            <chuangyuan.ycj.videolibrary.widget.ExoDefaultTimeBar
+                android:id="@id/exo_progress"
+                style="@style/ExoMediaTimeBar"
+                app:bar_height="3dp"
+                app:buffered_color="@color/green" />
+
+            <TextView
+                android:id="@id/exo_duration"
+                style="@style/ExoMediaDuration"
+                tools:text="06:21" />
+
+            <TextView style="@style/ExoMediaTextSwitch" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/custom_list_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone">
+
+        <RelativeLayout
+            android:id="@+id/custom_list_blank"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#80000000" />
+
+        <ScrollView
+            android:id="@+id/custom_list_scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp">
+
+            <LinearLayout
+                android:id="@+id/card_bg"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <HorizontalScrollView
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/toolbar_height"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:text="画面比例："
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/mode_fit"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:text="自适应"
+                            android:textColor="@color/greenAction" />
+
+                        <TextView
+                            android:id="@+id/mode_fill"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:text="充满屏幕"
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/mode_fixed_width"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:text="拉伸宽度"
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/mode_fixed_height"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:text="拉伸高度"
+                            android:textColor="@color/white" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <HorizontalScrollView
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/toolbar_height"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:text="快速跳转："
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/jump_10"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:tag="10"
+                            android:text="+10秒"
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/jump_30"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:tag="30"
+                            android:text="+30秒"
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/jump_60"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:tag="60"
+                            android:text="+1分钟"
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/jump_120"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:tag="120"
+                            android:text="+2分钟"
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/jump_10_l"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:tag="-10"
+                            android:text="-10秒"
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/jump_30_l"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:tag="-30"
+                            android:text="-30秒"
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/jump_60_l"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:tag="-60"
+                            android:text="-1分钟"
+                            android:textColor="@color/white" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <HorizontalScrollView
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/toolbar_height"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:text="倍速播放："
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/speed_1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:tag="1"
+                            android:text=" ×1 "
+                            android:textColor="@color/greenAction" />
+
+                        <TextView
+                            android:id="@+id/speed_1_2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:tag="1.2"
+                            android:text=" ×1.2 "
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/speed_1_5"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:tag="1.5"
+                            android:text=" ×1.5 "
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/speed_2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:tag="2"
+                            android:text=" ×2 "
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/speed_p8"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:tag="0.8"
+                            android:text=" ×0.8 "
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/speed_p5"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:tag="0.5"
+                            android:text=" ×0.5 "
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/speed_3"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:tag="3"
+                            android:text=" ×3 "
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/speed_4"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:tag="4"
+                            android:text=" ×4 "
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/speed_5"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:tag="5"
+                            android:text=" ×5 "
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/speed_6"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:tag="6"
+                            android:text=" ×6 "
+                            android:textColor="@color/white" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <TextView
+                    android:id="@+id/video_str_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginEnd="5dp"
+                    android:gravity="center"
+                    android:minHeight="@dimen/toolbar_height"
+                    android:text="视频格式："
+                    android:textColor="@color/white" />
+
+                <TextView
+                    android:id="@+id/audio_str_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginEnd="5dp"
+                    android:gravity="center"
+                    android:minHeight="@dimen/toolbar_height"
+                    android:text="音频格式："
+                    android:textColor="@color/white" />
+
+                <TextView
+                    android:id="@+id/video_address_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:lines="1"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical"
+                    android:minHeight="@dimen/toolbar_height"
+                    android:text="视频地址："
+                    android:textColor="@color/white" />
+            </LinearLayout>
+        </ScrollView>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:background="@drawable/exo_bg_video_top">
+
+        <ImageView
+            android:id="@+id/custom_mode"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/menu_video" />
+
+        <TextView
+            android:id="@+id/custom_toolbar_time"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:layout_toStartOf="@id/custom_mode"
+            android:gravity="center_vertical"
+            android:lines="1"
+            android:paddingStart="10dp"
+            android:paddingEnd="0dp"
+            android:text="loading"
+            android:textColor="@color/white" />
+
+        <TextView
+            android:id="@+id/custom_toolbar_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:layout_toStartOf="@id/custom_toolbar_time"
+            android:gravity="center_vertical"
+            android:lines="1"
+            android:paddingStart="10dp"
+            android:text="速度×1.0/默认"
+            android:textColor="@color/white" />
+
+        <TextView
+            android:id="@id/exo_controls_title"
+            style="@style/ExoMediaTitle"
+            android:layout_toStartOf="@id/custom_toolbar_desc" />
+    </RelativeLayout>
+</RelativeLayout>

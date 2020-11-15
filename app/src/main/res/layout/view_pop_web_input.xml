@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/bg"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/transparent">
+
+        <RelativeLayout
+            android:id="@+id/pop_input_edit_bg"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_alignParentBottom="true"
+            android:background="@color/white"
+            android:padding="5dp">
+
+            <TextView
+                android:id="@+id/button"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:gravity="center"
+                android:text="进入" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/url_card"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:layout_toStartOf="@id/button"
+                android:paddingStart="15dp"
+                android:paddingEnd="15dp"
+                app:cardCornerRadius="15dp"
+                app:cardElevation="0dp">
+
+                <EditText
+                    android:id="@+id/url_edit"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#F8F8F8"
+                    android:ellipsize="end"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:hint="搜索或输入网址"
+                    android:selectAllOnFocus="true"
+                    android:lines="1"
+                    android:maxLines="1"
+                    android:textSize="14sp" />
+            </androidx.cardview.widget.CardView>
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/pop_input_control_bg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/pop_input_edit_bg"
+            android:background="@color/white"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:background="@color/grey_black"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/copy"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="1dp"
+                    android:layout_weight="1"
+                    android:background="@color/white"
+                    android:gravity="center"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:text="复制" />
+
+                <TextView
+                    android:id="@+id/paste"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="1dp"
+                    android:layout_weight="1"
+                    android:background="@color/white"
+                    android:gravity="center"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:text="粘贴" />
+
+                <TextView
+                    android:id="@+id/cut"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="1dp"
+                    android:layout_weight="1"
+                    android:background="@color/white"
+                    android:gravity="center"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:text="剪切" />
+
+                <TextView
+                    android:id="@+id/clear"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:background="@color/white"
+                    android:gravity="center"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:text="清除" />
+            </LinearLayout>
+        </LinearLayout>
+
+</RelativeLayout>

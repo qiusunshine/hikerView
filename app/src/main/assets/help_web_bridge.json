@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "records": [
+    {
+      "date": "设置状态栏颜色",
+      "records": [
+        "方法：fy_bridge_app.setAppBarColor('#ffffff')"
+      ]
+    },
+    {
+      "date": "播放视频或音乐",
+      "records": [
+        "方法：fy_bridge_app.playVideo(url)"
+      ]
+    },
+    {
+      "date": "播放多集视频或音乐",
+      "records": [
+        "方法：fy_bridge_app.playVideos(\"[{title:'测试',url:'http://111.40.205.87/PLTV/88888888/224/3221225710/index.m3u8',use:true}]\")",
+        "属性use为true代表是正在播放的，因为可能传的是完整的，但是正在播放不是第一个视频，那么支持上一集",
+        "如果需要动态解析lazyRule的功能，那么还需要传属性codeAndHeader:\";get\"，和originalUrl属性，originalUrl为带动态解析规则的完整地址，use为true的那个视频必须设置url属性",
+        "即需要立即播放的需要在调用播放器前自行解出播放地址，然后别的视频不需要立即解出，传带动态解析规则的originalUrl属性即可",
+        "‘‘注意参数是字符串’’"
+      ]
+    },
+    {
+      "date": "显示图片",
+      "records": [
+        "方法：fy_bridge_app.showPic(url)"
+      ]
+    },
+    {
+      "date": "设置网页标题",
+      "records": [
+        "方法：fy_bridge_app.setWebTitle(title)"
+      ]
+    },
+    {
+      "date": "设置网页UA",
+      "records": [
+        "方法：fy_bridge_app.setWebUa(ua)",
+        "说明：UA仅当前域名生效"
+      ]
+    },
+    {
+      "date": "导入规则口令",
+      "records": [
+        "方法：fy_bridge_app.importRule('rule')",
+        "说明：口令为软件能够识别的口令，无法识别的无效"
+      ]
+    },
+    {
+      "date": "写入文件",
+      "records": [
+        "方法：fy_bridge_app.writeFile(String filePath, String content)",
+        "说明：filePath可以为hiker://files/a.txt或者文件绝对路径，hiker://files/a.txt等效为软件根路径下的Documents文件夹下的a.txt"
+      ]
+    },
+    {
+      "date": "同步请求（支持本地文件）",
+      "records": [
+        "方法：request(url, {headers:{},body:'',method:'POST'})",
+        "说明：第二个参数可以为空，即request(url)，返回格式为字符串，获取header和状态码的使用方法同JS里面发起请求",
+        "url支持hiker://files/a.txt，或file://开头的绝对文件路径，但是文件必须在软件可读路径内，否则无法读取"
+      ]
+    },
+    {
+      "date": "异步请求（支持本地文件）",
+      "records": [
+        "方法：requestAsync(url, param, key, callback)",
+        "说明：第二个参数和request方法的第二个参数一样，key为标识符，方便callback里面区分请求，callback为两个参数的方法，即请求成功后会调用callback(key, result)",
+        "key可以不传，即requestAsync(url, param, callback)，那么key=url",
+        "param可以不传，即requestAsync(url, callback)，此时key=url",
+        "url支持hiker://files/a.txt，或file://开头的绝对文件路径，但是文件必须在软件可读路径内，否则无法读取"
+      ]
+    },
+    {
+      "date": "存储全局变量",
+      "records": [
+        "方法：putVar('key', 'value')",
+        "说明：两个参数都是字符串，可以在不同网页之间共享，变量只在软件本次运行时间内有效，重启后失效，永久存储请参考写入文件和同步请求",
+        "并且首页、搜索引擎等规则里面，用js也能读写到，规则的js里面用法为putVar({key:'key', value:'value'})，和网页里面略有不同，参数为一个对象"
+      ]
+    },
+    {
+      "date": "读取全局变量",
+      "records": [
+        "方法：getVar('key')",
+        "说明：可以在不同网页之间共享，变量只在软件本次运行时间内有效，重启后失效，永久存储请参考写入文件和同步请求",
+        "并且首页、搜索引擎等规则里面，用js也能读写到，规则的js里面用法为getVar('key')，和网页里面一致"
+      ]
+    },
+    {
+      "date": "编解码增强",
+      "records": [
+        "支持JS和插件调用CryptoJS功能，JS规则里面，先eval(getCryptoJS())然后再使用CryptoJS.enc.Utf8.parse(word)等语法，插件里面同样需要eval(request('hiker://files/aes.js'))"
+      ]
+    },
+    {
+      "date": "读取网站Cookie",
+      "records": [
+        "方法：fy_bridge_app.getCookie('http://a.com/')，获取当前网页的cookie：fy_bridge_app.getCookie('')",
+        "说明：获取的地址的域名必须和当前网页域名一致，如果不一致会报错。即使网页使用了http-only也能获取到cookie"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.lxj.xpermission">
+    <application>
+        <meta-data android:name="android.notch_support" android:value="true"/>
+        <!--<meta-data android:name="android.max_aspect" android:value="2.4" />-->
+        <!--PermissonActivity-->
+        <activity android:name=".XPermission$PermissionActivity"
+                  android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+    </application>
+</manifest>

@@ -1,0 +1,11 @@
+D:/develop/android/libadblockplus-android/adblock-android/src/main/jni/JniFilterEngine.cpp:119:33: error: too many arguments to function call, expected 0, have 1
+    engine.ShowNextNotification(url);
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~ ^~~
+D:/develop/android/libadblockplus-android/adblock-android/src/main/jni/../../../../libadblockplus/include\AdblockPlus/FilterEngine.h:379:5: note: 'ShowNextNotification' declared here
+    void ShowNextNotification() const;
+    ^
+D:/develop/android/libadblockplus-android/adblock-android/src/main/jni/JniFilterEngine.cpp:216:49: error: no member named 'GetElementHidingSelectors' in 'AdblockPlus::FilterEngine'
+    std::vector<std::string> selectors = engine.GetElementHidingSelectors(domain, jSpecificOnly == JNI_TRUE);
+                                         ~~~~~~ ^
+2 errors generated.
+make: *** [D:/develop/android/sdk/ndk/21.3.6528147/build//../build/core/build-binary.mk:478: D:/develop/android/libadblockplus-android/adblock-android/build/intermediates/ndkBuild/abi_allRelease/obj/local/armeabi-v7a/objs/adblockplus-jni/JniFilterEngine.o] Error 1

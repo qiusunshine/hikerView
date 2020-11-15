@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/resize_mode_fit"
+        android:title="默认" />
+    <item
+        android:id="@+id/resize_mode_fill"
+        android:title="全屏" />
+    <item
+        android:id="@+id/resize_mode_fixed_width"
+        android:title="拉伸宽度" />
+    <item
+        android:id="@+id/resize_mode_fixed_height"
+        android:title="拉伸高度" />
+</menu>

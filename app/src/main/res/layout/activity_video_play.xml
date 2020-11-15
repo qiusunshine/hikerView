@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/grey"
+    android:orientation="vertical">
+
+    <chuangyuan.ycj.videolibrary.widget.VideoPlayerView
+        android:id="@+id/new_video_player"
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:background="@android:color/transparent"
+        app:controller_layout_id="@layout/custom_exo_playback_top_view"
+        app:player_load_layout_id="@layout/custom_exo_play_load"
+        app:surface_type="texture_view"
+        app:use_controller="true" />
+
+    <RelativeLayout
+        android:id="@+id/jinyun_bg"
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/iv_bg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
+
+        <TextView
+            android:id="@+id/music_position"
+            style="@style/ExoMediaDuration"
+            android:layout_height="20dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="10dp"
+            android:gravity="center_vertical" />
+
+        <TextView
+            android:id="@+id/music_duration"
+            style="@style/ExoMediaDuration"
+            android:layout_height="20dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:gravity="center_vertical" />
+
+        <chuangyuan.ycj.videolibrary.widget.ExoDefaultTimeBar
+            android:id="@+id/music_progress"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:layout_alignParentBottom="true"
+            android:layout_toStartOf="@id/music_duration"
+            android:layout_toEndOf="@id/music_position"
+            app:bar_height="2dp"
+            app:buffered_color="@color/redColor"
+            app:played_color="@color/red_shallow"
+            app:unplayed_color="@color/white" />
+
+        <ImageView
+            android:id="@+id/sv_bg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@id/music_progress"
+            android:layout_centerInParent="true"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="10dp" />
+    </RelativeLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/control_back"
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/ripple_white"
+                android:drawableStart="@drawable/ic_action_notice_blue"
+                android:drawableEnd="@drawable/ic_action_arrow_right"
+                android:ellipsize="end"
+                android:gravity="center_vertical"
+                android:lines="1"
+                android:maxLines="1"
+                android:text="当前播放："
+                android:textColor="@color/black_666" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/speed"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/ripple_white"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_action_last_blue" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:gravity="center"
+                        android:text="上一集" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/next"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="1.5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/ripple_white"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_action_next" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:gravity="center"
+                        android:text="下一集" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/mode"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="1.5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/ripple_white"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_action_play_mode" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:gravity="center"
+                        android:text="竖屏全屏" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/ripple_white"
+                android:drawableStart="@drawable/ic_action_notice_blue"
+                android:gravity="center_vertical"
+                android:text="@string/chooseOperation"
+                android:textColor="@color/black_666" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/download"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/ripple_white"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_home_download" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:gravity="center"
+                        android:text="@string/downloadTheVideo" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/player_x5"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="1.5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/ripple_white"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_action_player_x5" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:gravity="center"
+                        android:text="@string/useWebToPlay" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/copy"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="1.5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/ripple_white"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_action_player_copy" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:gravity="center"
+                        android:text="复制" />
+                </LinearLayout>
+
+            </LinearLayout>
+            <TextView
+                android:id="@+id/player_choose_title"
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/ripple_white"
+                android:drawableStart="@drawable/ic_action_notice_blue"
+                android:gravity="center_vertical"
+                android:text="@string/choosePlayer"
+                android:textColor="@color/black_666" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:orientation="horizontal">
+
+
+                <LinearLayout
+                    android:id="@+id/remote_play"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="1.5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/ripple_white"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_action_player_x5" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:gravity="center"
+                        android:text="@string/remotePlay" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/dlan"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="1.5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/ripple_white"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_action_player_dlan" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:gravity="center"
+                        android:text="传统投屏" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/other"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="1.5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/ripple_white"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_action_player_other" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:gravity="center"
+                        android:text="其它播放器" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/video_help"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/ripple_white"
+                android:drawableStart="@drawable/ic_action_notice_blue"
+                android:drawableEnd="@drawable/ic_action_arrow_right"
+                android:gravity="center_vertical"
+                android:minHeight="50dp"
+                android:text="自定义设置"
+                android:textColor="@color/black_666" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/auto_jump"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/ripple_white"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_jump" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:gravity="center"
+                        android:text="片头片尾" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/remote_player_redirect"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="1.5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/ripple_white"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_action_player_dlan" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:gravity="center"
+                        android:text="投屏直链" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/more_setting"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="1.5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/ripple_white"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_action_player_x5" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:gravity="center"
+                        android:text="更多设置" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
