@@ -278,7 +278,7 @@ public class JSEngine {
         if (defaultVal != null) {
             val = argsNativeObjectAdjust(defaultVal);
         }
-        if (val == null || Undefined.isUndefined(val)) {
+        if (val == null || isUndefined(val)) {
             val = "";
         }
         if (!(res instanceof String)) {
@@ -292,6 +292,13 @@ public class JSEngine {
         return (String) val;
     }
 
+    private boolean isUndefined(Object input){
+        if(input instanceof String && "undefined".equals(input)){
+            return true;
+        }
+        return Undefined.isUndefined(input);
+    }
+
     public void putVar(Object o) {
         putVar(o, null);
     }
@@ -300,7 +307,7 @@ public class JSEngine {
     public void putVar(Object o, Object o2) {
         Object res = argsNativeObjectAdjust(o);
         Object oo2 = argsNativeObjectAdjust(o2);
-        if (oo2 != null && !Undefined.isUndefined(oo2) && res instanceof String && oo2 instanceof String) {
+        if (oo2 != null && !isUndefined(oo2) && res instanceof String && oo2 instanceof String) {
             putVar2(res, oo2);
             return;
         }
@@ -791,7 +798,7 @@ public class JSEngine {
 
             com.lzy.okgo.request.base.Request<String, ?> request = OkGo.get(url);
             try {
-                if (options != null && !Undefined.isUndefined(options)) {
+                if (options != null && !isUndefined(options)) {
                     Map op = (Map) argsNativeObjectAdjust(options);
                     headerMap = (Map<String, String>) op.get("headers");
                     if (headerMap == null) {
@@ -1190,6 +1197,10 @@ public class JSEngine {
      * @return
      */
     private Object argsNativeObjectAdjust(Object input) {
+
+        if(Undefined.isUndefined(input)){
+            return input;
+        }
 
         if (input instanceof NativeObject) {
             JSONObject bodyJson = new JSONObject();
