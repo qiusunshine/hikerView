@@ -32,6 +32,10 @@ public class SearchParser {
 
     public static void findList(String url, SearchEngine searchEngine, String s, SearchJsCallBack<List<SearchResult>> callback) {
         MovieRule movieInfo = searchEngine.toMovieRule();
+        if (StringUtil.isEmpty(searchEngine.getFindRule())) {
+            callBackError(callback, "搜索解析规则不能为空");
+            return;
+        }
         if (searchEngine.getFindRule().startsWith("js:")) {
             JsEngineBridge.parseCallBack(url, searchEngine, s, callback);
             return;

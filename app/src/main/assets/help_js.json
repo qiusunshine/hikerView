@@ -26,7 +26,7 @@
         "获取当前网络请求地址，示例：.js:setError(MY_URL)，将会打印出当前网络请求地址，即MY_URL是一个变量，在执行JS前会注入进去，旧版使用getUrl()方法获取，但是可能不是特别准确",
         "显示内容到界面上或者输出错误信息，示例：.js:setError(getRule())",
         "写入文件writeFile(String filePath, String content)，filePath可以为hiker://files/a.txt或者文件绝对路径，hiker://files/a.txt等效为软件根路径下的Documents文件夹下的a.txt",
-        "存储和读取全局变量，示例：.js:putVar2('name', '张三');setError(getVar('name'))，该变量和插件里面的全局变量是一致的，重启软件后失效，如需长期有效，见文件存取"
+        "存储和读取全局变量，示例：.js:putVar2('name', '张三');setError(getVar('name'))，获取不到就返回默认值：getVar(\"key\",\"default\")，该变量和插件里面的全局变量是一致的，重启软件后失效，如需长期有效，见文件存取"
       ]
     },
     {

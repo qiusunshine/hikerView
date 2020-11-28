@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#fff</color>
+    <color name="colorPrimaryDark">#fff</color>
+    <color name="colorAccent">#D81B60</color>
+    <color name="black_666">#666666</color>
+    <color name="dark_edit">#333333</color>
+    <color name="half_transparent">#80000000</color>
+    <color name="white">#fff</color>
+    <color name="tabText">#99999999</color>
+    <color name="greenAction">#13B66A</color>
+    <color name="yellowAction">#13B66A</color>
+    <color name="yellowAction2">#e8bd4b</color>
+    <color name="redAction">#ed424b</color>
+    <color name="boldBlack">#3D3D3D</color>
+    <color name="lightBlack">#999999</color>
+    <color name="red">#FFF04C4B</color>
+    <color name="green">#14c47c</color>
+    <color name="z_transparent">#00000000</color>
+    <color name="z_dialog_bg_color">#FFFFFF</color>
+    <color name="grey_black">#DFDFDF</color>
+    <color name="gray_setting">#f2f2f6</color>
+    <color name="redColor">#FF8A65</color>
+    <color name="chapter_bottom">#fff5f5f5</color>
+    <color name="split_white">#f9f9f9</color>
+    <color name="blackText">#FF222222</color>
+    <color name="main_title">#0E0F11</color>
+    <color name="whiteblack">#99999999</color>
+    <color name="transparent">#00000000</color>
+    <color name="transparent2">#09000000</color>
+    <color name="gray_rice">#f7f7f7</color>
+    <color name="red_shallow">#fffe7577</color>
+    <color name="grey">#F5F5F5</color>
+    <color name="gray_text">#FF848484</color>
+    <color name="gray_text2">#FFA4A4A4</color>
+    <color name="black">#000</color>
+    <color name="chat">#559fca</color>
+    <color name="quote">#f0983c</color>
+    <color name="link">#5abb8b</color>
+    <color name="audio">#a67fc0</color>
+    <color name="photo">#d75f45</color>
+    <color name="text">#444444</color>
+    <color name="video">#f14843</color>
+    <color name="fab">#529ecc</color>
+    <color name="text_color">#949ca8</color>
+
+</resources>

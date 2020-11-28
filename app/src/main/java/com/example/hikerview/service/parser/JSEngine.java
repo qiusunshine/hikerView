@@ -46,6 +46,7 @@ import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.Undefined;
 
 import java.io.File;
 import java.io.IOException;
@@ -271,22 +272,38 @@ public class JSEngine {
      * @return 源码
      */
     @JSAnnotation(returnType = 1)
-    public String getVar(Object o) {
+    public String getVar(Object o, Object defaultVal) {
         Object res = argsNativeObjectAdjust(o);
+        Object val = "";
+        if (defaultVal != null) {
+            val = argsNativeObjectAdjust(defaultVal);
+        }
+        if (val == null || Undefined.isUndefined(val)) {
+            val = "";
+        }
         if (!(res instanceof String)) {
-            return "";
+            return (String) val;
         }
         String name = (String) res;
         if (varMap.containsKey(name)) {
             Timber.d("getVar: " + name + "===" + varMap.get(name));
             return varMap.get(name);
         }
-        return "";
+        return (String) val;
+    }
+
+    public void putVar(Object o) {
+        putVar(o, null);
     }
 
     @JSAnnotation
-    public void putVar(Object o) {
+    public void putVar(Object o, Object o2) {
         Object res = argsNativeObjectAdjust(o);
+        Object oo2 = argsNativeObjectAdjust(o2);
+        if (oo2 != null && !Undefined.isUndefined(oo2) && res instanceof String && oo2 instanceof String) {
+            putVar2(res, oo2);
+            return;
+        }
         if (!(res instanceof JSONObject)) {
             return;
         }
@@ -451,7 +468,6 @@ public class JSEngine {
 
     /**
      * 供js回调
-     *
      */
     @JSAnnotation
     public void refreshPage() {
@@ -775,7 +791,7 @@ public class JSEngine {
 
             com.lzy.okgo.request.base.Request<String, ?> request = OkGo.get(url);
             try {
-                if (options != null) {
+                if (options != null && !Undefined.isUndefined(options)) {
                     Map op = (Map) argsNativeObjectAdjust(options);
                     headerMap = (Map<String, String>) op.get("headers");
                     if (headerMap == null) {

@@ -25,6 +25,7 @@
       "records": [
         "即点击二级列表或者首页列表结果时，根据规则再次解析链接，获取真正要用网页访问的链接",
         "示例：body&&.stui-content__playlist,fyIndex&&li;a&&Text;*;*;a&&href.js:input+'@lazyRule=body＆＆＆＆a＆＆＆＆href'",
+        "纯JS示例：body&&.stui-content__playlist,fyIndex&&li;a&&Text;*;*;a&&href.js:input+'@lazyRule=.js:input'",
         "即链接后面加上@lazyRule=body＆＆＆＆a＆＆＆＆href（&&要用中文＆＆＆＆来代替），那么点击结果时就会请求链接然后用规则去解析获取真正的链接，然后视界再对真正的链接进行处理，比如检测为视频或者音乐则直接播放，检测为图片直接大图显示，否则用网页查看"
       ]
     },

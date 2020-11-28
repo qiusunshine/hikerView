@@ -13,13 +13,14 @@
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_below="@id/imageView"
         android:layout_marginTop="10dp"
         android:lines="1"
         android:maxLines="1"
         android:ellipsize="end"
         android:gravity="center_horizontal"
+        android:layout_centerHorizontal="true"
         android:textColor="@color/text"
         android:textSize="15sp" />
 </RelativeLayout>

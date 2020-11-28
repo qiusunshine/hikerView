@@ -127,6 +127,12 @@
       "records": [
         "url为toast://开头，那么视界会提示后面的文本信息，比如‘toast://加载失败，请换源’"
       ]
+    },
+    {
+      "date": "hiker://webdav",
+      "records": [
+        "点击即可快速备份规则到webdav，前提必须先设置好webdav账号"
+      ]
     }
   ]
 }

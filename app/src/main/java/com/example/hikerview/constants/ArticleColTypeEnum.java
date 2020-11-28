@@ -10,35 +10,38 @@ import java.util.List;
  */
 
 public enum ArticleColTypeEnum {
-    MOVIE_3(1, "movie_3", 12, 4),
-    HEADER(2, "header", 0, 12),
-    FOOTER(3, "footer", 0, 12),
-    MOVIE_1(4, "movie_1", 0, 12),
     TEXT_1(5, "text_1", 0, 12),
     TEXT_2(6, "text_2", 10, 6),
-    PIC_1(7, "pic_1", 0, 12),
-    PIC_2(8, "pic_2", 12, 6),
-    MOVIE_2(9, "movie_2", 12, 6),
-    PIC_3(10, "pic_3", 3, 4),
     TEXT_3(11, "text_3", 10, 4),
     TEXT_4(12, "text_4", 10, 3),
+    TEXT_CENTER_1(18, "text_center_1", 0, 12),
+    MOVIE_1(4, "movie_1", 0, 12),
+    MOVIE_2(9, "movie_2", 12, 6),
+    MOVIE_3(1, "movie_3", 12, 4),
+    MOVIE_1_LEFT_PIC(20, "movie_1_left_pic", 0, 12),
+    MOVIE_1_VERTICAL_PIC(21, "movie_1_vertical_pic", 0, 12),
+    MOVIE_3_MARQUEE(27, "movie_3_marquee", 12, 4),
+    PIC_1(7, "pic_1", 0, 12),
+    PIC_2(8, "pic_2", 12, 6),
+    PIC_3(10, "pic_3", 3, 4),
+    PIC_1_FULL(19, "pic_1_full", 0, 12),
+    PIC_3_SQUARE(30, "pic_3_square", 3, 4),
+    ICON_2(17, "icon_2", 10, 6),
     ICON_4(13, "icon_4", 10, 3),
+    ICON_3_SMALL(25, "icon_small_3", 10, 4),
     ICON_4_SMALL(14, "icon_small_4", 10, 3),
     ICON_4_ROUND(15, "icon_round_4", 10, 3),
     ICON_4_ROUND_SMALL(16, "icon_round_small_4", 10, 3),
-    ICON_2(17, "icon_2", 10, 6),
-    TEXT_CENTER_1(18, "text_center_1", 0, 12),
-    PIC_1_FULL(19, "pic_1_full", 0, 12),
-    MOVIE_1_LEFT_PIC(20, "movie_1_left_pic", 0, 12),
-    MOVIE_1_VERTICAL_PIC(21, "movie_1_vertical_pic", 0, 12),
     LONG_TEXT(22, "long_text", 0, 12),
-    LINE(23, "line", 0, 12),
     RICH_TEXT(24, "rich_text", 0, 12),
-    ICON_3_SMALL(25, "icon_small_3", 10, 4),
+    AVATAR(28, "avatar", 0, 12),
+    HEADER(2, "header", 0, 12),
+    FOOTER(3, "footer", 0, 12),
+    LINE(23, "line", 0, 12),
     LINE_BLANK(26, "line_blank", 0, 12),
-    MOVIE_3_MARQUEE(27, "movie_3_marquee", 12, 4),
-    AVATAR(28, "avatar", 0, 12);
+    BLANK_BLOCK(29, "blank_block", 0, 12);
 
+    private final static int max = 30;
     private final int itemType;
     private final String code;
     private final int leftRight;

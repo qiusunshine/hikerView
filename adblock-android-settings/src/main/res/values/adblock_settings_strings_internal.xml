@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="MissingTranslation">
+
+    <!-- WARNING: this is internal file, no need to translate it! -->
+
+    <string name="fragment_adblock_settings_enabled_key">adblock_enabled</string>
+    <string name="fragment_adblock_settings_filter_lists_key">adblock_filter_lists</string>
+    <string name="fragment_adblock_settings_aa_enabled_key">adblock_aa_enabled</string>
+    <string name="fragment_adblock_settings_wl_key">adblock_wl_domains</string>
+    <string name="fragment_adblock_settings_filter_lists_add_key">adblock_filter_lists_add</string>
+    <string name="fragment_adblock_settings_filter_lists_clear_key">adblock_filter_lists_clear</string>
+    <string name="fragment_adblock_settings_filter_count_key">adblock_filter_count</string>
+    <string name="fragment_adblock_settings_filter_my_key">adblock_filter_my</string>
+    <string name="fragment_adblock_settings_allowed_connection_type_key">adblock_allowed_connection_type</string>
+
+</resources>

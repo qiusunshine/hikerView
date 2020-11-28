@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Adblock: enabled/disabled -->
+    <androidx.preference.SwitchPreferenceCompat
+        android:key="@string/fragment_adblock_settings_enabled_key"
+        android:title="@string/fragment_adblock_settings_enabled_title"
+        app:iconSpaceReserved="false"
+        android:summary="@string/fragment_adblock_settings_enabled_summary" />
+
+    <!-- Filter lists add -->
+    <androidx.preference.Preference
+        android:key="@string/fragment_adblock_settings_filter_count_key"
+        android:title="@string/fragment_adblock_settings_filter_count_title"
+        app:iconSpaceReserved="false"/>
+
+    <!-- Filter lists my -->
+    <androidx.preference.Preference
+        android:key="@string/fragment_adblock_settings_filter_my_key"
+        android:title="@string/fragment_adblock_settings_filter_my_title"
+        android:summary="@string/fragment_adblock_settings_filter_my_summary"
+        app:iconSpaceReserved="false"/>
+
+    <!-- Filter lists -->
+    <androidx.preference.MultiSelectListPreference
+        android:positiveButtonText="@android:string/ok"
+        android:negativeButtonText="@android:string/cancel"
+        android:key="adblock_filter_lists"
+        android:title="@string/fragment_adblock_settings_filter_lists_title"
+        app:iconSpaceReserved="false"
+        android:summary="@string/fragment_adblock_settings_filter_lists_summary" />
+
+    <!-- Filter lists add -->
+    <androidx.preference.Preference
+        android:key="@string/fragment_adblock_settings_filter_lists_add_key"
+        android:title="@string/fragment_adblock_settings_filter_lists_add_title"
+        app:iconSpaceReserved="false"
+        android:summary="@string/fragment_adblock_settings_filter_lists_add_summary" />
+
+
+    <!-- Acceptable Ads: enabled/disabled -->
+    <androidx.preference.SwitchPreferenceCompat
+        android:key="@string/fragment_adblock_settings_aa_enabled_key"
+        android:title="@string/fragment_adblock_settings_aa_enabled_title"
+        app:iconSpaceReserved="false"
+        android:summary="@string/fragment_adblock_settings_aa_enabled_summary" />
+
+    <!-- Whitelisted domains -->
+    <androidx.preference.Preference
+        android:key="@string/fragment_adblock_settings_wl_key"
+        android:title="@string/fragment_adblock_settings_wl_title"
+        app:iconSpaceReserved="false"
+        android:summary="@string/fragment_adblock_settings_wl_summary" />
+
+    <!-- Allowed connection type for updates -->
+    <androidx.preference.ListPreference
+        android:key="@string/fragment_adblock_settings_allowed_connection_type_key"
+        android:title="@string/fragment_adblock_settings_allowed_connection_type"
+        app:iconSpaceReserved="false"
+        android:summary="%s"/>
+
+    <!-- Filter lists clear -->
+    <androidx.preference.Preference
+        android:key="@string/fragment_adblock_settings_filter_lists_clear_key"
+        android:title="清除已停用的订阅地址"
+        app:iconSpaceReserved="false"/>
+
+</androidx.preference.PreferenceScreen>

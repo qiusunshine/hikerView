@@ -4,4 +4,16 @@
         android:id="@+id/collect"
         android:title="加入收藏"
         app:showAsAction="never"/>
+    <item
+        android:id="@+id/share_url"
+        android:title="分享链接"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/share_rule"
+        android:title="分享为口令"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/share_remote_rule"
+        android:title="分享云口令"
+        app:showAsAction="never"/>
 </menu>

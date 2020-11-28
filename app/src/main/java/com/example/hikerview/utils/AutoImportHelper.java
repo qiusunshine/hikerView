@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
 import com.alibaba.fastjson.JSON;
@@ -32,10 +33,12 @@ import com.example.hikerview.ui.browser.model.AdUrlBlocker;
 import com.example.hikerview.ui.browser.model.JSManager;
 import com.example.hikerview.ui.browser.util.CollectionUtil;
 import com.example.hikerview.ui.home.ArticleListRuleEditActivity;
+import com.example.hikerview.ui.home.FilmListActivity;
 import com.example.hikerview.ui.home.model.ArticleListRule;
 import com.example.hikerview.ui.home.model.ArticleListRuleJO;
 import com.example.hikerview.ui.home.model.PastemeResponse;
 import com.example.hikerview.ui.js.AdUrlListActivity;
+import com.example.hikerview.ui.rules.model.DetailPageRule;
 import com.example.hikerview.ui.search.model.SearchRuleJO;
 import com.example.hikerview.ui.setting.utils.FastPlayImportUtil;
 import com.example.hikerview.ui.setting.utils.XTDialogRulesImportUtil;
@@ -79,6 +82,7 @@ public class AutoImportHelper {
     public static final String FILE_URL = "file_url";
     public static final String AD_SUBSCRIBE = "ad_subscribe_url";
     public static final String AD_BLOCK_RULES = "ad_block_url";
+    public static final String PAGE_DETAIL_RULES = "page_detail";
     private static final String SOURCE = "方圆影视视频源分享，全部复制后打开方圆影视APP最新版即可获取到视频源信息￥source￥";
     private static String shareRule = "";
 
@@ -127,6 +131,9 @@ public class AutoImportHelper {
                 break;
             case AD_SUBSCRIBE:
                 text = text + "广告拦截订阅";
+                break;
+            case PAGE_DETAIL_RULES:
+                text = text + "二级页面详情";
                 break;
         }
         if (StringUtil.isNotEmpty(shareRulePrefix)) {
@@ -501,6 +508,28 @@ public class AutoImportHelper {
                                 }
                                 importSearchRulesByUrl(context, sss[2]);
                             });
+                        }).show();
+                return true;
+            case PAGE_DETAIL_RULES:
+                new PromptDialog(context)
+                        .setDialogType(PromptDialog.DIALOG_TYPE_INFO)
+                        .setAnimationEnable(true)
+                        .setTitleText("温馨提示")
+                        .setContentText("剪贴板检测到二级页面详情口令，是否立即查看？")
+                        .setPositiveListener("立即查看", dialog -> {
+                            dialog.dismiss();
+                            ClipboardUtil.copyToClipboard(context, "");
+                            String[] rules = sss[2].split("@@");
+                            if (rules.length != 2) {
+                                ToastMgr.shortCenter(context, "规则有误");
+                                return;
+                            }
+                            DetailPageRule pageRule = JSON.parseObject(Base64.decode(rules[1], Base64.DEFAULT), DetailPageRule.class);
+                            Intent intent = new Intent(context, FilmListActivity.class);
+                            intent.putExtra("data", pageRule.getData());
+                            intent.putExtra("picUrl", pageRule.getPicUrl());
+                            intent.putExtra("title", pageRule.getTitle());
+                            context.startActivity(intent);
                         }).show();
                 return true;
             case SEARCH_ENGINE:
@@ -1024,63 +1053,66 @@ public class AutoImportHelper {
         alertDialog.show();
     }
 
-
     public static void shareByPasteme(Activity activity, String paste, String title) {
         new XPopup.Builder(activity)
                 .asInputConfirm("设置访问密码", "为空表示无需密码", text -> {
-                    try {
-                        JSONObject jsonObject = new JSONObject();
-                        jsonObject.put("lang", "plain");
-                        jsonObject.put("content", paste);
-                        if (StringUtil.isNotEmpty(text)) {
-                            jsonObject.put("password", text);
-                        }
-                        PostRequest<String> request = OkGo.post("http://api.pasteme.cn/");
-                        request.upJson(jsonObject)
-                                .execute(new CharsetStringCallback("UTF-8") {
-                                    @Override
-                                    public void onSuccess(com.lzy.okgo.model.Response<String> res) {
-                                        String s = res.body();
-                                        if (activity == null || activity.isFinishing()) {
-                                            return;
-                                        }
-
-                                        if (StringUtil.isEmpty(s)) {
-                                            return;
-                                        }
-                                        activity.runOnUiThread(() -> {
-                                            PastemeResponse response = JSON.parseObject(s, PastemeResponse.class);
-                                            if (response == null || StringUtil.isEmpty(response.getKey())) {
-                                                ToastMgr.shortCenter(activity, "提交云剪贴板失败");
-                                            } else {
-                                                String url = "http://pasteme.cn/" + response.getKey();
-                                                if (StringUtil.isNotEmpty(text)) {
-                                                    url = url + " " + text;
-                                                }
-                                                url = url + "\n\n规则名：" + title;
-                                                ClipboardUtil.copyToClipboardForce(activity, url, false);
-                                                AutoImportHelper.setShareRule(url);
-                                                ToastMgr.shortBottomCenter(activity, "云剪贴板地址已复制到剪贴板");
-                                            }
-                                        });
-                                    }
-
-                                    @Override
-                                    public void onError(com.lzy.okgo.model.Response<String> response) {
-                                        super.onError(response);
-                                        String msg = response.getException().toString();
-                                        if (activity == null || activity.isFinishing()) {
-                                            return;
-                                        }
-                                        activity.runOnUiThread(() -> {
-                                            ToastMgr.shortCenter(activity, "提交云剪贴板失败：" + msg);
-                                        });
-                                    }
-                                });
-                    } catch (JSONException e) {
-                        ToastMgr.shortCenter(activity, "提交云剪贴板失败：" + e.getMessage());
-                    }
+                    shareByPasteme(activity, paste, title, text, "规则名");
                 }).show();
+    }
+
+    public static void shareByPasteme(Activity activity, String paste, String title, @Nullable String password, String rulePrefix) {
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("lang", "plain");
+            jsonObject.put("content", paste);
+            if (StringUtil.isNotEmpty(password)) {
+                jsonObject.put("password", password);
+            }
+            PostRequest<String> request = OkGo.post("http://api.pasteme.cn/");
+            request.upJson(jsonObject)
+                    .execute(new CharsetStringCallback("UTF-8") {
+                        @Override
+                        public void onSuccess(com.lzy.okgo.model.Response<String> res) {
+                            String s = res.body();
+                            if (activity == null || activity.isFinishing()) {
+                                return;
+                            }
+
+                            if (StringUtil.isEmpty(s)) {
+                                return;
+                            }
+                            activity.runOnUiThread(() -> {
+                                PastemeResponse response = JSON.parseObject(s, PastemeResponse.class);
+                                if (response == null || StringUtil.isEmpty(response.getKey())) {
+                                    ToastMgr.shortCenter(activity, "提交云剪贴板失败");
+                                } else {
+                                    String url = "http://pasteme.cn/" + response.getKey();
+                                    if (StringUtil.isNotEmpty(password)) {
+                                        url = url + " " + password;
+                                    }
+                                    url = url + "\n\n" + rulePrefix + "：" + title;
+                                    ClipboardUtil.copyToClipboardForce(activity, url, false);
+                                    AutoImportHelper.setShareRule(url);
+                                    ToastMgr.shortBottomCenter(activity, "云剪贴板地址已复制到剪贴板");
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onError(com.lzy.okgo.model.Response<String> response) {
+                            super.onError(response);
+                            String msg = response.getException().toString();
+                            if (activity == null || activity.isFinishing()) {
+                                return;
+                            }
+                            activity.runOnUiThread(() -> {
+                                ToastMgr.shortCenter(activity, "提交云剪贴板失败：" + msg);
+                            });
+                        }
+                    });
+        } catch (JSONException e) {
+            ToastMgr.shortCenter(activity, "提交云剪贴板失败：" + e.getMessage());
+        }
     }
 
     public interface OnOkWithAdUrlsListener {

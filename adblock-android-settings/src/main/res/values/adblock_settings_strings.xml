@@ -1,0 +1,24 @@
+<resources>
+
+    <string name="fragment_adblock_settings_general_title">Adblock Plus</string>
+    <string name="fragment_adblock_settings_enabled_title">Adblock Plus</string>
+    <string name="fragment_adblock_settings_enabled_summary">允许于此应用程序中启用网站广告拦截功能</string>
+    <string name="fragment_adblock_settings_filter_lists_title">订阅管理</string>
+    <string name="fragment_adblock_settings_filter_lists_summary">启用或停用部分订阅规则</string>
+    <string name="fragment_adblock_settings_filter_lists_add_title">添加订阅地址</string>
+    <string name="fragment_adblock_settings_filter_count_title">已拦截广告数：</string>
+    <string name="fragment_adblock_settings_filter_my_title">我的订阅详情</string>
+    <string name="fragment_adblock_settings_filter_my_summary">所订阅规则的规则数、更新时间</string>
+    <string name="fragment_adblock_settings_filter_lists_add_summary">点击添加订阅地址</string>
+    <string name="fragment_adblock_settings_aa_enabled_title">可接受广告</string>
+    <string name="fragment_adblock_settings_aa_enabled_summary">我们希望鼓励网站使用直接的，非侵入式的广告。这就是为什么我们颁布了严格的规定，以便鉴别可接受的广告，并在下列默认设置中显示。如果你希望无广告的浏览，您可以在任何时候禁用该设置。</string>
+    <string name="fragment_adblock_settings_wl_title">白名单域名</string>
+    <string name="fragment_adblock_settings_wl_summary">将你希望看到广告的网站添加到这个列表中</string>
+    <string name="fragment_adblock_settings_add_domain">添加域名</string>
+    <string name="fragment_adblock_settings_wl_domains">白名单域名</string>
+    <string name="fragment_adblock_settings_allowed_connection_type">配置自动更新</string>
+    <string name="fragment_adblock_settings_allowed_connection_type_wifi_non_metered">非计量 Wi-Fi 网络</string>
+    <string name="fragment_adblock_settings_allowed_connection_type_wifi">所有 Wi-Fi 网络</string>
+    <string name="fragment_adblock_settings_allowed_connection_type_all">总是</string>
+
+</resources>

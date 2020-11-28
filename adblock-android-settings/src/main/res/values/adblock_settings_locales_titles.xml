@@ -1,0 +1,84 @@
+<resources>
+    <!-- separator for the pairs (v) -->
+    <string name="fragment_adblock_general_separator" translatable="false">|</string>
+
+    <!--  locale + separator (^) + title -->
+    <array name="fragment_adblock_general_locale_title">
+        <item>af|Afrikaans</item>
+        <item>am|ኣማርኛ</item>
+        <item>ar|العربية</item>
+        <item>as|অসমীয়া</item>
+        <item>ast|Asturianu</item>
+        <item>az|Azərbaycan</item>
+        <item>be|Беларуская мова</item>
+        <item>bg|български</item>
+        <item>bn|বাংলা (ভারত)</item>
+        <item>br|ar brezhoneg</item>
+        <item>bs|bosanski</item>
+        <item>ca|català</item>
+        <item>cs|čeština</item>
+        <item>cy|Cymraeg</item>
+        <item>da|dansk</item>
+        <item>de|Deutsch</item>
+        <item>dsb|dolnoserbski</item>
+        <item>el|ελληνικά</item>
+        <item>en|English</item>
+        <item>eo|Esperanto</item>
+        <item>es|español</item>
+        <item>et|eesti keel</item>
+        <item>eu|euskara</item>
+        <item>fa|فارسى</item>
+        <item>fi|suomi</item>
+        <item>fil|Filipino</item>
+        <item>fr|français</item>
+        <item>fy|Frysk</item>
+        <item>gl|Galego</item>
+        <item>gu|ગુજરાતી (ભારત)</item>
+        <item>he|עברית</item>
+        <item>hi|हिन्दी</item>
+        <item>hr|Hrvatski</item>
+        <item>hsb|hornjoserbsce</item>
+        <item>hu|magyar</item>
+        <item>hy|Հայերեն</item>
+        <item>id|Bahasa Indonesia</item>
+        <item>is|Íslenska</item>
+        <item>it|italiano</item>
+        <item>ja|日本語</item>
+        <item>ka|ქართული</item>
+        <item>kab|Taqbaylit</item>
+        <item>kk|Қазақ тілі</item>
+        <item>kn|ಕನ್ನಡ</item>
+        <item>ko|한국어</item>
+        <item>lt|lietuvių kalba</item>
+        <item>lv|latviešu valoda</item>
+        <item>mg|Malagasy</item>
+        <item>mk|македонски</item>
+        <item>ml|മലയാളം</item>
+        <item>ms|Melayu</item>
+        <item>nb|norsk</item>
+        <item>nl|Nederlands</item>
+        <item>nn|norsk</item>
+        <item>pa|ਪੰਜਾਬੀ (ਭਾਰਤ)</item>
+        <item>pl|polski</item>
+        <item>pt|português</item>
+        <item>rm|rumantsch</item>
+        <item>ro|română</item>
+        <item>ru|Русский</item>
+        <item>si|සිංහල</item>
+        <item>sk|slovenčina</item>
+        <item>sl|slovenščina</item>
+        <item>sq|shqip</item>
+        <item>sr|српски</item>
+        <item>sv|svenska</item>
+        <item>sw|Kiswahili</item>
+        <item>ta|தமிழ்</item>
+        <item>te|తెలుగు</item>
+        <item>th|ภาษาไทย</item>
+        <item>tr|Türkçe</item>
+        <item>uk|українська</item>
+        <item>ur|اردو</item>
+        <item>uz|o’zbek</item>
+        <item>vi|Tiếng Việt</item>
+        <item>zh|中文</item>
+    </array>
+</resources>

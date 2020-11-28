@@ -23,16 +23,20 @@
         android:title="编辑网页插件"
         app:showAsAction="never"/>
     <item
-        android:id="@+id/al_rule_to_template"
-        android:title="加为规则模板"
-        app:showAsAction="never"/>
-    <item
         android:id="@+id/al_rule_show_tool"
         android:title="快捷工具栏"
         app:showAsAction="never"/>
     <item
         android:id="@+id/al_rule_templates"
         android:title="快捷规则模板"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/al_rule_to_template"
+        android:title="加为规则模板"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/code_to_template"
+        android:title="加代码块模板"
         app:showAsAction="never"/>
     <item
         android:id="@+id/al_rule_clazz_fetch"
