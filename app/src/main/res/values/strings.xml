@@ -14,6 +14,9 @@
     <string name="bbs_url">http://bbs.fy-sys.cn/</string>
     <string name="bbs_new_url">https://haikuoshijie.cn/</string>
     <string name="search_engine">https://www.dogedoge.com/</string>
+    <string name="my_bookmark">我的书签</string>
+    <string name="fast_search">快速搜索</string>
+    <string name="web_search">网页搜索</string>
     <string name="andand">&amp;&amp;</string>
     <string name="code"><![CDATA[</>]]></string>
     <string name="input_rule_body_li"><![CDATA[列表规则（如body&&li)]]></string>

@@ -123,8 +123,8 @@
 
                         <ImageView
                             android:id="@+id/home_header_tab_left"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
                             android:layout_centerVertical="true"
                             android:paddingStart="4dp"
                             android:paddingEnd="4dp"

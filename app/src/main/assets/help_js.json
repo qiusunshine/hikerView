@@ -26,7 +26,7 @@
         "获取当前网络请求地址，示例：.js:setError(MY_URL)，将会打印出当前网络请求地址，即MY_URL是一个变量，在执行JS前会注入进去，旧版使用getUrl()方法获取，但是可能不是特别准确",
         "显示内容到界面上或者输出错误信息，示例：.js:setError(getRule())",
         "写入文件writeFile(String filePath, String content)，filePath可以为hiker://files/a.txt或者文件绝对路径，hiker://files/a.txt等效为软件根路径下的Documents文件夹下的a.txt",
-        "存储和读取全局变量，示例：.js:putVar2('name', '张三');setError(getVar('name'))，获取不到就返回默认值：getVar(\"key\",\"default\")，该变量和插件里面的全局变量是一致的，重启软件后失效，如需长期有效，见文件存取"
+        "存储和读取全局变量，示例：.js:putVar('name', '张三');setError(getVar('name'))，获取不到就返回默认值：getVar(\"key\",\"default\")，该变量和插件里面的全局变量是一致的，重启软件后失效，如需长期有效，见文件存取"
       ]
     },
     {
@@ -51,7 +51,7 @@
     {
       "date": "JS里面刷新页面",
       "records": [
-        "refreshPage()，可以和动态解析、toast://结合，比如@lazyRule=.js:putVar2('settingMode', '1')；；refreshPage()；；'toast://已设置为简洁模式'",
+        "refreshPage()，可以和动态解析、toast://结合，比如@lazyRule=.js:putVar('settingMode', '1')；；refreshPage()；；'toast://已设置为简洁模式'",
         "即可以用js执行一些操作，然后想要立即生效，那就刷新页面，返回'toast://已设置为简洁模式'来提示用户"
       ]
     },
@@ -83,6 +83,12 @@
       "date": "url链接用JS处理",
       "records": [
         "说明：之前有url参数js处理，这次还可以对链接本身js处理，如http://a.com.js:input+'/'?a=b.js:input+'a'"
+      ]
+    },
+    {
+      "date": "本地文件下载",
+      "records": [
+        "说明：因为有部分网址播放到一半会无法继续播放，然后就有大佬直接将m3u8文件缓存到本地，然后播放，但是本地m3u8不支持下载，因此可以在本地地址后面加上?url=原地址，这样视界下载前会解析后面的地址，但是不保证这样处理后能正确下载（毕竟都不能正确播放）"
       ]
     }
   ]

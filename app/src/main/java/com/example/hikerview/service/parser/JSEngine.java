@@ -8,7 +8,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
-import com.example.hikerview.constants.JSONPreFilter;
 import com.example.hikerview.constants.TimeConstants;
 import com.example.hikerview.constants.UAEnum;
 import com.example.hikerview.event.home.OnRefreshPageEvent;
@@ -18,6 +17,7 @@ import com.example.hikerview.service.http.CharsetStringConvert;
 import com.example.hikerview.service.http.HikerRuleUtil;
 import com.example.hikerview.ui.Application;
 import com.example.hikerview.ui.browser.model.SearchEngine;
+import com.example.hikerview.ui.download.util.UUIDUtil;
 import com.example.hikerview.ui.home.model.ArticleList;
 import com.example.hikerview.ui.home.model.ArticleListRule;
 import com.example.hikerview.ui.home.model.SearchResult;
@@ -35,6 +35,7 @@ import com.lzy.okgo.model.HttpHeaders;
 import com.lzy.okgo.request.PostRequest;
 
 import org.adblockplus.libadblockplus.android.Utils;
+import org.apache.commons.lang3.StringUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -50,6 +51,7 @@ import org.mozilla.javascript.Undefined;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -59,6 +61,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
@@ -76,26 +79,10 @@ public class JSEngine {
     private String allFunctions;
     private String evalFunctions;
     private volatile static JSEngine engine;
-    private String lastResCode = "";
-    private MovieRule movieRule;
-    private OnFindCallBack<String> stringOnFindCallBack;
-    private OnFindCallBack<List<SearchResult>> searchFindCallBack;
-    private OnFindCallBack<List<ArticleList>> homeCallBack;
-    private volatile static LoadMode loadMode = LoadMode.MOVIE_FIND;
-    private String rule = null;
-    private String ruleObject = null;
     private Map<String, String> varMap = new HashMap<>();
-    private String url;
-    private String input = "";
     private OkHttpClient noRedirectHttpClient;
-
-    private enum LoadMode {
-        SEARCH,
-        MOVIE_FIND,
-        CHAPTER,
-        HOME,
-        JS_PRE_RULE
-    }
+    private Map<String, OnFindCallBack<?>> callbackMap = new ConcurrentHashMap<>();
+    private Map<String, String> resCodeMap = new ConcurrentHashMap<>();
 
     private JSEngine() {
         this.clazz = JSEngine.class;
@@ -117,92 +104,110 @@ public class JSEngine {
         return engine;
     }
 
-    private void destroyCallbacks() {
-        homeCallBack = null;
-        stringOnFindCallBack = null;
-        searchFindCallBack = null;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public synchronized void parseSearchRes(String url, String res, SearchEngine searchEngine, OnFindCallBack<List<SearchResult>> searchJsCallBack) {
+    public void parseSearchRes(String url, String res, SearchEngine searchEngine, OnFindCallBack<List<SearchResult>> searchJsCallBack) {
         parseSearchRes(url, res, searchEngine.toMovieRule(), searchJsCallBack);
     }
 
-    private synchronized void parseSearchRes(String url, String res, MovieRule movieRule, OnFindCallBack<List<SearchResult>> searchJsCallBack) {
-        destroyCallbacks();
-        this.url = url;
-        loadMode = LoadMode.SEARCH;
-        this.searchFindCallBack = searchJsCallBack;
-        this.lastResCode = res;
-        this.movieRule = movieRule;
-        rule = null;
+    private void parseSearchRes(String url, String res, MovieRule movieRule, OnFindCallBack<List<SearchResult>> searchJsCallBack) {
+        String callbackKey = UUIDUtil.genUUID();
+        callbackMap.put(callbackKey, searchJsCallBack);
+        resCodeMap.put(callbackKey, res);
         if (!movieRule.getSearchFind().startsWith("js:")) {
             searchJsCallBack.showErr(movieRule.getTitle() + "---搜索结果解析失败！请检查规则");
         } else {
             try {
-                runScript("var MY_URL = '" + Utils.escapeJavaScriptString(url) + "';\n" + movieRule.getSearchFind().replaceFirst("js:", ""));
+                runScript(getMyCallbackKey(callbackKey) + getMyRule(movieRule) + getMyUrl(url) + getMyJs(movieRule.getSearchFind()), callbackKey);
             } catch (Exception e) {
                 Timber.e(e, "parseSearchRes: ");
-                setError("运行出错：" + e.toString());
+                setError("运行出错：" + e.toString(), callbackKey);
             }
         }
     }
 
-    public synchronized void parsePreRule(ArticleListRule articleListRule) {
-        loadMode = LoadMode.JS_PRE_RULE;
+    public void parseStr(String input, String js, MovieRule movieRule, OnFindCallBack<String> callBack) {
+        String callbackKey = UUIDUtil.genUUID();
+        callbackMap.put(callbackKey, callBack);
+        resCodeMap.put(callbackKey, input);
         try {
-            runScript("var my_rule = '" + Utils.escapeJavaScriptString(JSON.toJSONString(articleListRule)) + "';\n var MY_RULE = JSON.parse(my_rule);\n" + articleListRule.getPreRule());
+            runScript(getMyCallbackKey(callbackKey) + getMyRule(movieRule) + getMyJs(js), callbackKey);
         } catch (Exception e) {
-            setError("运行出错：" + e.toString());
-            Timber.e(e, "parsePreRule: ");
-        }
-    }
-
-
-    public synchronized void parsePreRule(SearchEngine articleListRule) {
-        loadMode = LoadMode.JS_PRE_RULE;
-        try {
-            runScript("var my_rule = '" + Utils.escapeJavaScriptString(JSON.toJSONString(articleListRule)) + "';\n var MY_RULE = JSON.parse(my_rule);\n" + articleListRule.getPreRule());
-        } catch (Exception e) {
-            setError("运行出错：" + e.toString());
-            Timber.e(e, "parsePreRule: ");
-        }
-    }
-
-    public synchronized void parseStr(String input, String js, MovieRule movieRule, OnFindCallBack<String> callBack) {
-        destroyCallbacks();
-        loadMode = LoadMode.SEARCH;
-        this.stringOnFindCallBack = callBack;
-        this.lastResCode = input;
-        this.movieRule = movieRule;
-        rule = null;
-        this.ruleObject = JSON.toJSONString(movieRule);
-        try {
-            runScript(js);
-        } catch (Exception e) {
-            setError("运行出错：" + e.toString());
+            setError("运行出错：" + e.toString(), callbackKey);
             Timber.e(e, "parseStr: ");
         }
     }
 
-    public synchronized void parseHome(String url, String input, ArticleListRule articleListRule, String js, OnFindCallBack<List<ArticleList>> callBack) {
-        destroyCallbacks();
-        this.url = url;
-        loadMode = LoadMode.HOME;
-        this.homeCallBack = callBack;
-        this.lastResCode = input;
-        this.rule = js.replaceFirst("js:", "");
-        this.movieRule = null;
-        this.ruleObject = JSON.toJSONString(articleListRule, JSONPreFilter.getSimpleFilter());
+    public void parseHome(String url, String input, ArticleListRule articleListRule, String js, OnFindCallBack<List<ArticleList>> callBack) {
+        String callbackKey = UUIDUtil.genUUID();
+        callbackMap.put(callbackKey, callBack);
+        resCodeMap.put(callbackKey, input);
         try {
-            runScript("\nvar MY_URL = '" + Utils.escapeJavaScriptString(url) + "';\n" + rule);
+            runScript("\n" + getMyRule(articleListRule) + getMyCallbackKey(callbackKey) + getMyUrl(url) + getMyJs(js), callbackKey);
         } catch (Exception e) {
-            setError("运行出错：" + e.toString());
+            setError("运行出错：" + e.toString(), callbackKey);
             Timber.e(e, "parseHome: ");
         }
+    }
+
+    public void parsePreRule(ArticleListRule articleListRule) {
+        String callbackKey = UUIDUtil.genUUID();
+        try {
+            runScript(getMyCallbackKey(callbackKey) + getMyRule(articleListRule) + articleListRule.getPreRule(), callbackKey);
+        } catch (Exception e) {
+            setError("运行出错：" + e.toString(), callbackKey);
+            Timber.e(e, "parsePreRule: ");
+        }
+    }
+
+
+    public void parsePreRule(SearchEngine articleListRule) {
+        String callbackKey = UUIDUtil.genUUID();
+        try {
+            runScript(getMyCallbackKey(callbackKey) + getMyRule(articleListRule) + articleListRule.getPreRule(), callbackKey);
+        } catch (Exception e) {
+            setError("运行出错：" + e.toString(), callbackKey);
+            Timber.e(e, "parsePreRule: ");
+        }
+    }
+
+    public String evalJS(String jsStr, String input) {
+        String js = evalFunctions + "\n" + getMyInput(input) + getMyCallbackKey(UUIDUtil.genUUID()) + StringUtil.decodeConflictStr(jsStr);//运行js = allFunctions + js
+        js = allFunctions + "\n" + getReplaceJS(js);
+        org.mozilla.javascript.Context rhino = org.mozilla.javascript.Context.enter();
+        rhino.setOptimizationLevel(-1);
+        rhino.setLanguageVersion(200);
+        try {
+            Scriptable scope = rhino.initStandardObjects();
+            ScriptableObject.putProperty(scope, "javaContext", org.mozilla.javascript.Context.javaToJS(this, scope));//配置属性 javaContext:当前类JSEngine的上下文
+            ScriptableObject.putProperty(scope, "javaLoader", org.mozilla.javascript.Context.javaToJS(clazz.getClassLoader(), scope));//配置属性 javaLoader:当前类的JSEngine的类加载器
+            Object re = rhino.evaluateString(scope, js, clazz.getSimpleName(), 1, null);
+            if (re instanceof String) {
+                return (String) re;
+            } else {
+                return re + "";
+            }
+        } finally {
+            org.mozilla.javascript.Context.exit();
+        }
+    }
+
+    private String getMyJs(String js) {
+        return StringUtils.replaceOnce(js, "js:", "");
+    }
+
+    private String getMyInput(String input) {
+        return "var input = '" + Utils.escapeJavaScriptString(input) + "';\n";
+    }
+
+    private String getMyCallbackKey(String callbackKey) {
+        return "var CALLBACK_KEY = '" + callbackKey + "';\n";
+    }
+
+    private String getMyUrl(String url) {
+        return "var MY_URL = '" + Utils.escapeJavaScriptString(url) + "';\n";
+    }
+
+    private String getMyRule(Object rule) {
+        return "var my_rule = '" + Utils.escapeJavaScriptString(JSON.toJSONString(rule)) + "';\n var MY_RULE = JSON.parse(my_rule);\n";
     }
 
     /**
@@ -252,8 +257,8 @@ public class JSEngine {
      * @return 源码
      */
     @JSAnnotation(returnType = 1)
-    public String getResCode() {
-        return this.lastResCode;
+    public String getResCode(@Parameter("callbackKey") Object callbackKey) {
+        return resCodeMap.get((String) argsNativeObjectAdjust(callbackKey));
     }
 
     /**
@@ -262,8 +267,8 @@ public class JSEngine {
      * @return 源码
      */
     @JSAnnotation(returnType = 1)
-    public String getUrl() {
-        return this.url;
+    public String getUrl(@Parameter("urlKey") Object urlKey) {
+        return (String) argsNativeObjectAdjust(urlKey);
     }
 
     /**
@@ -272,7 +277,7 @@ public class JSEngine {
      * @return 源码
      */
     @JSAnnotation(returnType = 1)
-    public String getVar(Object o, Object defaultVal) {
+    public String getVar(@Parameter("o") Object o, @Parameter("defaultVal") Object defaultVal) {
         Object res = argsNativeObjectAdjust(o);
         Object val = "";
         if (defaultVal != null) {
@@ -292,8 +297,8 @@ public class JSEngine {
         return (String) val;
     }
 
-    private boolean isUndefined(Object input){
-        if(input instanceof String && "undefined".equals(input)){
+    private boolean isUndefined(Object input) {
+        if (input instanceof String && "undefined".equals(input)) {
             return true;
         }
         return Undefined.isUndefined(input);
@@ -304,7 +309,7 @@ public class JSEngine {
     }
 
     @JSAnnotation
-    public void putVar(Object o, Object o2) {
+    public void putVar(@Parameter("o") Object o, @Parameter("o2") Object o2) {
         Object res = argsNativeObjectAdjust(o);
         Object oo2 = argsNativeObjectAdjust(o2);
         if (oo2 != null && !isUndefined(oo2) && res instanceof String && oo2 instanceof String) {
@@ -319,7 +324,7 @@ public class JSEngine {
     }
 
     @JSAnnotation
-    public void putVar2(Object o1, Object o2) {
+    public void putVar2(@Parameter("o1") Object o1, @Parameter("o2") Object o2) {
         Object oo1 = argsNativeObjectAdjust(o1);
         Object oo2 = argsNativeObjectAdjust(o2);
         if (!(oo1 instanceof String) || !(oo2 instanceof String)) {
@@ -339,7 +344,7 @@ public class JSEngine {
      * @return
      */
     @JSAnnotation(returnType = 1)
-    public String decodeStr(Object o1, Object o2) {
+    public String decodeStr(@Parameter("o1") Object o1, @Parameter("o2") Object o2) {
         Object oo1 = argsNativeObjectAdjust(o1);
         Object oo2 = argsNativeObjectAdjust(o2);
         if (!(oo1 instanceof String) || !(oo2 instanceof String)) {
@@ -360,7 +365,7 @@ public class JSEngine {
      * @return
      */
     @JSAnnotation(returnType = 1)
-    public String encodeStr(Object o1, Object o2) {
+    public String encodeStr(@Parameter("o1") Object o1, @Parameter("o2") Object o2) {
         Object oo1 = argsNativeObjectAdjust(o1);
         Object oo2 = argsNativeObjectAdjust(o2);
         if (!(oo1 instanceof String) || !(oo2 instanceof String)) {
@@ -381,7 +386,7 @@ public class JSEngine {
      * @return
      */
     @JSAnnotation(returnType = 1)
-    public String base64Decode(Object o1) {
+    public String base64Decode(@Parameter("o1") Object o1) {
         Object oo1 = argsNativeObjectAdjust(o1);
         if (!(oo1 instanceof String)) {
             return "";
@@ -395,7 +400,7 @@ public class JSEngine {
      * @return
      */
     @JSAnnotation(returnType = 1)
-    public String base64Encode(Object o1) {
+    public String base64Encode(@Parameter("o1") Object o1) {
         Object oo1 = argsNativeObjectAdjust(o1);
         if (!(oo1 instanceof String)) {
             return "";
@@ -409,7 +414,7 @@ public class JSEngine {
      * @return
      */
     @JSAnnotation(returnType = 1)
-    public String aesDecode(Object o1, Object o2) {
+    public String aesDecode(@Parameter("o1") Object o1, @Parameter("o2") Object o2) {
         Object oo1 = argsNativeObjectAdjust(o1);
         Object oo2 = argsNativeObjectAdjust(o2);
         if (!(oo1 instanceof String) || !(oo2 instanceof String)) {
@@ -439,7 +444,7 @@ public class JSEngine {
      * @return
      */
     @JSAnnotation(returnType = 1)
-    public String aesEncode(Object o1, Object o2) {
+    public String aesEncode(@Parameter("o1") Object o1, @Parameter("o2") Object o2) {
         Object oo1 = argsNativeObjectAdjust(o1);
         Object oo2 = argsNativeObjectAdjust(o2);
         if (!(oo1 instanceof String) || !(oo2 instanceof String)) {
@@ -460,17 +465,8 @@ public class JSEngine {
      * @return 规则
      */
     @JSAnnotation(returnType = 1)
-    public String getRule() {
-        if (!TextUtils.isEmpty(ruleObject)) {
-            return ruleObject;
-        }
-        if (this.movieRule != null) {
-            return JSON.toJSONString(this.movieRule);
-        }
-        if (!TextUtils.isEmpty(rule)) {
-            return rule;
-        }
-        return "";
+    public String getRule(@Parameter("ruleStrKey") Object ruleStrKey) {
+        return (String) argsNativeObjectAdjust(ruleStrKey);
     }
 
     /**
@@ -487,21 +483,25 @@ public class JSEngine {
      * @param o 要回调的结果
      */
     @JSAnnotation
-    public void setStrResult(Object o) {
+    public void setStrResult(@Parameter("o") Object o, @Parameter("callbackKey") Object callbackKey, @Parameter("ruleKey") Object ruleKey) {
         Object res = argsNativeObjectAdjust(o);
+        Object rule = argsNativeObjectAdjust(ruleKey);
+        String movieTitle = ((JSONObject) rule).getString("Title");
+        String callbackStr = (String) argsNativeObjectAdjust(callbackKey);
+        OnFindCallBack onFindCallBack = callbackMap.get(callbackStr);
+        if (onFindCallBack == null) {
+            return;
+        }
+        callbackMap.remove(callbackStr);
         if (!(res instanceof String)) {
-            if (this.stringOnFindCallBack != null) {
-                this.stringOnFindCallBack.showErr(movieRule.getTitle() + "---视频解析失败！请检查规则");
-            }
+            onFindCallBack.showErr(movieTitle + "---视频解析失败！请检查规则");
             return;
         }
         try {
-            if (this.stringOnFindCallBack != null) {
-                this.stringOnFindCallBack.onSuccess((String) res);
-            }
+            onFindCallBack.onSuccess((String) res);
         } catch (Exception e) {
             e.printStackTrace();
-            this.stringOnFindCallBack.showErr(movieRule.getTitle() + "---视频解析失败！请检查规则");
+            onFindCallBack.showErr(movieTitle + "---视频解析失败！请检查规则");
         }
     }
 
@@ -511,11 +511,21 @@ public class JSEngine {
      * @param o 要回调的结果
      */
     @JSAnnotation
-    public void setSearchResult(Object o) {
+    public void setSearchResult(@Parameter("o") Object o, @Parameter("callbackKey") Object callbackKey, @Parameter("ruleKey") Object ruleKey) {
         Object res = argsNativeObjectAdjust(o);
+        Object rule = argsNativeObjectAdjust(ruleKey);
+        String movieTitle = ((JSONObject) rule).getString("Title");
+
+        String callbackStr = (String) argsNativeObjectAdjust(callbackKey);
+        OnFindCallBack onFindCallBack = callbackMap.get(callbackStr);
+        if (onFindCallBack == null) {
+            return;
+        }
+        callbackMap.remove(callbackStr);
+
         if (!(res instanceof JSONObject)) {
-            if (this.searchFindCallBack != null) {
-                this.searchFindCallBack.showErr(movieRule.getTitle() + "---搜索结果解析失败！请检查规则");
+            if (onFindCallBack != null) {
+                onFindCallBack.showErr(movieTitle + "---搜索结果解析失败！请检查规则");
             }
             return;
         }
@@ -527,7 +537,7 @@ public class JSEngine {
                     SearchResult searchResult = new SearchResult();
                     searchResult.setTitle(array.getJSONObject(i).getString("title"));
                     searchResult.setUrl(array.getJSONObject(i).getString("url"));
-                    searchResult.setDesc(this.movieRule.getTitle());
+                    searchResult.setDesc(movieTitle);
                     if (array.getJSONObject(i).containsKey("desc")) {
                         searchResult.setDescMore(array.getJSONObject(i).getString("desc"));
                     }
@@ -545,10 +555,10 @@ public class JSEngine {
                     e.printStackTrace();
                 }
             }
-            this.searchFindCallBack.onSuccess(results);
+            onFindCallBack.onSuccess(results);
         } catch (Exception e) {
             e.printStackTrace();
-            this.searchFindCallBack.showErr(movieRule.getTitle() + "---搜索结果解析失败！请检查规则");
+            onFindCallBack.showErr(movieTitle + "---搜索结果解析失败！请检查规则");
         }
     }
 
@@ -558,12 +568,17 @@ public class JSEngine {
      * @param o 要回调的结果
      */
     @JSAnnotation
-    public void setHomeResult(Object o) {
+    public void setHomeResult(@Parameter("o") Object o, @Parameter("callbackKey") Object callbackKey) {
         Object res = argsNativeObjectAdjust(o);
+        String callbackStr = (String) argsNativeObjectAdjust(callbackKey);
+        OnFindCallBack onFindCallBack = callbackMap.get(callbackStr);
+        if (onFindCallBack == null) {
+            return;
+        }
+        callbackMap.remove(callbackStr);
+
         if (!(res instanceof JSONObject)) {
-            if (this.homeCallBack != null) {
-                this.homeCallBack.showErr("---分类结果解析失败！请检查规则：setHomeResult is not JSONObject");
-            }
+            onFindCallBack.showErr("---分类结果解析失败！请检查规则：setHomeResult is not JSONObject");
             return;
         }
         try {
@@ -593,10 +608,10 @@ public class JSEngine {
                     e.printStackTrace();
                 }
             }
-            this.homeCallBack.onSuccess(results);
+            onFindCallBack.onSuccess(results);
         } catch (Exception e) {
             e.printStackTrace();
-            this.homeCallBack.showErr("---分类结果解析失败！请检查规则：" + e.getMessage());
+            onFindCallBack.showErr("---分类结果解析失败！请检查规则：" + e.getMessage());
         }
     }
 
@@ -606,27 +621,19 @@ public class JSEngine {
      * @param o 要回调的结果
      */
     @JSAnnotation
-    public void setError(Object o) {
+    public void setError(@Parameter("o") Object o, @Parameter("callbackKey") Object callbackKey) {
         Object res = argsNativeObjectAdjust(o);
-        if (res instanceof String) {
-            Timber.d("setError: %s", res.toString());
-            if (loadMode == LoadMode.HOME && homeCallBack != null) {
-                homeCallBack.showErr("---解析失败！请检查规则：" + res);
-            } else if (loadMode == LoadMode.SEARCH && searchFindCallBack != null) {
-                searchFindCallBack.showErr("---解析失败！请检查规则：" + res);
-            } else {
-                EventBus.getDefault().post(new ToastEvent("---解析失败！请检查规则：" + res));
-            }
-        } else {
-            Timber.d("setError: %s", JSON.toJSONString(res));
-            if (loadMode == LoadMode.HOME && homeCallBack != null) {
-                homeCallBack.showErr("---解析失败！请检查规则：" + JSON.toJSONString(res));
-            } else if (loadMode == LoadMode.SEARCH && searchFindCallBack != null) {
-                searchFindCallBack.showErr("---解析失败！请检查规则：" + res);
-            } else {
-                EventBus.getDefault().post(new ToastEvent("---解析失败！请检查规则：" + JSON.toJSONString(res)));
-            }
+        Timber.d("setError: %s", JSON.toJSONString(res));
+
+        String callbackStr = (String) argsNativeObjectAdjust(callbackKey);
+        OnFindCallBack onFindCallBack = callbackMap.get(callbackStr);
+        if (onFindCallBack == null) {
+            EventBus.getDefault().post(new ToastEvent("---解析失败！请检查规则：" + JSON.toJSONString(res)));
+            return;
         }
+        callbackMap.remove(callbackStr);
+
+        onFindCallBack.showErr("---解析失败！请检查规则：" + res);
     }
 
     private Object fetchByHiker(String url) {
@@ -657,119 +664,6 @@ public class JSEngine {
         return false;
     }
 
-//    public String request(String url, Object options) {
-//        try {
-//            if (StringUtil.isEmpty(url)) {
-//                return "";
-//            }
-//            if (url.startsWith("hiker://files/")) {
-//                String fileName = url.replace("hiker://files/", "");
-//                File file = new File(SettingConfig.rootDir + File.separator + fileName);
-//                if (file.exists()) {
-//                    return FileUtil.fileToString(file.getAbsolutePath());
-//                } else {
-//                    return "";
-//                }
-//            } else if (url.startsWith("file://")) {
-//                url = url.replace("file://", "");
-//                File file = new File(url);
-//                if (file.exists()) {
-//                    return FileUtil.fileToString(file.getAbsolutePath());
-//                } else {
-//                    return "";
-//                }
-//            }
-//            if (url.startsWith("hiker://")) {
-//                try {
-//                    return HikerRuleUtil.getRulesByHiker(url);
-//                } catch (Exception e) {
-//                    return "";
-//                }
-//            }
-//            String contentType = null;
-//            boolean withHeaders = false;
-//            boolean redirect = true;
-//            try {
-//                Request.Builder request = new Request.Builder().url(url);
-//                if (options != null) {
-//                    Map op = (Map) argsNativeObjectAdjust(options);
-//                    Map<String, String> headers = (Map<String, String>) op.get("headers");
-//                    if (headers == null) {
-//                        headers = (Map<String, String>) op.get("header");
-//                    }
-//                    if (op.containsKey("withHeaders")) {
-//                        try {
-//                            withHeaders = (Boolean) op.get("withHeaders");
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                    if (op.containsKey("redirect")) {
-//                        try {
-//                            redirect = (Boolean) op.get("redirect");
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                    String body = "";
-//                    if (headers != null) {
-//                        contentType = headers.get("content-type");
-//                        body = headers.get("body");
-//                        request = request.headers(Headers.of(headers));
-//                    }
-//                    if (op.containsKey("body")) {
-//                        body = (String) op.get("body");
-//                    }
-//                    String method = (String) op.get("method");
-//                    if (body != null && method != null && method.equalsIgnoreCase("POST")) {
-//                        if ((contentType != null && contentType.equals("application/json")) || StringUtil.isEmpty(body)) {
-//                            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charst=utf-8"), body);
-//                            request = request.post(requestBody);
-//                        } else {
-//                            FormBody.Builder builder = new FormBody.Builder();
-//                            for (String form : body.split("&")) {
-//                                int split = form.indexOf("=");
-//                                builder.add(StringUtil.decodeConflictStr(form.substring(0, split)), StringUtil.decodeConflictStr(form.substring(split + 1)));
-//                            }
-//                            request = request.post(builder.build());
-//                        }
-//                    }
-//                }
-//                try (Response response = new OkHttpClient().newBuilder()
-//                        .followRedirects(redirect)
-//                        .followSslRedirects(redirect)
-//                        .build().newCall(request.build()).execute();
-//                     ResponseBody body = response.body()) {
-//                    Map<String, List<String>> headers = response.headers().toMultimap();
-//                    String s;
-//                    if (body != null) {
-//                        if (contentType != null && contentType.split("charst=").length > 1) {
-//                            String code = contentType.split("charst=")[1];
-//                            Log.d(TAG, "fetch: " + code);
-//                            s = new String(body.bytes(), code);
-//                        } else {
-//                            s = body.string();
-//                        }
-//                        //                Log.d(TAG, "fetch: " + s);
-//                    } else {
-//                        s = "";
-//                    }
-//                    if (withHeaders) {
-//                        JSONObject jsonObject = new JSONObject();
-//                        jsonObject.put("body", s);
-//                        jsonObject.put("headers", headers);
-//                        return jsonObject.toJSONString();
-//                    }
-//                    return s;
-//                }
-//            } catch (Throwable e) {
-//                return "";
-//            }
-//        } catch (Throwable e) {
-//            return "";
-//        }
-//    }
-
     /**
      * 供js使用fetch
      * 参考自https://github.com/mabDc/MyBookshelf/blob/master/app/src/main/java/com/kunfei/bookshelf/model/analyzeRule/AnalyzeRule.java
@@ -777,7 +671,7 @@ public class JSEngine {
      * @return 源码
      */
     @JSAnnotation(returnType = 1)
-    public String fetch(String url, Object options) {
+    public String fetch(@Parameter("url") String url, @Parameter("options") Object options) {
         Timber.d("fetch, %s", url);
         long start = System.currentTimeMillis();
         try {
@@ -867,9 +761,12 @@ public class JSEngine {
                     }
                 }
 
-                String charst = "UTF-8";
-                if (contentType != null && contentType.split("charst=").length > 1) {
-                    charst = contentType.split("charst=")[1];
+                String charset = "UTF-8";
+                if (contentType != null && contentType.split("charset=").length > 1) {
+                    charset = contentType.split("charset=")[1];
+                } else if (contentType != null && contentType.split("charst=").length > 1) {
+                    //自己挖的坑，总是要填的
+                    charset = contentType.split("charst=")[1];
                 }
                 boolean finalWithHeaders = withHeaders;
                 boolean finalWithStatusCode = withStatusCode;
@@ -879,7 +776,7 @@ public class JSEngine {
                     request.client(noRedirectHttpClient);
                 }
                 request.retryCount(0);
-                Call<String> call = request.converter(new CharsetStringConvert(charst)).adapt();
+                Call<String> call = request.converter(new CharsetStringConvert(charset)).adapt();
                 com.lzy.okgo.model.Response<String> response = call.execute();
                 long end = System.currentTimeMillis();
                 Timber.d("js, fetch: consume=%s, %s", (end - start), url);
@@ -933,7 +830,7 @@ public class JSEngine {
      * @return 源码
      */
     @JSAnnotation(returnType = 1)
-    public String fetchCookie(String url, Object options) {
+    public String fetchCookie(@Parameter("url") String url, @Parameter("options") Object options) {
         try {
             Map op;
             if (options == null) {
@@ -967,7 +864,7 @@ public class JSEngine {
     }
 
     @JSAnnotation
-    public void writeFile(String filePath, String content) {
+    public void writeFile(@Parameter("filePath") String filePath, @Parameter("content") String content) {
         if (filePath.startsWith("hiker://files/")) {
             String fileName = filePath.replace("hiker://files/", "");
             filePath = UriUtils.getRootDir(Application.application.getApplicationContext()) + File.separator + fileName;
@@ -989,7 +886,7 @@ public class JSEngine {
      * @return
      */
     @JSAnnotation(returnType = 1)
-    public String parseDomForHtml(Object o1, Object o2) {
+    public String parseDomForHtml(@Parameter("o1") Object o1, @Parameter("o2") Object o2) {
         Object oo1 = argsNativeObjectAdjust(o1);
         Object oo2 = argsNativeObjectAdjust(o2);
         if (!(oo1 instanceof String) || !(oo2 instanceof String)) {
@@ -1006,7 +903,7 @@ public class JSEngine {
      * @return
      */
     @JSAnnotation(returnType = 2)
-    public String parseDomForArray(Object o1, Object o2) {
+    public String parseDomForArray(@Parameter("o1") Object o1, @Parameter("o2") Object o2) {
         Object oo1 = argsNativeObjectAdjust(o1);
         Object oo2 = argsNativeObjectAdjust(o2);
         if (!(oo1 instanceof String) || !(oo2 instanceof String)) {
@@ -1023,7 +920,7 @@ public class JSEngine {
      * @return
      */
     @JSAnnotation(returnType = 1)
-    public String parseDom(Object o1, Object o2) {
+    public String parseDom(@Parameter("o1") Object o1, @Parameter("o2") Object o2, @Parameter("urlKey") Object urlKey) {
         Object oo1 = argsNativeObjectAdjust(o1);
         Object oo2 = argsNativeObjectAdjust(o2);
         if (!(oo1 instanceof String) || !(oo2 instanceof String)) {
@@ -1031,7 +928,7 @@ public class JSEngine {
         }
         String html = (String) oo1;
         String rule = (String) oo2;
-        return CommonParser.parseDomForUrl(html, rule, this.url);
+        return CommonParser.parseDomForUrl(html, rule, (String) argsNativeObjectAdjust(urlKey));
     }
 
     @JSAnnotation(returnType = 1)
@@ -1043,21 +940,11 @@ public class JSEngine {
     }
 
     /**
-     * 编解码
-     *
-     * @return
-     */
-    @EvalJSAnnotation(returnType = 1)
-    public String getInputVal() {
-        return input;
-    }
-
-    /**
      * 执行JS
      *
      * @param js js执行代码 eg: "var v1 = getValue('Ta');setValue(‘key’，v1);"
      */
-    private synchronized void runScript(String js) {
+    private void runScript(String js, String callbackKey) {
         String runJSStr = allFunctions + "\n" + getReplaceJS(js);//运行js = allFunctions + js
         org.mozilla.javascript.Context rhino = org.mozilla.javascript.Context.enter();
         rhino.setLanguageVersion(200);
@@ -1069,6 +956,14 @@ public class JSEngine {
             rhino.evaluateString(scope, runJSStr, clazz.getSimpleName(), 1, null);
         } finally {
             org.mozilla.javascript.Context.exit();
+            try {
+                if (!StringUtil.isEmpty(callbackKey)) {
+                    resCodeMap.remove(callbackKey);
+                    callbackMap.remove(callbackKey);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -1079,32 +974,6 @@ public class JSEngine {
         }
 
         return js;
-    }
-
-    public synchronized String evalJS(String jsStr, String input) {
-        destroyCallbacks();
-        this.input = input;
-        String js = evalFunctions + "\n var input = getInputVal();" + StringUtil.decodeConflictStr(jsStr);//运行js = allFunctions + js
-//        String js = "var input = `" + input + "`;" + StringUtil.decodeConflictStr(jsStr);
-//        Log.d(TAG, "evalJS: " + js);
-        js = allFunctions + "\n" + getReplaceJS(js);//运行js = allFunctions + js
-        org.mozilla.javascript.Context rhino = org.mozilla.javascript.Context.enter();
-        rhino.setOptimizationLevel(-1);
-        rhino.setLanguageVersion(200);
-        try {
-            Scriptable scope = rhino.initStandardObjects();
-            ScriptableObject.putProperty(scope, "javaContext", org.mozilla.javascript.Context.javaToJS(this, scope));//配置属性 javaContext:当前类JSEngine的上下文
-            ScriptableObject.putProperty(scope, "javaLoader", org.mozilla.javascript.Context.javaToJS(clazz.getClassLoader(), scope));//配置属性 javaLoader:当前类的JSEngine的类加载器
-            Object re = rhino.evaluateString(scope, js, clazz.getSimpleName(), 1, null);
-//            Log.d(TAG, "evalJS: " + re);
-            if (re instanceof String) {
-                return (String) re;
-            } else {
-                return re + "";
-            }
-        } finally {
-            org.mozilla.javascript.Context.exit();
-        }
     }
 
 
@@ -1142,7 +1011,8 @@ public class JSEngine {
         String paramsNameString = "";//获取function的参数名称
         String paramsNameInvokeString = "";
         Class[] parmTypeArray = method.getParameterTypes();
-        if (parmTypeArray != null && parmTypeArray.length > 0) {
+
+        if (parmTypeArray.length > 0) {
             String[] parmStrArray = new String[parmTypeArray.length];
             String[] parmNameArray = new String[parmTypeArray.length];
             for (int i = 0; i < parmTypeArray.length; i++) {
@@ -1154,6 +1024,31 @@ public class JSEngine {
             paramsNameInvokeString = "," + paramsNameString;
         }
 
+        StringBuilder paramCheck = new StringBuilder();
+
+        Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+        for (int i = 0; i < parameterAnnotations.length; i++) {
+            for (Annotation annotation : parameterAnnotations[i]) {
+                if (Parameter.class.equals(annotation.annotationType())) {
+                    String parameterName = ((Parameter) annotation).value();
+                    switch (parameterName) {
+                        case "callbackKey":
+                            paramCheck.append("param").append(i).append(" = CALLBACK_KEY;\n");
+                            break;
+                        case "ruleKey":
+                            paramCheck.append("param").append(i).append(" = MY_RULE;\n");
+                            break;
+                        case "urlKey":
+                            paramCheck.append("param").append(i).append(" = MY_URL;\n");
+                            break;
+                        case "ruleStrKey":
+                            paramCheck.append("param").append(i).append(" = my_rule;\n");
+                            break;
+                    }
+                }
+            }
+        }
+
         Class returnType = method.getReturnType();
         String returnStr = returnType.getSimpleName().equals("void") ? "" : "return";//是否有返回值
 
@@ -1163,6 +1058,7 @@ public class JSEngine {
             //返回字符串
             functionStr = String.format(
                     " function %s(%s){\n" +
+                            paramCheck.toString() +
                             "    var retStr = method_%s.invoke(javaContext%s);\n" +
                             "    return retStr + '';\n" +
                             " }\n", functionName, paramsNameString, functionName, paramsNameInvokeString);
@@ -1170,6 +1066,7 @@ public class JSEngine {
             //返回对象
             functionStr = String.format(
                     " function %s(%s){\n" +
+                            paramCheck.toString() +
                             "    var retStr = method_%s.invoke(javaContext%s);\n" +
                             "    var ret = {} ;\n" +
                             "    eval('ret='+retStr);\n" +
@@ -1179,6 +1076,7 @@ public class JSEngine {
             //非返回对象
             functionStr = String.format(
                     " function %s(%s){\n" +
+                            paramCheck.toString() +
                             "    %s method_%s.invoke(javaContext%s);\n" +
                             " }\n", functionName, paramsNameString, returnStr, functionName, paramsNameInvokeString);
         }
@@ -1197,8 +1095,7 @@ public class JSEngine {
      * @return
      */
     private Object argsNativeObjectAdjust(Object input) {
-
-        if(Undefined.isUndefined(input)){
+        if (Undefined.isUndefined(input)) {
             return input;
         }
 
@@ -1262,5 +1159,11 @@ public class JSEngine {
     @Retention(value = RetentionPolicy.RUNTIME)
     public @interface EvalJSAnnotation {
         int returnType() default 0;//是否返回对象，默认为false 不返回，1：字符串
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.PARAMETER)
+    public @interface Parameter {
+        String value() default "";
     }
 }

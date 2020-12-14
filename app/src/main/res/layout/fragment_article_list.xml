@@ -2,35 +2,13 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/progress_image_view1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="2dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginStart="12dp"
-        android:visibility="invisible"
-        app:srcCompat="@drawable/avd_progress_indeterminate_horizontal" />
-
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/progress_image_view2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginStart="12dp"
-        android:layout_alignParentBottom="true"
-        android:visibility="gone"
-        app:srcCompat="@drawable/avd_progress_indeterminate_horizontal" />
+    android:layout_height="match_parent"
+    android:id="@+id/bg">
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/progress_image_view2"
-        android:layout_below="@id/progress_image_view1">
+        android:layout_marginTop="2dp">
         <com.example.hikerview.ui.view.SmartRefreshLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -56,5 +34,27 @@
             app:rfs_handlePressedColor="@color/greenAction"
             android:layout_gravity="end"/>
     </FrameLayout>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/progress_image_view1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginStart="12dp"
+        android:visibility="invisible"
+        app:srcCompat="@drawable/avd_progress_indeterminate_horizontal" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/progress_image_view2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginStart="12dp"
+        android:layout_alignParentBottom="true"
+        android:visibility="gone"
+        app:srcCompat="@drawable/avd_progress_indeterminate_horizontal" />
 
 </RelativeLayout>

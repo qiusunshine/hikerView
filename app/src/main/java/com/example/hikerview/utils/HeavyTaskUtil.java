@@ -73,6 +73,9 @@ public class HeavyTaskUtil {
     }
 
     public static void saveNowPlayerPos(Context mContext, String lastUrl, int pos, boolean canBelow) {
+        if(lastUrl.startsWith("content")){
+            return;
+        }
         lastUrl = HttpParser.getRealUrlFilterHeaders(lastUrl);
         lastUrl = LocalServerParser.getUrlForPos(mContext, lastUrl);
         lastUrl = getUrlForPosMemory(lastUrl);
@@ -116,6 +119,9 @@ public class HeavyTaskUtil {
 
     public static int getPlayerPos(Context context, String playUrl) {
         try {
+            if(playUrl.startsWith("content")){
+                return 0;
+            }
             playUrl = HttpParser.getRealUrlFilterHeaders(playUrl);
             playUrl = LocalServerParser.getUrlForPos(context, playUrl);
             playUrl = getUrlForPosMemory(playUrl);

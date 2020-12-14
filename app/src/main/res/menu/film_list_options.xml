@@ -16,4 +16,8 @@
         android:id="@+id/share_remote_rule"
         android:title="分享云口令"
         app:showAsAction="never"/>
+    <item
+        android:id="@+id/share_remote_rule_2"
+        android:title="分享云口令2"
+        app:showAsAction="never"/>
 </menu>

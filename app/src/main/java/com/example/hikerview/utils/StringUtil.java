@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,6 +16,71 @@ import java.util.regex.Pattern;
  * 时间：At 12:03
  */
 public class StringUtil {
+
+    public final static String[] LOWER_CASES = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"};
+    public final static String[] UPPER_CASES = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
+    public final static String[] NUMS_LIST = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+    public final static String[] SYMBOLS_ARRAY = {"!", "~", "^", "_", "*"};
+
+    public static String genRandomPwd(int pwd_len) {
+        return genRandomPwd(pwd_len, false);
+    }
+
+    /**
+     * 生成随机密码
+     *
+     * @param pwd_len 密码长度
+     * @param simple  简单模式
+     * @return 密码的字符串
+     */
+    public static String genRandomPwd(int pwd_len, boolean simple) {
+        if (pwd_len < 6 || pwd_len > 20) {
+            return "";
+        }
+        int lower, upper, num = 0, symbol = 0;
+        lower = pwd_len / 2;
+
+        if (simple) {
+            upper = pwd_len - lower;
+        } else {
+            upper = (pwd_len - lower) / 2;
+            num = (pwd_len - lower) / 2;
+            symbol = pwd_len - lower - upper - num;
+        }
+
+        StringBuilder pwd = new StringBuilder();
+        Random random = new Random();
+        int position = 0;
+        while ((lower + upper + num + symbol) > 0) {
+            if (lower > 0) {
+                position = random.nextInt(pwd.length() + 1);
+
+                pwd.insert(position, LOWER_CASES[random.nextInt(LOWER_CASES.length)]);
+                lower--;
+            }
+            if (upper > 0) {
+                position = random.nextInt(pwd.length() + 1);
+
+                pwd.insert(position, UPPER_CASES[random.nextInt(UPPER_CASES.length)]);
+                upper--;
+            }
+            if (num > 0) {
+                position = random.nextInt(pwd.length() + 1);
+
+                pwd.insert(position, NUMS_LIST[random.nextInt(NUMS_LIST.length)]);
+                num--;
+            }
+            if (symbol > 0) {
+                position = random.nextInt(pwd.length() + 1);
+
+                pwd.insert(position, SYMBOLS_ARRAY[random.nextInt(SYMBOLS_ARRAY.length)]);
+                symbol--;
+            }
+
+            System.out.println(pwd.toString());
+        }
+        return pwd.toString();
+    }
 
     public static String arrayToString(String[] list, int fromIndex, String cha) {
         return arrayToString(list, fromIndex, list == null ? 0 : list.length, cha);
@@ -470,14 +536,14 @@ public class StringUtil {
         }
     }
 
-    public static String[] splitUrlByQuestionMark(String url){
-        if(isEmpty(url)){
+    public static String[] splitUrlByQuestionMark(String url) {
+        if (isEmpty(url)) {
             return new String[]{url};
-        }else {
+        } else {
             String[] urls = url.split("\\?");
-            if(urls.length <= 1){
+            if (urls.length <= 1) {
                 return urls;
-            }else {
+            } else {
                 String[] res = new String[2];
                 res[0] = urls[0];
                 res[1] = arrayToString(urls, 1, "?");

@@ -13,6 +13,7 @@
         <item name="android:textColorPrimary">@color/text_color_primary</item>
         <item name="android:textColorSecondary">@color/text_color_grey_600</item>
         <item name="android:textColorTertiary">@color/text_color_tertiary</item>
+        <item name="android:actionBarStyle">@style/FullScreenActionBarStyle</item>
     </style>
 
     <style name="HomeTheme" parent="AppTheme">
@@ -86,6 +87,11 @@
 
     <style name="FullScreenActionBarStyle" parent="Widget.AppCompat.ActionBar">
         <item name="android:background">@color/colorPrimaryDark</item>
+    </style>
+
+    <style name="ToolbarBarStyle" parent="ThemeOverlay.AppCompat.Light">
+        <item name="colorControlNormal">@color/blackText</item>
+        <item name="colorButtonNormal">@color/blackText</item>
     </style>
 
     <style name="TabLayoutStyle" parent="android:Widget">

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@mipmap/collection"
+        android:shortcutDisabledMessage="@string/web_search"
+        android:shortcutId="webSearch"
+        android:shortcutLongLabel="@string/web_search"
+        android:shortcutShortLabel="@string/web_search">
+
+        <categories android:name="android.shortcut.conversation" />
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="hiker://webSearch"
+            android:targetClass="com.example.hikerview.ui.home.MainActivity"
+            android:targetPackage="com.example.hikerview" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@mipmap/history"
+        android:shortcutDisabledMessage="@string/fast_search"
+        android:shortcutId="search"
+        android:shortcutLongLabel="@string/fast_search"
+        android:shortcutShortLabel="@string/fast_search">
+
+        <categories android:name="android.shortcut.conversation" />
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="hiker://search"
+            android:targetClass="com.example.hikerview.ui.home.MainActivity"
+            android:targetPackage="com.example.hikerview" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@mipmap/bookmark"
+        android:shortcutDisabledMessage="@string/my_bookmark"
+        android:shortcutId="bookmark"
+        android:shortcutLongLabel="@string/my_bookmark"
+        android:shortcutShortLabel="@string/my_bookmark">
+
+        <categories android:name="android.shortcut.conversation" />
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="hiker://bookmark"
+            android:targetClass="com.example.hikerview.ui.home.MainActivity"
+            android:targetPackage="com.example.hikerview" />
+    </shortcut>
+</shortcuts>

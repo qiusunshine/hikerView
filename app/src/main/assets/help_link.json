@@ -133,6 +133,12 @@
       "records": [
         "点击即可快速备份规则到webdav，前提必须先设置好webdav账号"
       ]
+    },
+    {
+      "date": "hiker://webRule",
+      "records": [
+        "点击即可开启Web编辑规则模式"
+      ]
     }
   ]
 }

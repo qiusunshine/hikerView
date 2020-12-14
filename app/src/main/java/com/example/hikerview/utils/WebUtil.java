@@ -88,6 +88,18 @@ public class WebUtil {
         context.startActivity(intent, ActivityOptions.makeCustomAnimation(context, R.anim.alpha_no_trans, R.anim.alpha_no_trans).toBundle());
     }
 
+    public static void goWebHomeAndSearch(Activity context) {
+        Intent intent = new Intent();
+        intent.setClass(context, WebViewActivity.class);
+        intent.putExtra("is_xiu_tan", false);
+        String webHome = SettingConfig.professionalMode ? "https://movie.douban.com/tag/#/" : context.getResources().getString(R.string.search_engine);
+        String defaultRightUrl = PreferenceMgr.getString(context, "defaultRightUrl", webHome);
+        intent.putExtra("url", defaultRightUrl);
+        intent.putExtra("homeTabMode", "webhome");
+        intent.putExtra("showSearch", true);
+        context.startActivity(intent, ActivityOptions.makeCustomAnimation(context, R.anim.alpha_no_trans, R.anim.alpha_no_trans).toBundle());
+    }
+
     public static void goWebFromHistoryVideo(Context context, String url, String title, String videoUrl) {
         if (webActivityExist.get()) {
             PlayerChooser.startPlayer(context, title, videoUrl);

@@ -10,7 +10,7 @@
         android:id="@+id/line"/>
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/item_reult_img"
         android:layout_toStartOf="@id/line"
         android:layout_width="28dp"
         android:layout_centerVertical="true"

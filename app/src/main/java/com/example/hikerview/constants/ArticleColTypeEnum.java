@@ -26,6 +26,7 @@ public enum ArticleColTypeEnum {
     PIC_3(10, "pic_3", 3, 4),
     PIC_1_FULL(19, "pic_1_full", 0, 12),
     PIC_3_SQUARE(30, "pic_3_square", 3, 4),
+    PIC_1_CARD(32, "pic_1_card", 0, 12),
     ICON_2(17, "icon_2", 10, 6),
     ICON_4(13, "icon_4", 10, 3),
     ICON_3_SMALL(25, "icon_small_3", 10, 4),
@@ -39,9 +40,10 @@ public enum ArticleColTypeEnum {
     FOOTER(3, "footer", 0, 12),
     LINE(23, "line", 0, 12),
     LINE_BLANK(26, "line_blank", 0, 12),
-    BLANK_BLOCK(29, "blank_block", 0, 12);
+    BLANK_BLOCK(29, "blank_block", 0, 12),
+    BIG_BLANK_BLOCK(31, "big_blank_block", 0, 12);
+    private final static int max = 32;
 
-    private final static int max = 30;
     private final int itemType;
     private final String code;
     private final int leftRight;

@@ -33,6 +33,17 @@
                 android:textSize="12sp" />
         </androidx.cardview.widget.CardView>
 
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:id="@+id/click_tag_icon"
+            android:visibility="gone"
+            android:src="@drawable/ic_view_history">
+
+        </ImageView>
+
         <TextView
             android:id="@+id/item_ad_title"
             android:layout_width="match_parent"

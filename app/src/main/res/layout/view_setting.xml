@@ -274,6 +274,37 @@
             </RelativeLayout>
 
             <RelativeLayout
+                android:id="@+id/set_bg_float_hide_mode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple_gray_setting"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp">
+
+                <ImageView
+                    android:id="@+id/icon_float_hide_mode"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/tree4" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_arrow_right" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="40dp"
+                    android:layout_toEndOf="@id/icon_float_hide_mode"
+                    android:text="首页悬浮图标隐形"
+                    android:textColor="@color/text"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
                 android:id="@+id/set_bg_search_sort"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

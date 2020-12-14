@@ -36,6 +36,7 @@ import com.example.hikerview.ui.home.ArticleListRuleEditActivity;
 import com.example.hikerview.ui.home.FilmListActivity;
 import com.example.hikerview.ui.home.model.ArticleListRule;
 import com.example.hikerview.ui.home.model.ArticleListRuleJO;
+import com.example.hikerview.ui.home.model.NetCutResponse;
 import com.example.hikerview.ui.home.model.PastemeResponse;
 import com.example.hikerview.ui.js.AdUrlListActivity;
 import com.example.hikerview.ui.rules.model.DetailPageRule;
@@ -46,8 +47,11 @@ import com.example.hikerview.ui.view.DialogBuilder;
 import com.example.hikerview.ui.view.ZLoadingDialog.ZLoadingDialog;
 import com.example.hikerview.ui.view.colorDialog.PromptDialog;
 import com.example.hikerview.ui.view.dialog.GlobalDialogActivity;
+import com.example.hikerview.ui.view.popup.ConfirmPopup;
 import com.lxj.xpopup.XPopup;
+import com.lxj.xpopup.core.BasePopupView;
 import com.lzy.okgo.OkGo;
+import com.lzy.okgo.request.GetRequest;
 import com.lzy.okgo.request.PostRequest;
 
 import org.greenrobot.eventbus.EventBus;
@@ -59,6 +63,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+
+import timber.log.Timber;
 
 /**
  * 作者：By 15968
@@ -164,6 +170,20 @@ public class AutoImportHelper {
         } else {
             return rules[2];
         }
+    }
+
+    public static boolean checkText(Activity context, String text1) {
+        if(StringUtil.isEmpty(text1)){
+            return false;
+        }
+        if (text1.startsWith("http://pasteme.cn/") || text1.startsWith("https://pasteme.cn/")) {
+            AutoImportHelper.checkClipboardByPasteme(context, text1);
+            return true;
+        } else if (text1.startsWith("https://netcut.cn/p/") || text1.startsWith("http://netcut.cn/p/")) {
+            AutoImportHelper.checkClipboardByNetCut(context, text1);
+            return true;
+        }
+        return AutoImportHelper.checkAutoText(context, text1);
     }
 
     public static boolean checkAutoText(Context context, String shareText) {
@@ -1055,9 +1075,19 @@ public class AutoImportHelper {
 
     public static void shareByPasteme(Activity activity, String paste, String title) {
         new XPopup.Builder(activity)
-                .asInputConfirm("设置访问密码", "为空表示无需密码", text -> {
-                    shareByPasteme(activity, paste, title, text, "规则名");
-                }).show();
+                .asCustom(new ConfirmPopup(activity)
+                        .bind("设置访问密码", "为空表示无需密码", new ConfirmPopup.OkListener() {
+                            @Override
+                            public void ok(String text) {
+                                shareByPasteme(activity, paste, title, text, "规则名");
+                            }
+
+                            @Override
+                            public void cancel() {
+                                String pwd = StringUtil.genRandomPwd(6, true);
+                                shareByPasteme(activity, paste, title, pwd, "规则名");
+                            }
+                        }).setBtn("确定", "随机密码")).show();
     }
 
     public static void shareByPasteme(Activity activity, String paste, String title, @Nullable String password, String rulePrefix) {
@@ -1068,8 +1098,17 @@ public class AutoImportHelper {
             if (StringUtil.isNotEmpty(password)) {
                 jsonObject.put("password", password);
             }
-            PostRequest<String> request = OkGo.post("http://api.pasteme.cn/");
+            BasePopupView popupView = new XPopup.Builder(activity)
+                    .asLoading("正在提交云剪贴板")
+                    .show();
+            PostRequest<String> request = OkGo.post("https://pasteme.cn/_api/backend/");
             request.upJson(jsonObject)
+                    .headers(":authority", "pasteme.cn")
+                    .headers(":method", "POST")
+                    .headers(":path", "/_api/backend/")
+                    .headers(":scheme", "https")
+                    .headers("referer", "https://pasteme.cn/")
+                    .headers("cookie", "")
                     .execute(new CharsetStringCallback("UTF-8") {
                         @Override
                         public void onSuccess(com.lzy.okgo.model.Response<String> res) {
@@ -1079,21 +1118,39 @@ public class AutoImportHelper {
                             }
 
                             if (StringUtil.isEmpty(s)) {
+                                activity.runOnUiThread(() -> {
+                                    if (popupView != null) {
+                                        popupView.dismiss();
+                                    }
+                                });
                                 return;
                             }
                             activity.runOnUiThread(() -> {
-                                PastemeResponse response = JSON.parseObject(s, PastemeResponse.class);
-                                if (response == null || StringUtil.isEmpty(response.getKey())) {
-                                    ToastMgr.shortCenter(activity, "提交云剪贴板失败");
-                                } else {
-                                    String url = "http://pasteme.cn/" + response.getKey();
-                                    if (StringUtil.isNotEmpty(password)) {
-                                        url = url + " " + password;
+                                if (popupView != null) {
+                                    popupView.dismiss();
+                                }
+                                try {
+                                    Timber.d("shareByPasteme onSuccess: %s", s);
+                                    PastemeResponse response = JSON.parseObject(s, PastemeResponse.class);
+                                    if (response == null || StringUtil.isEmpty(response.getKey())) {
+                                        ToastMgr.shortCenter(activity, "提交云剪贴板失败");
+                                    } else {
+                                        String url = "https://pasteme.cn/" + response.getKey();
+                                        if (StringUtil.isNotEmpty(password)) {
+                                            url = url + " " + password;
+                                        }
+                                        url = url + "\n\n" + rulePrefix + "：" + title;
+                                        ClipboardUtil.copyToClipboardForce(activity, url, false);
+                                        AutoImportHelper.setShareRule(url);
+                                        ToastMgr.shortBottomCenter(activity, "云剪贴板地址已复制到剪贴板");
                                     }
-                                    url = url + "\n\n" + rulePrefix + "：" + title;
-                                    ClipboardUtil.copyToClipboardForce(activity, url, false);
-                                    AutoImportHelper.setShareRule(url);
-                                    ToastMgr.shortBottomCenter(activity, "云剪贴板地址已复制到剪贴板");
+                                } catch (Exception e) {
+                                    String msg = e.getMessage();
+                                    if (msg != null && msg.length() > 20) {
+                                        msg = msg.substring(0, 20);
+                                    }
+                                    ToastMgr.shortCenter(activity, "提交云剪贴板失败:" + msg);
+                                    e.printStackTrace();
                                 }
                             });
                         }
@@ -1106,6 +1163,9 @@ public class AutoImportHelper {
                                 return;
                             }
                             activity.runOnUiThread(() -> {
+                                if (popupView != null) {
+                                    popupView.dismiss();
+                                }
                                 ToastMgr.shortCenter(activity, "提交云剪贴板失败：" + msg);
                             });
                         }
@@ -1114,6 +1174,169 @@ public class AutoImportHelper {
             ToastMgr.shortCenter(activity, "提交云剪贴板失败：" + e.getMessage());
         }
     }
+
+
+    /**
+     * 解析pasteme的地址获取口令
+     *
+     * @param url pasteme地址
+     */
+    public static void checkClipboardByPasteme(Activity activity, String url) {
+        try {
+            url = StringUtil.trimBlanks(url);
+            url = url.split("\n")[0];
+            String[] urls = url.split(" ");
+            if (urls.length == 1) {
+                url = url.replace("//pasteme.cn/", "//pasteme.cn/_api/backend/") + "?json=true";
+            } else {
+                url = urls[0].replace("//pasteme.cn/", "//pasteme.cn/_api/backend/") + "," + urls[1] + "?json=true";
+            }
+            GetRequest<String> request = OkGo.get(url);
+            request.headers(":authority", "pasteme.cn")
+                    .headers(":method", "POST")
+                    .headers(":path", "/_api/backend/")
+                    .headers(":scheme", "https")
+                    .headers("referer", "https://pasteme.cn/")
+                    .headers("cookie", "")
+                    .execute(new CharsetStringCallback("UTF-8") {
+                        @Override
+                        public void onSuccess(com.lzy.okgo.model.Response<String> res) {
+                            String s = res.body();
+                            if (activity == null || activity.isFinishing()) {
+                                return;
+                            }
+                            if (StringUtil.isEmpty(s)) {
+                                return;
+                            }
+                            activity.runOnUiThread(() -> {
+                                Timber.d("checkClipboardByPasteme onSuccess: %s", s);
+                                try {
+                                    PastemeResponse response = JSON.parseObject(s, PastemeResponse.class);
+                                    if (response != null && !StringUtil.isEmpty(response.getContent())) {
+                                        try {
+                                            checkAutoText(activity, response.getContent());
+                                        } catch (Exception ignored) {
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onError(com.lzy.okgo.model.Response<String> response) {
+                            super.onError(response);
+                        }
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void shareByNetCut(Activity activity, String paste, String title, String rulePrefix) {
+        PostRequest<String> request = OkGo.post("http://netcut.cn/api/note/create/");
+        String noteName = "hk" + TimeUtil.getSecondTimestamp();
+        request.params("note_name", noteName)
+                .params("note_content", paste)
+                .params("note_pwd", "0")
+                .params("expire_time", "31536000")
+                .execute(new CharsetStringCallback("UTF-8") {
+                    @Override
+                    public void onSuccess(com.lzy.okgo.model.Response<String> res) {
+                        String s = res.body();
+                        Timber.d("shareByNetCut, response:%s", s);
+                        if (activity == null || activity.isFinishing()) {
+                            return;
+                        }
+
+                        if (StringUtil.isEmpty(s)) {
+                            return;
+                        }
+                        activity.runOnUiThread(() -> {
+                            try {
+                                NetCutResponse response = JSON.parseObject(s, NetCutResponse.class);
+                                if (response == null || response.getData() == null || response.getStatus() != 1) {
+                                    ToastMgr.shortCenter(activity, "提交云剪贴板失败:" + (response == null ? "null" : response.getError()));
+                                } else {
+                                    String url = "http://netcut.cn/p/" + response.getData().getNote_id();
+                                    url = url + "\n\n" + rulePrefix + "：" + title;
+                                    ClipboardUtil.copyToClipboardForce(activity, url, false);
+                                    AutoImportHelper.setShareRule(url);
+                                    ToastMgr.shortBottomCenter(activity, "云剪贴板地址已复制到剪贴板");
+                                }
+                            } catch (Exception e) {
+                                String msg = e.getMessage();
+                                if (msg != null && msg.length() > 20) {
+                                    msg = msg.substring(0, 20);
+                                }
+                                ToastMgr.shortCenter(activity, "提交云剪贴板失败:" + msg);
+                                e.printStackTrace();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(com.lzy.okgo.model.Response<String> response) {
+                        super.onError(response);
+                        String msg = response.getException().toString();
+                        if (activity == null || activity.isFinishing()) {
+                            return;
+                        }
+                        activity.runOnUiThread(() -> {
+                            ToastMgr.shortCenter(activity, "提交云剪贴板失败：" + msg);
+                        });
+                    }
+                });
+    }
+
+
+    /**
+     * 解析netcut的地址获取口令
+     *
+     * @param url 地址
+     */
+    public static void checkClipboardByNetCut(Activity activity, String url) {
+        try {
+            url = StringUtil.trimBlanks(url);
+            url = url.split("\n")[0];
+            String[] urls = url.split(" ");
+            String[] noteIdUrl = urls[0].split("/p/");
+            if (noteIdUrl.length != 2) {
+                return;
+            }
+            String noteId = noteIdUrl[1];
+            url = "http://netcut.cn/api/note/data/?note_id=" + noteId;
+            CodeUtil.get(url, new CodeUtil.OnCodeGetListener() {
+                @Override
+                public void onSuccess(String s) {
+                    if (activity.isFinishing()) {
+                        return;
+                    }
+                    if (StringUtil.isEmpty(s)) {
+                        return;
+                    }
+                    activity.runOnUiThread(() -> {
+                        NetCutResponse response = JSON.parseObject(s, NetCutResponse.class);
+                        if (response != null && response.getData() != null && StringUtil.isNotEmpty(response.getData().getNote_content())) {
+                            try {
+                                checkAutoText(activity, response.getData().getNote_content());
+                            } catch (Exception ignored) {
+                            }
+                        }
+                    });
+                }
+
+                @Override
+                public void onFailure(int errorCode, String msg) {
+
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public interface OnOkWithAdUrlsListener {
         void ok(boolean withAdUrls);
