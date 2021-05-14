@@ -5,6 +5,7 @@
       "date": "搜索引擎链接",
       "records": [
         "用**作为关键词的占位符",
+        "如果用**会冲突，那么可以用%%作为关键词的占位符",
         "示例：网页内搜索'我'，网址变为：https://quark.sm.cn/s?q=%E6%88%91，'%'后面的即关键词'我'的编码后的关键词，因此规则为：https://quark.sm.cn/s?q=**"
       ]
     },
@@ -47,16 +48,6 @@
         "示例：.list-content&&.u-movie;h2&&Text;a&&href;.pingfen&&Text;.meta&&Text;img&&data-original",
         "说明：前三个为必选，后三个可以不要，比如.list-content&&.u-movie;h2&&Text;a&&href",
         "增强：也可以部分不要，比如.list-content&&.u-movie;h2&&Text;a&&href;*;*;img&&data-original"
-      ]
-    },
-    {
-      "date": "解析规则增强",
-      "records": [
-        "说明：可以全部用js来代替首页频道解析规则，或者搜索解析规则，那么规则以js:开头",
-        "示例：js: var s = getResCode(); var json={}; eval('json=' + s);\n\nvar next=json.nextPageUrl;\nvar s2 = fetch(next,{});\nvar j2={}; eval('j2=' + s2);\nfor(var i=0;i<j2.itemList.length;i++){\njson.itemList.push(j2.itemList[i]);\n}\n\nvar res={};var d=[];for(var i=0;i<json.itemList.length;i++){var j = json.itemList[i]; if(j.type!=\"followCard\")continue;var r = {};r.pic_url=j.data.content.data.cover.feed;r.title = j.data.content.data.title;r.desc=j.data.header.description;r.url='https://www.kaiyanapp.com/detail.html?vid=' + j.data.header.id+'&utm_source=eyepetizer-homepage&utm_medium=internal&utm_campaign=routine';d.push(r);}\nres.data = d;setHomeResult(res);",
-        "说明：setHomeResult返回内容为数组对象，格式为[{title:'标题',pic_url:'图片',desc:'描述',url:'链接'}]，（最新版也可以用img表示图片地址）",
-        "说明：setSearchResult返回内容为数组对象，格式为[{title:'标题',img:'图片',desc:'描述', content:'详情', url:'链接'}]，（最新版也可以用pic_url表示图片地址）",
-        "说明：setHomeResult返回首页结果，setSearchResult返回搜索结果，setError('111')返回报错信息（可用来调试），更多用法请参考现有规则"
       ]
     },
     {
@@ -145,15 +136,16 @@
       "date": "嗅探识别优化",
       "records": [
         "在二级、动态解析或者首页点击时，会自动根据链接判断是否为图片或者音视频，然后分别跳转图片查看器、视频播放器和网页",
-        "如果链接里面含有ignoreImg=true则不会被识别为图片，兼容部分链接含有jpg之类的关键词但是不是图片的情况",
-        "如果链接里面含有ignoreVideo=true则不会被识别为视频或者音乐，兼容部分链接含有mp4之类的关键词但是不是视频和音乐的情况"
+        "如果链接里面含有#ignoreImg=true#则不会被识别为图片，兼容部分链接含有jpg之类的关键词但是不是图片的情况，识别完会自动清除该标记",
+        "如果链接里面含有#ignoreVideo=true#则不会被识别为视频或者音乐，兼容部分链接含有mp4之类的关键词但是不是视频和音乐的情况，识别完会自动清除该标记",
+        "如果链接里面含有#isVideo=true#则会强制被识别为视频或者音乐，识别完会自动清除该标记"
       ]
     },
     {
       "date": "不要记录足迹",
       "records": [
         "在二级页面点击时默认会记录当前点击位置，除非文本字数超过25",
-        "但是有时候少于25个字符也期望不记录足迹，因此可以在页面url加上#noHistory#，请求时会自动删除该标识，仅做标识用",
+        "但是有时候少于25个字符也期望不记录足迹，因此可以在页面url或者按钮url里面加上#noHistory#，请求时会自动删除该标识，仅做标识用",
         "注意该功能是放在前一级上的，要想二级没足迹，那就要在一级跳二级的链接上加该标志"
       ]
     },
@@ -161,6 +153,13 @@
       "date": "不要记录历史记录",
       "records": [
         "在页面url加上#noRecordHistory#，那么进入该页面就会不记录历史记录，该标识可以加在链接的任意位置，真正请求时会自动删除该标识"
+      ]
+    },
+    {
+      "date": "规则有二级解析规则，如何继续用网页打开链接",
+      "records": [
+        "链接地址前加web://，即完整地址为web://http://baidu.com",
+        "使用场景：因为有些按钮点击需要根据二级规则跳二级页面，但是有些按钮就是简单的网页入口"
       ]
     }
   ]

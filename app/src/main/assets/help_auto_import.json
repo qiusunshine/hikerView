@@ -5,7 +5,7 @@
       "date": "首页合集",
       "records": [
         "标识：home_rule_url",
-        "示例：海阔视界，首页频道合集￥home_rule_url￥https://bbs.fy-sys.cn/rule"
+        "示例：海阔视界，首页频道合集￥home_rule_url￥https://bbs.fy-sys.cn/rule.json，支持单个规则或者合集规则的json格式"
       ]
     },
     {
@@ -85,6 +85,13 @@
       "records": [
         "标识：ad_subscribe_url",
         "示例：海阔视界，广告拦截订阅￥ad_subscribe_url￥https://gitee.com/qiusunshine233/hikerView/raw/master/adSub.json"
+      ]
+    },
+    {
+      "date": "首页规则订阅",
+      "records": [
+        "标识：home_sub",
+        "示例：海阔视界，合集规则订阅￥home_sub￥https://gitee.com/sub.json"
       ]
     }
   ]

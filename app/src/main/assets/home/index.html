@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+		<title id="title">主页</title>
+		<link rel="stylesheet" type="text/css" href="css/main.css?v=1.48" />
+		<link rel="stylesheet" id="nightCss" type="text/css" href="css/night.css?v=1.48" disabled />
+		<script type="text/javascript">
+			var d = new Date()
+			var time = d.getHours()
+			if(time < 24) {
+				document.getElementById("title").innerHTML = "主页 - 深夜啦！";
+			}
+			if(time < 21) {
+				document.getElementById("title").innerHTML = "主页 - 傍晚啦！";
+			}
+			if(time < 18) {
+				document.getElementById("title").innerHTML = "主页 - 下午啦！";
+			}
+			if(time < 15) {
+				document.getElementById("title").innerHTML = "主页 - 中午啦！";
+			}
+			if(time < 12) {
+				document.getElementById("title").innerHTML = "主页 - 上午啦！";
+			}
+			if(time < 9) {
+				document.getElementById("title").innerHTML = "主页 - 清晨啦！";
+			}
+			if(time < 6) {
+				document.getElementById("title").innerHTML = "主页 - 黎明啦！";
+			}
+			if(time < 3) {
+				document.getElementById("title").innerHTML = "主页 - 佛晓啦！";
+			}
+		</script>
+	</head>
+
+	<body>
+		<div id="app">
+			<div class="page-home">
+				<div class="logo"></div>
+				<div class="ornament-input-group"></div>
+				<div class="bookmark"></div>
+			</div>
+			<div class="page-search">
+				<div class="history">
+					<div class="set" style="width: 30px; height: 30px; background-color: #f5f5f5; border-radius: 15px; right: 24px; top: -80px; position: absolute;">
+						<svg t="1584758255651" class="icon" style="margin: 8px;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11942" width="14" height="14"><path d="M320.583806 507.875243a190.358751 190.358751 0 1 0 190.358751-190.358751 190.358751 190.358751 0 0 0-190.358751 190.358751z m190.358751-63.452917a63.452917 63.452917 0 1 1-63.452917 63.452917 63.452917 63.452917 0 0 1 63.452917-63.452917z" fill="#2c2c2c" p-id="11943"></path><path d="M927.828221 232.489584L542.669016 8.500787a63.452917 63.452917 0 0 0-63.452917 0L94.056893 232.489584a63.452917 63.452917 0 0 0-31.726458 55.204038v447.343064a63.452917 63.452917 0 0 0 31.726458 55.204037L479.216099 1015.498578a63.452917 63.452917 0 0 0 63.452917 0l385.159205-223.354267a63.452917 63.452917 0 0 0 31.726458-55.204038V287.059092a63.452917 63.452917 0 0 0-31.726458-54.569508zM832.648846 698.233994l-321.706289 186.551575L189.236269 698.233994V323.861784l321.706288-186.551575 321.706289 186.551575z" fill="#2c2c2c" p-id="11944"></path></svg>	
+					</div>
+					<div class="emptyHistory"></div>
+					<ul class="content"></ul>
+				</div>
+				<ul class="suggestion"></ul>
+				<div class="bottom-row">
+					<div class="search-from">
+						<div class="input-bg">
+							<div class="engine"></div>
+							<input class="search-input" placeholder="搜索或输入网址" />
+							<div class="empty-input"></div>
+							<div class="search-btn" style="animation: down .3s;">取消</div>
+						</div>
+					</div>
+					<div class="shortcut">
+						<div class="content">
+							<ul class="shortcut1">
+								<li>http://</li>
+								<li>https://</li>
+								<li>www.</li>
+								<li>m.</li>
+								<li>wap.</li>
+							</ul>
+							<ul class="shortcut2">
+								<li>.</li>
+								<li>/</li>
+								<li>.com</li>
+								<li>.cn</li>
+								<li>.cc</li>
+								<li>.org</li>
+								<li>.xyz</li>
+							</ul>
+							<ul class="shortcut3"></ul>
+						</div>
+					</div>
+				</div>
+			</div>
+			<input class="s-temp" />
+		</div>
+		<script src="js/lib/require.js?v=1.48"></script>
+		<script src="js/main.js?v=1.48"></script>
+		<!-- 不重要的CSS最后加载 -->
+		<link rel="stylesheet" type="text/css" href="css/lazy.css?v=1.48" />
+	</body>
+
+</html>

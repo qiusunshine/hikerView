@@ -38,7 +38,17 @@
         "如何获取返回的状态码：fetch('http://www.a.cn', {withStatusCode:true})，那么返回的内容为'{body:'字符串内容',headers:{},statusCode:200}'",
         "支持链接为hiker://files/a.txt的形式",
         "如何禁止重定向：fetch('http://www.a.cn', {redirect:false})",
+        "使用移动端UA：request代替fetch，其余使用方法和fetch完全一致",
+        "设置超时时间：fetch('http://www.a.cn', {timeout:5000})，单位为毫秒，默认10秒超时",
         "如何引用UA：fetch('http://www.a.cn', {headers:{\"User-Agent\":MOBILE_UA}})，fetch('http://www.a.cn', {headers:{\"User-Agent\":PC_UA}})，当然也可以自定义"
+      ]
+    },
+    {
+      "date": "JS里面发起批量请求",
+      "records": [
+        "示例：var data = batchFetch([{url:'http://www.a.cn', options:{headers:{},body:'a=1&b=2',method:'POST'}}, {url:'http://www.b.cn'}]);setError(data[0] + '=====' + data[1]);",
+        "说明：参数为一个数组，数组每一项是一个对象，每个对象包含url和options属性，分别对应fetch方法的第一二个参数，返回一个字符串数组对象，注意是对象，顺序和参数顺序严格一致",
+        "注意：数组参数长度超过16时，会自动分批，同步循环执行，比如20个参数，那么会先16个并发请求，请求完再发起4个并发请求，最后再返回结果"
       ]
     },
     {
@@ -52,7 +62,8 @@
       "date": "JS里面刷新页面",
       "records": [
         "refreshPage()，可以和动态解析、toast://结合，比如@lazyRule=.js:putVar('settingMode', '1')；；refreshPage()；；'toast://已设置为简洁模式'",
-        "即可以用js执行一些操作，然后想要立即生效，那就刷新页面，返回'toast://已设置为简洁模式'来提示用户"
+        "即可以用js执行一些操作，然后想要立即生效，那就刷新页面，返回'toast://已设置为简洁模式'来提示用户",
+        "如何刷新页面不滚动到顶部？refreshPage(false)，默认会自动滚动到顶部"
       ]
     },
     {
@@ -65,10 +76,11 @@
       "date": "解析规则增强",
       "records": [
         "说明：可以全部用js来代替首页频道解析规则，或者搜索解析规则，那么规则以js:开头",
-        "示例：js: var s = getResCode(); var json={}; eval('json=' + s);\n\nvar next=json.nextPageUrl;\nvar s2 = fetch(next,{});\nvar j2={}; eval('j2=' + s2);\nfor(var i=0;i<j2.itemList.length;i++){\njson.itemList.push(j2.itemList[i]);\n}\n\nvar res={};var d=[];for(var i=0;i<json.itemList.length;i++){var j = json.itemList[i]; if(j.type!=\"followCard\")continue;var r = {};r.pic_url=j.data.content.data.cover.feed;r.title = j.data.content.data.title;r.desc=j.data.header.description;r.url='https://www.kaiyanapp.com/detail.html?vid=' + j.data.header.id+'&utm_source=eyepetizer-homepage&utm_medium=internal&utm_campaign=routine';d.push(r);}\nres.data = d;setHomeResult(res);",
+        "示例：js: var s = getResCode(); var json={}; eval('json=' + s);\n\nvar next=json.nextPageUrl;\nvar s2 = fetch(next,{});\nvar j2={}; eval('j2=' + s2);\nfor(var i=0;i<j2.itemList.length;i++){\njson.itemList.push(j2.itemList[i]);\n}\n\nvar d=[];for(var i=0;i<json.itemList.length;i++){var j = json.itemList[i]; if(j.type!=\"followCard\")continue;var r = {};r.pic_url=j.data.content.data.cover.feed;r.title = j.data.content.data.title;r.desc=j.data.header.description;r.url='https://www.kaiyanapp.com/detail.html?vid=' + j.data.header.id+'&utm_source=eyepetizer-homepage&utm_medium=internal&utm_campaign=routine';d.push(r);}\nsetHomeResult(d);",
         "说明：setHomeResult返回内容为数组对象，格式为[{title:'标题',pic_url:'图片',desc:'描述',url:'链接'}]，（最新版也可以用img表示图片地址）",
         "说明：setSearchResult返回内容为数组对象，格式为[{title:'标题',img:'图片',desc:'描述', content:'详情', url:'链接'}]，（最新版也可以用pic_url表示图片地址）",
-        "说明：setHomeResult返回首页结果，setSearchResult返回搜索结果，setError('111')返回报错信息（可用来调试），更多用法请参考现有规则"
+        "说明：setHomeResult返回首页结果，setSearchResult返回搜索结果，setError('111')返回报错信息（可用来调试），更多用法请参考现有规则",
+        "说明：setHomeResult和setSearchResult支持混用，两者效果和setResult一致，软件会自动识别回调类型"
       ]
     },
     {
@@ -89,6 +101,34 @@
       "date": "本地文件下载",
       "records": [
         "说明：因为有部分网址播放到一半会无法继续播放，然后就有大佬直接将m3u8文件缓存到本地，然后播放，但是本地m3u8不支持下载，因此可以在本地地址后面加上?url=原地址，这样视界下载前会解析后面的地址，但是不保证这样处理后能正确下载（毕竟都不能正确播放）"
+      ]
+    },
+    {
+      "date": "关闭页面并刷新前一个页面",
+      "records": [
+        "back() 或 back(true) 关闭页面并刷新前一个页面，back(false) 只关闭页面",
+        "‘‘注意’’：该函数限制只能在二级页面使用，一级页面已屏蔽该函数调用"
+      ]
+    },
+    {
+      "date": "获取我的规则订阅",
+      "records": [
+        "var subscribeRecords = getHomeSub();",
+        "返回一个数组，获取标题：subscribeRecords[0].title，获取订阅地址：subscribeRecords[0].url",
+        "判断是否已经订阅某个地址：var hasSub = hasHomeSub('http://1.com')"
+      ]
+    },
+    {
+      "date": "刷新X5链接或者内容",
+      "records": [
+        "refreshX5WebView('http://1.com')",
+        "refreshX5Desc('float&&255')，该方法只会刷新高度等信息，不会刷新网页"
+      ]
+    },
+    {
+      "date": "获取常用历史规则",
+      "records": [
+        "getLastRules(count)，比如getLastRules(12)"
       ]
     }
   ]

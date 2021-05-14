@@ -1,0 +1,97 @@
+/**
+ * 夜间模式
+*/
+:root {
+    --bg: #282828;
+	--white: #888;
+	--dark: #888;
+}
+body {
+	background: #1f2120;
+}
+.bookmark .list {
+	filter: brightness(60%);
+}
+.bookmark .addbook .img svg {
+	background: #444;
+	border: none;
+}
+.bookmark .addbook .img svg path {
+	fill: #999;
+}
+.page-search,
+.input-bg {
+	background: #282828;
+}
+.search-from {
+	background: #252726;
+	border-color: #3f3f3f;
+}
+.search-input::-webkit-input-placeholder {
+	color: #555;
+}
+.shortcut {
+	background: #1f2120;
+}
+.shortcut .content ul {
+	color: #666;
+}
+.shortcut .shortcut1 li:active,
+.shortcut .shortcut2 li:active{
+    background:#171717;
+}
+.history li{
+	background:#1f1f1f;
+}
+.emptyHistory{
+	filter: invert(100%) brightness(60%);
+	background-color:#ccc;
+}
+.suggestion li {
+	filter: invert(100%) brightness(60%);
+}
+.suggestion li:active{
+	background-color: #c4c4c4;
+}
+.shortcut3 li:not(:first-child),
+.empty-input {
+	filter: brightness(60%);
+}
+.theme-white .bookmark .list .text {
+	text-shadow: none;
+}
+.search-btn:active {
+	color: #444;
+}
+.addbook-input,
+.addbook-btn {
+	border-color: #3f3f3f;
+}
+.addbook-btn a:active,
+#addbook-upload:active,
+.set-option:active {
+	background: #212121;
+}
+/* 精选页面 */
+.page-choice .page-content{
+    background: #1f2120;
+}
+.choice-li a div{
+    background: #282828;
+}
+.choice-li a:active > div,.choice-ul li:active{
+    background: #181818;
+}
+.choice-ul li{
+    color: #545454;
+}
+.choice-close{
+	filter: invert(85%);
+	border-radius: 0 0 9px 9px;
+}
+.choice-cut .list .content{
+    background: linear-gradient(to right bottom,#2c2c22,#272727);
+}
+.choice-cut .list{
+	filter: brightness(60%);
+}

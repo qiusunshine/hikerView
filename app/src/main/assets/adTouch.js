@@ -703,18 +703,43 @@
 
             log('MATCH:', MATCH);
 
-            let requireCode = '';
+            let requireCode = `let isRequire = ${!!meta.require},RequireStack = ${(meta.require && meta.require.length) || 0};`;
             const newline = '\n      ';
 
             if (meta.require) {
-              requireCode = meta.require
-                .map((v) => `eval(request("${v}"));`)
+              requireCode += meta.require
+                .map((v) => `
+                requestAsync("${v}", (key, result) => {
+                  fy_bridge_app.putVar("${v}", result);
+                });
+                setInterval(() => {
+                  if (fy_bridge_app.getVar("${v}") !== "undefined") {
+                    eval(fy_bridge_app.getVar("${v}"));
+                    RequireStack--;
+                    clearInterval(this);
+                  }
+                }, 100);
+                `)
                 .join(newline);
             }
 
             const code = url.startsWith('http')
-              ? `eval(request("${url}"));`
-              : `eval(decodeURIComponent("${encodeURIComponent(url)}"));`;
+              ? `
+              requestAsync("${url}", (key, result) => {
+                fy_bridge_app.putVar("${url}", result);
+              });
+              setInterval(() => {
+                if (fy_bridge_app.getVar("${url}") !== "undefined" && RequireStack === 0) {
+                  eval(fy_bridge_app.getVar("${url}"));
+                  clearInterval(this);
+                }
+              }, 100);`
+              : `setInterval(() => {
+                if (RequireStack === 0) {
+                  eval(decodeURIComponent("${encodeURIComponent(url)}"));
+                  clearInterval(this);
+                }
+              }, 100);`;
 
             return TEMPLATE.replace('NAME', meta.name[0])
               .replace(/\/\/ EXCLUDE/, `const EXCLUDE = ${EXCLUDE || '""'};`)

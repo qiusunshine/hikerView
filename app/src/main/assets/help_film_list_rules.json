@@ -26,13 +26,28 @@
         "即点击二级列表或者首页列表结果时，根据规则再次解析链接，获取真正要用网页访问的链接",
         "示例：body&&.stui-content__playlist,fyIndex&&li;a&&Text;*;*;a&&href.js:input+'@lazyRule=body＆＆＆＆a＆＆＆＆href'",
         "纯JS示例：body&&.stui-content__playlist,fyIndex&&li;a&&Text;*;*;a&&href.js:input+'@lazyRule=.js:input'",
-        "即链接后面加上@lazyRule=body＆＆＆＆a＆＆＆＆href（&&要用中文＆＆＆＆来代替），那么点击结果时就会请求链接然后用规则去解析获取真正的链接，然后视界再对真正的链接进行处理，比如检测为视频或者音乐则直接播放，检测为图片直接大图显示，否则用网页查看"
+        "即链接后面加上@lazyRule=body＆＆＆＆a＆＆＆＆href（&&要用中文＆＆＆＆来代替），那么点击结果时就会请求链接然后用规则去解析获取真正的链接，然后视界再对真正的链接进行处理，比如检测为视频或者音乐则直接播放，检测为图片直接大图显示，否则用网页查看",
+        "不显示弹窗#noLoading#：a&&href.js:input+'#noLoading#@lazyRule=.js:input'，该标识识别完会自动清除，不会影响访问和代码执行"
       ]
     },
     {
       "date": "搜索规则的二级列表规则",
       "records": [
         "如果搜索规则的二级列表规则和首页频道的二级规则完全一样，可以直接在搜索的二级列表规则写上*，那么解析时就会用首页的二级列表规则"
+      ]
+    },
+    {
+      "date": "动态解析和深层嵌套秘籍",
+      "records": [
+        "如果是纯JS规则的深层嵌套和动态解析非常麻烦，因为三级四级规则都要写在一个字符串里面，换行书写和查看异常难受，因此LoyDglk大佬提供了一个方便书写动态解析和深层嵌套的方法",
+        "动态解析示例：d.push({url:$('url').lazyRule(()=>setError(input))})，最后生成d.push({url:'url@lazyRule=.js:setError(input)'})",
+        "动态解析普通规则示例：d.push({url:$('url','iframe&&src').lazyRule(()=>setError(input))})，最后生成d.push({url:'url@lazyRule=iframe&&src.js:setError(input)'})",
+        "动态解析参数传递示例：$(parseDom(key,\"a&&href\")).lazyRule((obj)=>{\nsetError(obj.word);\nvar html=fetch(input);\n},{word:\"23eeee\"})",
+        "深层嵌套示例：d.push({url:$('url').rule(()=>setError(input))})，最后生成d.push({url:'url@rule=js:setError(input)'})",
+        "深层嵌套多级嵌套示例：d.push({url:$('url').rule(()=>$('url2').rule(()=>setError(input)))})，一级生成d.push({url:'url@rule=js:$('url2').rule(()=>setError(input))，下一级生成url2@rule=js:setError(input)'})",
+        "参数传递和普通规则都一样，即第一层方法第一个参数为链接，第二个参数为普通规则，第二层方法第一个参数为函数，第二个参数为函数的参数，目的是将当前的变量值传递到下一个页面读取",
+        "调用x5的弹窗：使用时必须有一个x5组件，$(\"https://m.baidu.com\").x5Rule(()=>{\n        alert(\"哈哈哈链接是\"+input)\n    })",
+        "实际生成的是(function(){})()立即执行函数的形式，以上例子为了方便看就简化了"
       ]
     }
   ]

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "records": [
+    {
+      "date": "投屏开发",
+      "records": [
+        "获取投屏播放地址：",
+        "/playUrl，该接口会返回可播放的视频地址，如果手机端更新了链接，该接口也会自动刷新，因此可以定时检测",
+        "/playUrl?enhance=true，增强接口，返回{url:'',headers:{},jumpStartDuration:0,jumpEndDuration:0}即带header和片头片尾"
+      ]
+    }
+  ]
+}

@@ -6,7 +6,8 @@
       "records": [
         "展开首页频道",
         "hiker://home@V电影，跳转频道名称为V电影的首页频道",
-        "hiker://home@V电影这种形式，仅支持首页规则里面用，网页里面不支持跳转，hiker://home两者都支持"
+        "hiker://home@V电影这种形式，仅支持首页规则里面用，网页里面不支持跳转，hiker://home两者都支持",
+        "hiker://home@规则名支持补偿，如hiker://home@规则1||规则2||http://haikuoshijie.cn，那么会先找规则1，找不到找规则2，还找不到则进入网页"
       ]
     },
     {
@@ -138,6 +139,66 @@
       "date": "hiker://webRule",
       "records": [
         "点击即可开启Web编辑规则模式"
+      ]
+    },
+    {
+      "date": "hiker://debug",
+      "records": [
+        "点击即可打开开发助手页面，用于放在首页按钮的链接上，点击即可快速跳转"
+      ]
+    },
+    {
+      "date": "从二级页面跳转漫画模式",
+      "records": [
+        "链接格式：pics://https://a.com/1.jpg&&https://a.com/2.jpg"
+      ]
+    },
+    {
+      "date": "在二级页面提示文本信息",
+      "records": [
+        "链接格式：toast://提示内容"
+      ]
+    },
+    {
+      "date": "在二级页面导入规则口令",
+      "records": [
+        "链接格式：海阔视界，当前分享的是...（只要海阔视界开头）"
+      ]
+    },
+    {
+      "date": "从二级页面跳转网页，直接加载js内容",
+      "records": [
+        "链接格式：javascript:var a = 'a'"
+      ]
+    },
+    {
+      "date": "从二级页面跳转X5全屏显示",
+      "records": [
+        "链接格式：x5://http://a.com"
+      ]
+    },
+    {
+      "date": "在二级页面刷新当前页面X5链接",
+      "records": [
+        "链接格式：x5WebView://http://a.com"
+      ]
+    },
+    {
+      "date": "从X5跳转网页",
+      "records": [
+        "链接格式：web://http://a.com"
+      ]
+    },
+    {
+      "date": "从二级强制跳转网页，忽略二级解析规则",
+      "records": [
+        "链接格式：web://http://a.com"
+      ]
+    },
+    {
+      "date": "从二级强制调用X5播放器播放视频地址",
+      "records": [
+        "链接格式：x5Play://http://a.com/1.mp4"
       ]
     }
   ]

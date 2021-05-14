@@ -61,7 +61,8 @@
       "records": [
         "方法：request(url, {headers:{},body:'',method:'POST'})",
         "说明：第二个参数可以为空，即request(url)，返回格式为字符串，获取header和状态码的使用方法同JS里面发起请求",
-        "url支持hiker://files/a.txt，或file://开头的绝对文件路径，但是文件必须在软件可读路径内，否则无法读取"
+        "url支持hiker://files/a.txt，或file://开头的绝对文件路径，但是文件必须在软件可读路径内，否则无法读取",
+        "javascript:模式下使用见后文"
       ]
     },
     {
@@ -71,7 +72,8 @@
         "说明：第二个参数和request方法的第二个参数一样，key为标识符，方便callback里面区分请求，callback为两个参数的方法，即请求成功后会调用callback(key, result)",
         "key可以不传，即requestAsync(url, param, callback)，那么key=url",
         "param可以不传，即requestAsync(url, callback)，此时key=url",
-        "url支持hiker://files/a.txt，或file://开头的绝对文件路径，但是文件必须在软件可读路径内，否则无法读取"
+        "url支持hiker://files/a.txt，或file://开头的绝对文件路径，但是文件必须在软件可读路径内，否则无法读取",
+        "javascript:模式下使用见后文"
       ]
     },
     {
@@ -101,6 +103,55 @@
       "records": [
         "方法：fy_bridge_app.getCookie('http://a.com/')，获取当前网页的cookie：fy_bridge_app.getCookie('')",
         "说明：获取的地址的域名必须和当前网页域名一致，如果不一致会报错。即使网页使用了http-only也能获取到cookie"
+      ]
+    },
+    {
+      "date": "刷新二级页面",
+      "records": [
+        "方法：fy_bridge_app.refreshPage(true)，和JS里面使用refreshPage类似",
+        "注意：只能在X5WebView组件里面使用"
+      ]
+    },
+    {
+      "date": "javascript:模式下使用",
+      "records": [
+        "javascript:模式下因为浏览器内核的问题，无法使用request等视界封装好的方法，可以先执行eval(fy_bridge_app.getInternalJs())",
+        "然后就能调用request和requestAsync等方法"
+      ]
+    },
+    {
+      "date": "解析网页Dom元素parseDomForHtml、parseDomForArray",
+      "records": [
+        "方法：fy_bridge_app.parseDomForHtml(html, rule)",
+        "用法和JS里面一样，见JS指南，不过parseDomForArray返回是一个数组字符串，需要自己用JSON.parse才能变成数组"
+      ]
+    },
+    {
+      "date": "刷新X5链接或者内容",
+      "records": [
+        "方法：fy_bridge_app.refreshX5Desc('float&&255')，该方法只会刷新高度等信息，不会刷新网页"
+      ]
+    },
+    {
+      "date": "保存图片到相册",
+      "records": [
+        "方法：fy_bridge_app.saveImage('http://1.jpg')"
+      ]
+    },
+    {
+      "date": "网页跳转二级详情页面（视界原生界面）",
+      "records": [
+        "方法：fy_bridge_app.toDetailPage(String ruleTitle, String url, String group, String colType, String detailFindRule, String preRule)",
+        "detailFindRule如何优雅实现？var detailRule = 'js:' + $$$().toString((obj)=>{//你的代码}, obj)，原理就是把写的方法生成为字符串，注意你的代码里面不要用到外部变量，如要用到需要通过obj参数传进去",
+        "和“二级列表”说明里面的$().rule()类似，具体看“二级列表”里面的深层嵌套秘籍（如果javascript:模式下使用须先执行eval(fy_bridge_app.getInternalJs())）"
+      ]
+    },
+    {
+      "date": "X5打开新页面",
+      "records": [
+        "说明：因为X5里面不能返回，一按返回键整个界面就销毁了，因此网页里面打开新页面之后如果还是在当前界面就无法返回，可以在网页里面使a标签点击事件改为下面的方式，即用视界新开一个页面来加载链接",
+        "重要提示：非特殊场景没必要用此方法，主要考虑是否有必要按返回键回之前的网页",
+        "方法：fy_bridge_app.newPage(String title, String url)"
       ]
     }
   ]
