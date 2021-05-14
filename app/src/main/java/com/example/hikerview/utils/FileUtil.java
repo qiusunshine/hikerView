@@ -449,6 +449,9 @@ public class FileUtil {
     }
 
     public static long getFolderSize(File file) {
+        if (!file.isDirectory()) {
+            return file.length();
+        }
         long size = 0;
         File[] fileList = file.listFiles();
         for (File aFileList : fileList) {

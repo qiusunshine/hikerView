@@ -2,6 +2,8 @@ package com.example.hikerview.utils;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
@@ -9,6 +11,9 @@ import android.webkit.MimeTypeMap;
 import androidx.core.content.FileProvider;
 
 import java.io.File;
+import java.net.URISyntaxException;
+
+import timber.log.Timber;
 
 /**
  * 作者：By hdy
@@ -26,7 +31,12 @@ public class ShareUtil {
             intent.putExtra(Intent.EXTRA_TEXT, "");
         }
         intent.setType("text/plain");
-        context.startActivity(Intent.createChooser(intent, "分享"));
+        try {
+            context.startActivity(Intent.createChooser(intent, "分享"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            ToastMgr.shortBottomCenter(context, "系统故障：" + e.getMessage());
+        }
     }
 
     public static void findVideoPlayerToDeal(Context context, String url) {
@@ -44,6 +54,23 @@ public class ShareUtil {
     }
 
     public static void findChooserToDeal(Context context, String url) {
+        if (url.startsWith("intent:")) {
+            try {
+                Intent intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+                if (intent != null) {
+                    PackageManager packageManager = context.getPackageManager();
+                    ResolveInfo info = packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
+                    if (info != null) {
+                        context.startActivity(intent);
+                    } else {
+                        ToastMgr.shortBottomCenter(context, "找不到对应的应用");
+                    }
+                }
+            } catch (URISyntaxException e) {
+                Timber.e(e);
+            }
+            return;
+        }
         if (TextUtils.isEmpty(url)) {
             ToastMgr.shortBottomCenter(context, "此链接有问题，不过我们为您复制到了剪贴板");
             ClipboardUtil.copyToClipboard(context, url);

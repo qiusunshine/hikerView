@@ -3,7 +3,6 @@ package com.example.hikerview.utils;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 操作防抖
@@ -18,13 +17,6 @@ public class Debouncer<V> {
     }
 
     public synchronized void debounce(Callable<V> callable, long internalTime) {
-        if (future != null) {
-            future.cancel(false);
-        }
-        try {
-            future = HeavyTaskUtil.getScheduledExecutorService().schedule(callable, internalTime, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
     }
 }

@@ -20,6 +20,7 @@ public class ViewCollection extends LitePalSupport implements Comparable<ViewCol
     private String lastClick;
     private String group;
     private String picUrl;
+    private String extraData;
 
     public String getMITitle() {
         return MITitle;
@@ -117,5 +118,13 @@ public class ViewCollection extends LitePalSupport implements Comparable<ViewCol
 
     public void setPicUrl(String picUrl) {
         this.picUrl = picUrl;
+    }
+
+    public String getExtraData() {
+        return extraData;
+    }
+
+    public void setExtraData(String extraData) {
+        this.extraData = extraData;
     }
 }

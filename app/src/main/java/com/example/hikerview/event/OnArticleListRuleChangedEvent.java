@@ -12,7 +12,14 @@ public class OnArticleListRuleChangedEvent {
         SettingConfig.nowLoadRulesTime = System.currentTimeMillis();
     }
 
+    public OnArticleListRuleChangedEvent(int updateFromSub) {
+        SettingConfig.nowLoadRulesTime = System.currentTimeMillis();
+        this.updateFromSub = updateFromSub;
+    }
+
     private String fromClazz;
+
+    private int updateFromSub;
 
     public String getFromClazz() {
         return fromClazz;
@@ -20,5 +27,13 @@ public class OnArticleListRuleChangedEvent {
 
     public void setFromClazz(String fromClazz) {
         this.fromClazz = fromClazz;
+    }
+
+    public int getUpdateFromSub() {
+        return updateFromSub;
+    }
+
+    public void setUpdateFromSub(int updateFromSub) {
+        this.updateFromSub = updateFromSub;
     }
 }

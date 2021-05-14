@@ -8,7 +8,7 @@ package com.example.hikerview.constants;
 
 public enum UAEnum {
     AUTO("auto", "自动提取（不建议使用）", ""),
-    MOBILE("mobile", "移动端（mobile、Android）", "Mozilla/5.0 (Linux; U; Android 10; zh-CN; ELE-AL00 Build/HUAWEIELE-AL00) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.108 UCBrowser/12.8.6.1066 Mobile Safari/537.36"),
+    MOBILE("mobile", "移动端（mobile、Android）", "Mozilla/5.0 (Linux; Android 11; Mi 10 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.152 Mobile Safari/537.36"),
     PC("pc", "电脑端（pc、Windows）", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36");
 
     UAEnum(String code, String name, String content) {

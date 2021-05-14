@@ -2,7 +2,10 @@ package com.example.hikerview.utils;
 
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
+import com.example.hikerview.constants.ImageUrlMapEnum;
 import com.example.hikerview.ui.setting.model.SettingConfig;
+
+import java.io.File;
 
 /**
  * 作者：By 15968
@@ -13,7 +16,15 @@ public class GlideUtil {
     private static final String TAG = "GlideUtil";
 
     public static Object getGlideUrl(String baseUrl, String url) {
+        int drawableId = ImageUrlMapEnum.getIdByUrl(url);
+        if (drawableId > 0) {
+            return drawableId;
+        }
         if (StringUtil.isEmpty(baseUrl) || url == null || !url.startsWith("http")) {
+            if (StringUtil.isNotEmpty(url) && url.startsWith("hiker://files/")) {
+                String fileName = url.replace("hiker://files/", "");
+                return "file://" + SettingConfig.rootDir + File.separator + fileName;
+            }
             return url;
         } else {
             LazyHeaders.Builder builder = new LazyHeaders.Builder();
@@ -48,9 +59,13 @@ public class GlideUtil {
                     url = s[0];
                 }
             } else {
+                if (url.contains("@Referer=")) {
+                    url = url.replace("@Referer=", "");
+                    refer = "";
+                }
                 if (url.contains("@User-Agent=")) {
-                    url = url.split("@User-Agent=")[0];
                     ua = url.split("@User-Agent=")[1];
+                    url = url.split("@User-Agent=")[0];
                 }
             }
 //            Log.d(TAG, "getGlideUrl: " + url);

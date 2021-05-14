@@ -1,5 +1,6 @@
 package com.example.hikerview.ui;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
@@ -30,6 +31,7 @@ import java.lang.ref.WeakReference;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
+import okhttp3.brotli.BrotliInterceptor;
 import ren.yale.android.cachewebviewlib.WebViewCacheInterceptor;
 import ren.yale.android.cachewebviewlib.WebViewCacheInterceptorInst;
 import ren.yale.android.cachewebviewlib.config.CacheExtensionConfig;
@@ -46,6 +48,7 @@ public class Application extends android.app.Application {
     private static WeakReference<Context> mContext;
     public static Application application = null;
     private static boolean hasMainActivity = false;
+    private Activity homeActivity;
     public static int loadedTime = 0;
 
     public static boolean hasMainActivity() {
@@ -63,12 +66,14 @@ public class Application extends android.app.Application {
         mContext = new WeakReference<>(getApplicationContext());
         //OKGO配置
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        builder.addInterceptor(BrotliInterceptor.INSTANCE);
         builder.readTimeout(TimeConstants.HTTP_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS);
         builder.writeTimeout(TimeConstants.HTTP_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS);
         builder.connectTimeout(TimeConstants.HTTP_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS);
         //方法一：信任所有证书,不安全有风险
         HttpsUtils.SSLParams sslParams1 = HttpsUtils.getSslSocketFactory();
-        builder.sslSocketFactory(sslParams1.sSLSocketFactory, HttpsUtils.UnSafeTrustManager);
+        builder.sslSocketFactory(sslParams1.sSLSocketFactory, HttpsUtils.UnSafeTrustManager)
+                .hostnameVerifier(HttpsUtils.UnSafeHostnameVerifier);
         HttpHeaders headers = new HttpHeaders();
         headers.put("charset", "UTF-8");
         OkGo.getInstance().init(this).setOkHttpClient(builder.build())
@@ -83,6 +88,8 @@ public class Application extends android.app.Application {
             Timber.plant(new Timber.DebugTree());
         }
         RichText.initCacheDir(this);
+        // 写 ActivityLifecycle 调试 Task 信息用
+        // Timber.tag("Application").d(activity.getLocalClassName() + "#TaskId#" + activity.getTaskId());
     }
 
     private void installCrashHandler() {
@@ -185,5 +192,13 @@ public class Application extends android.app.Application {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public Activity getHomeActivity() {
+        return homeActivity;
+    }
+
+    public void setHomeActivity(Activity homeActivity) {
+        this.homeActivity = homeActivity;
     }
 }

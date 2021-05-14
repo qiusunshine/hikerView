@@ -20,6 +20,10 @@ public class ViewHistory extends LitePalSupport implements Comparable<ViewHistor
     private String videoUrl;
     private String params;
     private String lastClick;
+    /**
+     * 额外数据
+     */
+    private String extraData;
 
     public String getRuleBaseUrl() {
         return ruleBaseUrl;
@@ -66,6 +70,12 @@ public class ViewHistory extends LitePalSupport implements Comparable<ViewHistor
         if (o == null) {
             return 0;
         }
+        if (o.getTime() == null) {
+            return 1;
+        }
+        if (this.getTime() == null) {
+            return -1;
+        }
         return o.getTime().compareTo(this.getTime());
     }
 
@@ -93,7 +103,7 @@ public class ViewHistory extends LitePalSupport implements Comparable<ViewHistor
         this.lastClick = lastClick;
     }
 
-    public long getId(){
+    public long getId() {
         return getBaseObjId();
     }
 
@@ -111,5 +121,13 @@ public class ViewHistory extends LitePalSupport implements Comparable<ViewHistor
 
     public void setPicUrl(String picUrl) {
         this.picUrl = picUrl;
+    }
+
+    public String getExtraData() {
+        return extraData;
+    }
+
+    public void setExtraData(String extraData) {
+        this.extraData = extraData;
     }
 }

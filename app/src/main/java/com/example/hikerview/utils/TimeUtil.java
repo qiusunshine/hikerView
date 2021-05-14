@@ -37,4 +37,21 @@ public class TimeUtil {
             return timestamp;
         }
     }
+
+    /**
+     * 秒数转换成格式化时间
+     *
+     * @param sec 秒数
+     * @return xx 时 xx 分 xx 秒
+     */
+    public static String secToTime(int sec) {
+        if (sec <= 0) {
+            return "0 秒";
+        } else {
+            int hour = sec / 3600;
+            int minute = sec % 3600 / 60;
+            int second = sec % 60; // 不足 60 的就是秒，够 60 就是分
+            return (hour > 0 ? (hour + " 小时 ") : "") + (minute > 0 ? (minute + " 分 ") : "") + (second + " 秒");
+        }
+    }
 }

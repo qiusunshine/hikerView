@@ -1,6 +1,7 @@
 package com.example.hikerview.utils;
 
 import android.content.Context;
+import android.graphics.Color;
 
 import androidx.fragment.app.FragmentManager;
 
@@ -28,24 +29,26 @@ public class SplashUtil {
 
     private static boolean showLoading = true;
 
-    public static void showSplash(Context context, FragmentManager manager) {
+    public static boolean showSplash(Context context, FragmentManager manager) {
         if(SettingConfig.professionalMode){
-            return;
+            return false;
         }
         int splashOpenTimes = PreferenceMgr.getInt(context, "splashOpenTimes", 0);
         if (splashOpenTimes < shouldTimes) {
-            List<Object> imageUrls = Arrays.asList(R.mipmap.guide_channel,
+            List<Object> imageUrls = Arrays.asList(
                     R.mipmap.guide_plugin,
                     R.mipmap.guide_view,
                     R.mipmap.guide_open);
             new XPopup.Builder(context)
                     .asImageViewer(null, 0, imageUrls,
                             false,false, -1, -1, -1,
-                            false, null, new PopImageLoaderNoView(""))
+                            false, Color.rgb(32, 36, 46), null, new PopImageLoaderNoView(""))
                     .show();
             setSplashOpenTimes(context, shouldTimes);
+            return true;
 //            new SplashDialogFragment(shouldTimes).show(manager, "home_splash_dialog");
         }
+        return false;
     }
 
     public static int getSplashOpenTimes(Context context) {

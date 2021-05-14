@@ -43,6 +43,15 @@ public class BackupUtil {
                 filePaths.add(jsFile.getAbsolutePath());
             }
         }
+        //模板
+        String rulesPath = UriUtils.getRootDir(Application.getContext()) + File.separator + "rules";
+        File dir = new File(rulesPath);
+        if (dir.exists()) {
+            File templateFile = new File(rulesPath + File.separator + "rule_template.json");
+            if(templateFile.exists()){
+                filePaths.add(templateFile.getAbsolutePath());
+            }
+        }
         String zipFilePath = UriUtils.getRootDir(context) + File.separator + "backup" + File.separator + "hiker.zip";
         try {
             FileUtil.deleteFile(zipFilePath);
@@ -126,6 +135,12 @@ public class BackupUtil {
                         int jsFileNum = 0;
                         if (dbExist) {
                             FileUtil.copyFile(dbFile.getAbsolutePath(), dbNewFilePath);
+                        }
+                        String templateFilePath = fileDirPath + File.separator + "rule_template.json";
+                        File templateFile = new File(templateFilePath);
+                        if (templateFile.exists()) {
+                            String templateNewFilePath = UriUtils.getRootDir(context) + File.separator + "rules" + File.separator + "rule_template.json";
+                            FileUtil.copyFile(templateFile.getAbsolutePath(), templateNewFilePath);
                         }
                         if (jsFiles != null) {
                             for (File jsFilePath : jsFiles) {

@@ -20,6 +20,9 @@ public class JSONPreFilter {
         filter.getExcludes().add("saved");
         filter.getExcludes().add("order");
         filter.getExcludes().add("id");
+        filter.getExcludes().add("gmtCreate");
+        filter.getExcludes().add("gmtModified");
+        filter.getExcludes().add("lastUseTime");
         return filter;
     }
 

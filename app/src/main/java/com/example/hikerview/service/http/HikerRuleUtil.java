@@ -2,15 +2,23 @@ package com.example.hikerview.service.http;
 
 import com.alibaba.fastjson.JSON;
 import com.example.hikerview.constants.JSONPreFilter;
+import com.example.hikerview.model.BigTextDO;
 import com.example.hikerview.model.Bookmark;
 import com.example.hikerview.model.DownloadRecord;
 import com.example.hikerview.model.ViewCollection;
 import com.example.hikerview.model.ViewHistory;
+import com.example.hikerview.ui.Application;
+import com.example.hikerview.ui.bookmark.model.BookmarkModel;
 import com.example.hikerview.ui.home.model.ArticleListRule;
+import com.example.hikerview.ui.home.model.ArticleListRuleModel;
+import com.example.hikerview.utils.FilesInAppUtil;
+import com.example.hikerview.utils.HeavyTaskUtil;
 import com.example.hikerview.utils.StringUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.litepal.LitePal;
+
+import java.util.List;
 
 /**
  * 作者：By 15968
@@ -25,15 +33,34 @@ public class HikerRuleUtil {
         }
         url = url.replace("hiker://", "");
         if (url.startsWith("home")) {
-            return JSON.toJSONString(LitePal.findAll(ArticleListRule.class), JSONPreFilter.getSimpleFilter());
+            List<ArticleListRule> rules = LitePal.findAll(ArticleListRule.class);
+            return JSON.toJSONString(ArticleListRuleModel.sort(rules), JSONPreFilter.getSimpleFilter());
         } else if (url.startsWith("bookmark")) {
-            return JSON.toJSONString(LitePal.findAll(Bookmark.class), JSONPreFilter.getSimpleFilter());
+            List<Bookmark> rules = LitePal.findAll(Bookmark.class);
+            return JSON.toJSONString(BookmarkModel.sort(rules), JSONPreFilter.getSimpleFilter());
         } else if (url.startsWith("download")) {
             return JSON.toJSONString(LitePal.findAll(DownloadRecord.class), JSONPreFilter.getSimpleFilter());
         } else if (url.startsWith("collection")) {
             return JSON.toJSONString(LitePal.findAll(ViewCollection.class), JSONPreFilter.getSimpleFilter());
         } else if (url.startsWith("history")) {
             return JSON.toJSONString(LitePal.findAll(ViewHistory.class), JSONPreFilter.getSimpleFilter());
+        } else {
+            return "";
+        }
+    }
+
+    public static String getAssetsFileByHiker(String url) {
+        if (StringUtil.isEmpty(url) || !url.startsWith("hiker://assets/")) {
+            return "";
+        }
+        url = url.replace("hiker://assets/", "");
+        if (url.equals("home.js")) {
+            String js = BigTextDO.getHomeJs();
+            if (js == null) {
+                return FilesInAppUtil.getAssetsString(Application.getContext(), "home.js");
+            } else {
+                return js;
+            }
         } else {
             return "";
         }
@@ -48,12 +75,14 @@ public class HikerRuleUtil {
             if (url.startsWith("empty")) {
                 listener.onSuccess(StringUtils.replaceOnce(url, "empty", ""));
             } else if (url.startsWith("home")) {
-                LitePal.findAllAsync(ArticleListRule.class).listen(list -> {
-                    listener.onSuccess(JSON.toJSONString(list, JSONPreFilter.getSimpleFilter()));
+                HeavyTaskUtil.executeNewTask(() -> {
+                    List<ArticleListRule> rules = LitePal.findAll(ArticleListRule.class);
+                    listener.onSuccess(JSON.toJSONString(ArticleListRuleModel.sort(rules), JSONPreFilter.getSimpleFilter()));
                 });
             } else if (url.startsWith("bookmark")) {
-                LitePal.findAllAsync(Bookmark.class).listen(list -> {
-                    listener.onSuccess(JSON.toJSONString(list, JSONPreFilter.getSimpleFilter()));
+                HeavyTaskUtil.executeNewTask(() -> {
+                    List<Bookmark> rules = LitePal.findAll(Bookmark.class);
+                    listener.onSuccess(JSON.toJSONString(BookmarkModel.sort(rules), JSONPreFilter.getSimpleFilter()));
                 });
             } else if (url.startsWith("download")) {
                 LitePal.findAllAsync(DownloadRecord.class).listen(list -> {

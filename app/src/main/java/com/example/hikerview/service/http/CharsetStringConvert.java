@@ -4,6 +4,8 @@ import android.text.TextUtils;
 
 import com.lzy.okgo.convert.Converter;
 
+import java.io.IOException;
+
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
@@ -22,16 +24,33 @@ public class CharsetStringConvert implements Converter<String> {
 
     @Override
     public String convertResponse(Response response) throws Throwable {
-        try (ResponseBody body = response.body()){
+        try (ResponseBody body = response.body()) {
             if (TextUtils.isEmpty(charset)) {
                 if (body != null) {
-                    return body.string();
+                    try {
+                        return body.string();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        //部分情况下会抛异常
+                        return "";
+                    }
                 }
                 return "";
             }
             byte[] b = new byte[0];
             if (body != null) {
-                b = body.bytes();
+                try {
+                    b = body.bytes();
+                    //自动识别charset
+//                    MediaType mediaType = body.contentType();
+//                    if (mediaType != null && mediaType.charset() != null) {
+//                        return new String(b, mediaType.charset());
+//                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    //部分情况下获取byte会抛异常
+                    return "";
+                }
             }
             return new String(b, charset);
         }

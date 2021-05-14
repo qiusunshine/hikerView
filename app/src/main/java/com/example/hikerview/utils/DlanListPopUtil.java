@@ -7,6 +7,8 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.example.hikerview.event.video.OnDeviceUpdateEvent;
+import com.example.hikerview.ui.Application;
 import com.qingfeng.clinglibrary.entity.ClingDevice;
 import com.qingfeng.clinglibrary.entity.IDevice;
 import com.qingfeng.clinglibrary.listener.BrowseRegistryListener;
@@ -14,6 +16,8 @@ import com.qingfeng.clinglibrary.listener.DeviceListChangedListener;
 import com.qingfeng.clinglibrary.service.ClingUpnpService;
 import com.qingfeng.clinglibrary.service.manager.ClingManager;
 import com.qingfeng.clinglibrary.service.manager.DeviceManager;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +31,7 @@ public class DlanListPopUtil {
     private static final String TAG = "DlanListPopUtil";
     private volatile static DlanListPopUtil sInstance;
     private static boolean hasBind = false;
+    private ClingDevice usedDevice;
 
     private DlanListPopUtil() {
     }
@@ -46,38 +51,43 @@ public class DlanListPopUtil {
     private BrowseRegistryListener registryListener = new BrowseRegistryListener();
     private ClingUpnpService beyondUpnpService;
     private ClingManager clingUpnpServiceManager;
-    private boolean hasInit = false;
     private List<ClingDevice> list = new ArrayList<>();
 
     public List<ClingDevice> getDevices() {
         return list;
     }
 
-    public void init(Context context) {
+    private void init() {
+        list.clear();
+        usedDevice = null;
         registryListener.setOnDeviceListChangedListener(new DeviceListChangedListener() {
             @Override
             public void onDeviceAdded(final IDevice device) {
                 list.add((ClingDevice) device);
+                if (EventBus.getDefault().hasSubscriberForEvent(OnDeviceUpdateEvent.class)) {
+                    EventBus.getDefault().post(new OnDeviceUpdateEvent());
+                }
                 Log.d(TAG, "onDeviceAdded: ");
             }
 
             @Override
             public void onDeviceRemoved(final IDevice device) {
-                list.remove((ClingDevice) device);
+                list.remove(device);
+                if (usedDevice == device) {
+                    usedDevice = null;
+                }
+                if (EventBus.getDefault().hasSubscriberForEvent(OnDeviceUpdateEvent.class)) {
+                    EventBus.getDefault().post(new OnDeviceUpdateEvent());
+                }
                 Log.d(TAG, "onDeviceRemoved: ");
             }
         });
-
-        if (!hasInit) {
-            initAndRefresh(context);
-            hasInit = true;
-        }
+        initAndRefresh(Application.application.getHomeActivity());
     }
 
-    public void reInit(Context context){
-        unBind(context);
-        hasInit = false;
-        init(context);
+    public void reInit() {
+        unBind(Application.application.getHomeActivity());
+        init();
     }
 
     private void initAndRefresh(Context context) {
@@ -117,5 +127,13 @@ public class DlanListPopUtil {
                 Log.e(TAG, "unBind: " + e.getMessage(), e);
             }
         }
+    }
+
+    public ClingDevice getUsedDevice() {
+        return usedDevice;
+    }
+
+    public void setUsedDevice(ClingDevice usedDevice) {
+        this.usedDevice = usedDevice;
     }
 }

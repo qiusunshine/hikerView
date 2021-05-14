@@ -9,7 +9,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -18,6 +17,7 @@ import androidx.appcompat.app.AlertDialog;
 import com.alibaba.fastjson.JSON;
 import com.example.hikerview.R;
 import com.example.hikerview.bean.MovieInfoUse;
+import com.example.hikerview.event.BookmarkRefreshEvent;
 import com.example.hikerview.event.LoadingDismissEvent;
 import com.example.hikerview.event.OnArticleListRuleChangedEvent;
 import com.example.hikerview.event.ToastMessage;
@@ -39,7 +39,9 @@ import com.example.hikerview.ui.home.model.ArticleListRuleJO;
 import com.example.hikerview.ui.home.model.NetCutResponse;
 import com.example.hikerview.ui.home.model.PastemeResponse;
 import com.example.hikerview.ui.js.AdUrlListActivity;
+import com.example.hikerview.ui.rules.PublishCodeEditActivity;
 import com.example.hikerview.ui.rules.model.DetailPageRule;
+import com.example.hikerview.ui.rules.service.HomeRulesSubService;
 import com.example.hikerview.ui.search.model.SearchRuleJO;
 import com.example.hikerview.ui.setting.utils.FastPlayImportUtil;
 import com.example.hikerview.ui.setting.utils.XTDialogRulesImportUtil;
@@ -48,6 +50,7 @@ import com.example.hikerview.ui.view.ZLoadingDialog.ZLoadingDialog;
 import com.example.hikerview.ui.view.colorDialog.PromptDialog;
 import com.example.hikerview.ui.view.dialog.GlobalDialogActivity;
 import com.example.hikerview.ui.view.popup.ConfirmPopup;
+import com.example.hikerview.ui.view.popup.ImportRulesPopup;
 import com.lxj.xpopup.XPopup;
 import com.lxj.xpopup.core.BasePopupView;
 import com.lzy.okgo.OkGo;
@@ -89,6 +92,8 @@ public class AutoImportHelper {
     public static final String AD_SUBSCRIBE = "ad_subscribe_url";
     public static final String AD_BLOCK_RULES = "ad_block_url";
     public static final String PAGE_DETAIL_RULES = "page_detail";
+    public static final String PUBLISH_CODE = "publish";
+    public static final String HOME_SUB = "home_sub";
     private static final String SOURCE = "方圆影视视频源分享，全部复制后打开方圆影视APP最新版即可获取到视频源信息￥source￥";
     private static String shareRule = "";
 
@@ -141,6 +146,12 @@ public class AutoImportHelper {
             case PAGE_DETAIL_RULES:
                 text = text + "二级页面详情";
                 break;
+            case PUBLISH_CODE:
+                text = text + "提交云仓库规则";
+                break;
+            case HOME_SUB:
+                text = text + "合集规则订阅";
+                break;
         }
         if (StringUtil.isNotEmpty(shareRulePrefix)) {
             text = text + "，" + shareRulePrefix;
@@ -173,7 +184,7 @@ public class AutoImportHelper {
     }
 
     public static boolean checkText(Activity context, String text1) {
-        if(StringUtil.isEmpty(text1)){
+        if (StringUtil.isEmpty(text1)) {
             return false;
         }
         if (text1.startsWith("http://pasteme.cn/") || text1.startsWith("https://pasteme.cn/")) {
@@ -187,6 +198,15 @@ public class AutoImportHelper {
     }
 
     public static boolean checkAutoText(Context context, String shareText) {
+        try {
+            return realCheckAutoText(context, shareText);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean realCheckAutoText(Context context, String shareText) {
         shareText = shareText.trim();
         if (shareText.startsWith("方圆")) {
             return checkAutoTextByFangYuan(context, shareText);
@@ -237,6 +257,7 @@ public class AutoImportHelper {
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
+                                ToastMgr.shortCenter(context, "出错：" + e.getMessage());
                             }
                         }).show();
                 return true;
@@ -255,6 +276,48 @@ public class AutoImportHelper {
                                 context.startActivity(intent);
                             } catch (Exception e) {
                                 e.printStackTrace();
+                                ToastMgr.shortCenter(context, "出错：" + e.getMessage());
+                            }
+                        }).show();
+                return true;
+            case HOME_SUB:
+                new PromptDialog(context)
+                        .setDialogType(PromptDialog.DIALOG_TYPE_INFO)
+                        .setAnimationEnable(true)
+                        .setTitleText("温馨提示")
+                        .setContentText("剪贴板检测到合集规则订阅地址")
+                        .setPositiveListener("立即导入", dialog -> {
+                            dialog.dismiss();
+                            ClipboardUtil.copyToClipboard(context, "");
+                            String[] rules = sss[2].split("@@");
+                            if (rules.length != 2) {
+                                ToastMgr.shortBottomCenter(context, "格式有误");
+                                return;
+                            }
+                            HomeRulesSubService.addSubWithPopup(context, rules[0], rules[1], ok -> {
+                                if (ok) {
+                                    ToastMgr.shortBottomCenter(context, "已添加订阅");
+                                }
+                            });
+                        }).show();
+                return true;
+            case PUBLISH_CODE:
+                new PromptDialog(context)
+                        .setDialogType(PromptDialog.DIALOG_TYPE_INFO)
+                        .setAnimationEnable(true)
+                        .setTitleText("温馨提示")
+                        .setContentText("剪贴板检测到提交云仓库规则")
+                        .setPositiveListener("立即查看", dialog -> {
+                            dialog.dismiss();
+                            ClipboardUtil.copyToClipboard(context, "");
+                            try {
+                                String rule = new String(Base64.decode(StringUtil.replaceLineBlank(sss[2]), Base64.NO_WRAP));
+                                Intent intent = new Intent(context, PublishCodeEditActivity.class);
+                                intent.putExtra("data", rule);
+                                context.startActivity(intent);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ToastMgr.shortCenter(context, "出错：" + e.getMessage());
                             }
                         }).show();
                 return true;
@@ -286,25 +349,30 @@ public class AutoImportHelper {
                         .setContentText("剪贴板检测到广告拦截订阅地址，是否立即设置为远程订阅地址")
                         .setPositiveListener("设置", dialog -> {
                             dialog.dismiss();
-                            ClipboardUtil.copyToClipboard(context, "");
-                            if (TextUtils.isEmpty(sss[2])) {
-                                AdUrlSubscribe.updateSubscribeUrl(context, "no-subscribe");
-                                ToastMgr.shortBottomCenter(context, "已取消订阅功能");
-                            } else if (sss[2].startsWith("http")) {
-                                AdUrlSubscribe.updateSubscribeUrl(context, sss[2]);
-                                ToastMgr.shortBottomCenter(context, "已设置订阅地址为" + sss[2]);
-                                AdUrlSubscribe.checkUpdateAsync(context, new SimpleActionListener() {
-                                    @Override
-                                    public void success(String msg) {
+                            try {
+                                ClipboardUtil.copyToClipboard(context, "");
+                                if (TextUtils.isEmpty(sss[2])) {
+                                    AdUrlSubscribe.updateSubscribeUrl(context, "no-subscribe");
+                                    ToastMgr.shortBottomCenter(context, "已取消订阅功能");
+                                } else if (sss[2].startsWith("http")) {
+                                    AdUrlSubscribe.updateSubscribeUrl(context, sss[2]);
+                                    ToastMgr.shortBottomCenter(context, "已设置订阅地址为" + sss[2]);
+                                    AdUrlSubscribe.checkUpdateAsync(context, new SimpleActionListener() {
+                                        @Override
+                                        public void success(String msg) {
 
-                                    }
+                                        }
 
-                                    @Override
-                                    public void failed(String msg) {
-                                    }
-                                });
-                            } else {
-                                ToastMgr.shortBottomCenter(context, "订阅地址格式有误");
+                                        @Override
+                                        public void failed(String msg) {
+                                        }
+                                    });
+                                } else {
+                                    ToastMgr.shortBottomCenter(context, "订阅地址格式有误");
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ToastMgr.shortCenter(context, "出错：" + e.getMessage());
                             }
                         }).show();
                 return true;
@@ -316,15 +384,16 @@ public class AutoImportHelper {
                         .setContentText("剪贴板检测到快速播放设置信息，是否立即保存？")
                         .setPositiveListener("保存", dialog -> {
                             dialog.dismiss();
-                            if (sss.length != 3) {
-                                ToastMgr.shortBottomCenter(context, "格式错误！");
-                                return;
-                            }
-                            ClipboardUtil.copyToClipboard(context, "");
                             try {
+                                if (sss.length != 3) {
+                                    ToastMgr.shortBottomCenter(context, "格式错误！");
+                                    return;
+                                }
+                                ClipboardUtil.copyToClipboard(context, "");
                                 FastPlayImportUtil.importRules(context, sss[2], count -> EventBus.getDefault().post(new ToastMessage("成功保存" + count + "条规则")));
                             } catch (Exception e) {
                                 e.printStackTrace();
+                                ToastMgr.shortCenter(context, "出错：" + e.getMessage());
                             }
                         }).show();
                 return true;
@@ -345,6 +414,7 @@ public class AutoImportHelper {
                                 XTDialogRulesImportUtil.importRules(context, sss[2], count -> EventBus.getDefault().post(new ToastMessage("成功保存" + count + "条规则")));
                             } catch (Exception e) {
                                 e.printStackTrace();
+                                ToastMgr.shortCenter(context, "出错：" + e.getMessage());
                             }
                         }).show();
                 return true;
@@ -365,51 +435,10 @@ public class AutoImportHelper {
                                     ruleStr = sss[2];
                                 }
                                 ClipboardUtil.copyToClipboard(context, "");
-                                String rule = ruleStr;
-                                if (ruleStr.startsWith("base64://")) {
-                                    try {
-                                        String realRule = ruleStr.split("@")[2];
-                                        rule = new String(Base64.decode(StringUtil.replaceLineBlank(realRule), Base64.DEFAULT));
-                                    } catch (Exception e) {
-                                        ToastMgr.shortBottomCenter(context, "规则有误：" + e.getMessage());
-                                        return;
-                                    }
-                                }
-                                if (FilterUtil.hasFilterWord(rule)) {
-                                    ToastMgr.shortBottomCenter(context, "规则含有违禁词，禁止导入");
-                                    return;
-                                }
-                                ArticleListRuleJO ruleJO = null;
-                                try {
-                                    ruleJO = JSON.parseObject(rule, ArticleListRuleJO.class);
-                                } catch (Exception e) {
-                                    ToastMgr.shortBottomCenter(context, "规则有误：" + e.getMessage());
-                                    return;
-                                }
-                                if (ruleJO == null || StringUtil.isEmpty(ruleJO.getTitle())) {
-                                    return;
-                                }
-                                //广告拦截规则
-                                if (StringUtil.isNotEmpty(ruleJO.getAdBlockUrls())) {
-                                    ArticleListRuleJO finalRuleJO = ruleJO;
-                                    String finalRule = rule;
-                                    showWithAdUrlsDialog(context, "检测到该首页频道规则附带了广告拦截规则，确定立即导入规则吗？", withAdUrls -> {
-                                        Log.d(TAG, "checkAutoText: withAdUrls=" + withAdUrls);
-                                        if (withAdUrls) {
-                                            String[] urls = finalRuleJO.getAdBlockUrls().split("##");
-                                            HeavyTaskUtil.executeNewTask(() -> AdUrlBlocker.instance().addUrls(Arrays.asList(urls)));
-                                        }
-                                        Intent intent = new Intent(context, ArticleListRuleEditActivity.class);
-                                        intent.putExtra("data", finalRule);
-                                        context.startActivity(intent);
-                                    });
-                                } else {
-                                    Intent intent = new Intent(context, ArticleListRuleEditActivity.class);
-                                    intent.putExtra("data", rule);
-                                    context.startActivity(intent);
-                                }
+                                importRuleByRuleText(context, ruleStr);
                             } catch (Exception e) {
                                 e.printStackTrace();
+                                ToastMgr.shortCenter(context, "出错：" + e.getMessage());
                             }
                         }).show();
                 return true;
@@ -418,34 +447,62 @@ public class AutoImportHelper {
                         .setDialogType(PromptDialog.DIALOG_TYPE_INFO)
                         .setAnimationEnable(true)
                         .setTitleText("温馨提示")
-                        .setContentText("剪贴板检测到首页频道合集规则，是否立即导入？")
+                        .setContentText("剪贴板检测到首页频道远程规则（合集/单个规则），是否立即导入？")
                         .setPositiveListener("立即导入", dialog -> {
                             dialog.dismiss();
                             if (sss.length != 3) {
                                 ToastMgr.shortBottomCenter(context, "格式错误！");
                                 return;
                             }
-                            if (FilterUtil.hasFilterWord(sss[2])) {
-                                ToastMgr.shortBottomCenter(context, "规则含有违禁词，禁止导入");
+                            String url = sss[2];
+                            if (StringUtil.isEmpty(url) || (!url.startsWith("http") && !url.startsWith("file")) && !url.startsWith("hiker://")) {
+                                ToastMgr.shortBottomCenter(context, "链接有误！");
                                 return;
                             }
-                            ClipboardUtil.copyToClipboard(context, "");
-                            importRulesWithDialog(context, data -> {
-                                if (StringUtil.isEmpty(sss[2]) || (!sss[2].startsWith("http") && !sss[2].startsWith("file")) && !sss[2].startsWith("hiker://")) {
-                                    ToastMgr.shortBottomCenter(context, "链接有误！");
-                                    return;
+                            CodeUtil.get(url, new CodeUtil.OnCodeGetListener() {
+                                @Override
+                                public void onSuccess(String text) {
+                                    if (StringUtil.isEmpty(text)) {
+                                        ToastMgr.shortCenter(context, "出错：文件内容为空");
+                                        return;
+                                    }
+                                    String s = text.trim();
+                                    if (s.startsWith("{") && s.endsWith("}")) {
+                                        //单个规则
+                                        importRuleByRuleText(context, s);
+                                        return;
+                                    }
+                                    //规则合集
+                                    importRulesWithDialog(context, data -> {
+                                        try {
+                                            if (StringUtil.isNotEmpty(data)) {
+                                                BackupUtil.backupDB(context, true);
+                                            }
+                                            LitePal.deleteAll(ArticleListRule.class);
+                                            importHomeRulesByText(context, s);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            ToastMgr.shortCenter(context, "出错：" + e.getMessage());
+                                        }
+                                    }, data -> {
+                                        try {
+                                            if (StringUtil.isNotEmpty(data)) {
+                                                BackupUtil.backupDB(context, true);
+                                            }
+                                            importHomeRulesByText(context, s);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            ToastMgr.shortCenter(context, "出错：" + e.getMessage());
+                                        }
+                                    });
                                 }
-                                if (StringUtil.isNotEmpty(data)) {
-                                    BackupUtil.backupDB(context, true);
+
+                                @Override
+                                public void onFailure(int errorCode, String msg) {
+                                    ToastMgr.shortBottomCenter(context, "导入失败，网络连接错误！");
                                 }
-                                LitePal.deleteAll(ArticleListRule.class);
-                                importHomeRulesByUrl(context, sss[2]);
-                            }, data -> {
-                                if (StringUtil.isNotEmpty(data)) {
-                                    BackupUtil.backupDB(context, true);
-                                }
-                                importHomeRulesByUrl(context, sss[2]);
                             });
+                            ClipboardUtil.copyToClipboard(context, "");
                         }).show();
                 return true;
             case BOOKMARK_URL:
@@ -492,7 +549,12 @@ public class AutoImportHelper {
                                 return;
                             }
                             ClipboardUtil.copyToClipboard(context, "");
-                            importFileByUrl(context, sss[2]);
+                            try {
+                                importFileByUrl(context, sss[2]);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ToastMgr.shortCenter(context, "出错：" + e.getMessage());
+                            }
                         }).show();
                 return true;
             case SEARCH_ENGINE_URL:
@@ -538,18 +600,23 @@ public class AutoImportHelper {
                         .setContentText("剪贴板检测到二级页面详情口令，是否立即查看？")
                         .setPositiveListener("立即查看", dialog -> {
                             dialog.dismiss();
-                            ClipboardUtil.copyToClipboard(context, "");
-                            String[] rules = sss[2].split("@@");
-                            if (rules.length != 2) {
-                                ToastMgr.shortCenter(context, "规则有误");
-                                return;
+                            try {
+                                ClipboardUtil.copyToClipboard(context, "");
+                                String[] rules = sss[2].split("@@");
+                                if (rules.length != 2) {
+                                    ToastMgr.shortCenter(context, "规则有误");
+                                    return;
+                                }
+                                DetailPageRule pageRule = JSON.parseObject(Base64.decode(rules[1], Base64.NO_WRAP), DetailPageRule.class);
+                                Intent intent = new Intent(context, FilmListActivity.class);
+                                intent.putExtra("data", pageRule.getData());
+                                intent.putExtra("picUrl", pageRule.getPicUrl());
+                                intent.putExtra("title", pageRule.getTitle());
+                                context.startActivity(intent);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ToastMgr.shortCenter(context, "出错：" + e.getMessage());
                             }
-                            DetailPageRule pageRule = JSON.parseObject(Base64.decode(rules[1], Base64.DEFAULT), DetailPageRule.class);
-                            Intent intent = new Intent(context, FilmListActivity.class);
-                            intent.putExtra("data", pageRule.getData());
-                            intent.putExtra("picUrl", pageRule.getPicUrl());
-                            intent.putExtra("title", pageRule.getTitle());
-                            context.startActivity(intent);
                         }).show();
                 return true;
             case SEARCH_ENGINE:
@@ -560,27 +627,78 @@ public class AutoImportHelper {
                         .setDialogType(PromptDialog.DIALOG_TYPE_INFO)
                         .setAnimationEnable(true)
                         .setTitleText("温馨提示")
-                        .setContentText("剪贴板检测到网页插件规则信息，是否【覆盖】导入？注意覆盖导入后无法恢复！")
-                        .setPositiveListener("覆盖导入", dialog -> {
+                        .setContentText("剪贴板检测到网页插件规则信息，是否立即导入？")
+                        .setPositiveListener("立即导入", dialog -> {
                             dialog.dismiss();
-                            ClipboardUtil.copyToClipboard(context, "");
-                            String[] js = sss[2].split("@");
-                            Log.d(TAG, "checkAutoText: sss[2]=" + sss[2] + "，js=" + Arrays.toString(js));
-                            if (js.length < 2) {
-                                ToastMgr.shortBottomCenter(context, "规则有误！");
-                                return;
-                            }
-                            if (!JSManager.instance(context).hasJs(js[0])) {
-                                updateJsNow(context, js);
-                            } else {
-                                new XPopup.Builder(context)
-                                        .asConfirm("温馨提示", "确认更新插件“" + js[0] + "”吗？注意更新后原插件内容无法恢复！",
-                                                () -> updateJsNow(context, js)).show();
+                            try {
+                                ClipboardUtil.copyToClipboard(context, "");
+                                String[] js = sss[2].split("@");
+                                Log.d(TAG, "checkAutoText: sss[2]=" + sss[2] + "，js=" + Arrays.toString(js));
+                                if (js.length < 2) {
+                                    ToastMgr.shortBottomCenter(context, "规则有误！");
+                                    return;
+                                }
+                                if (!JSManager.instance(context).hasJs(js[0])) {
+                                    updateJsNow(context, js);
+                                } else {
+                                    new XPopup.Builder(context)
+                                            .asConfirm("温馨提示", "确认更新插件“" + js[0] + "”吗？注意更新后原插件内容无法恢复！",
+                                                    () -> updateJsNow(context, js)).show();
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                ToastMgr.shortCenter(context, "出错：" + e.getMessage());
                             }
                         }).show();
                 return true;
             default:
                 return false;
+        }
+    }
+
+    private static void importRuleByRuleText(Context context, String ruleStr) {
+        String rule = ruleStr;
+        if (ruleStr.startsWith("base64://")) {
+            try {
+                String realRule = ruleStr.split("@")[2];
+                rule = new String(Base64.decode(StringUtil.replaceLineBlank(realRule), Base64.NO_WRAP));
+            } catch (Exception e) {
+                ToastMgr.shortBottomCenter(context, "规则有误：" + e.getMessage());
+                return;
+            }
+        }
+        if (FilterUtil.hasFilterWord(rule)) {
+            ToastMgr.shortBottomCenter(context, "规则含有违禁词，禁止导入");
+            return;
+        }
+        ArticleListRuleJO ruleJO = null;
+        try {
+            ruleJO = JSON.parseObject(rule, ArticleListRuleJO.class);
+        } catch (Exception e) {
+            ToastMgr.shortBottomCenter(context, "规则有误：" + e.getMessage());
+            return;
+        }
+        if (ruleJO == null || StringUtil.isEmpty(ruleJO.getTitle())) {
+            return;
+        }
+        //广告拦截规则
+        if (StringUtil.isNotEmpty(ruleJO.getAdBlockUrls())) {
+            ArticleListRuleJO finalRuleJO = ruleJO;
+            String finalRule = rule;
+            showWithAdUrlsDialog(context, "检测到该首页频道规则附带了广告拦截规则，确定立即导入规则吗？", withAdUrls -> {
+                Timber.d("checkAutoText: withAdUrls=%s", withAdUrls);
+                if (withAdUrls) {
+                    String[] urls = finalRuleJO.getAdBlockUrls().split("##");
+                    HeavyTaskUtil.executeNewTask(() -> AdUrlBlocker.instance().addUrls(Arrays.asList(urls)));
+                }
+                Intent intent = new Intent(context, ArticleListRuleEditActivity.class);
+                intent.putExtra("data", finalRule);
+                context.startActivity(intent);
+            });
+        } else {
+            Intent intent = new Intent(context, ArticleListRuleEditActivity.class);
+            intent.putExtra("data", rule);
+            context.startActivity(intent);
         }
     }
 
@@ -598,7 +716,7 @@ public class AutoImportHelper {
             }
             String decodeStr = null;
             try {
-                decodeStr = new String(Base64.decode(StringUtil.replaceLineBlank(js[1]).replace("base64://", ""), Base64.DEFAULT));
+                decodeStr = new String(Base64.decode(StringUtil.replaceLineBlank(js[1]).replace("base64://", ""), Base64.NO_WRAP));
             } catch (Exception e) {
                 Log.e(TAG, "checkAutoText: " + e.getMessage(), e);
                 ToastMgr.shortBottomCenter(context, "BASE64解码失败！格式有误，请检查！");
@@ -644,31 +762,16 @@ public class AutoImportHelper {
 
 
     private static void importRulesWithDialog(Context context, OnOkListener deleteImportListener, OnOkListener onlyImportListener) {
-        View view1 = LayoutInflater.from(context).inflate(R.layout.view_dialog_rules_import, null, false);
-        View check_bg = view1.findViewById(R.id.check_bg);
-        final ImageView check_img = view1.findViewById(R.id.check_img);
-        check_img.setTag("1");
-        final AlertDialog alertDialog = new AlertDialog.Builder(context)
-                .setTitle("请选择导入模式")
-                .setView(view1)
-                .setCancelable(true)
-                .setPositiveButton("保留原规则", (dialog, which) -> {
-                    dialog.dismiss();
-                    onlyImportListener.ok("1".equals(check_img.getTag()) ? "backup" : null);
-                }).setNegativeButton("删除原规则", (dialog, which) -> {
-                    dialog.dismiss();
-                    deleteImportListener.ok("1".equals(check_img.getTag()) ? "backup" : null);
-                }).create();
-        check_bg.setOnClickListener(v -> {
-            if ("1".equals(check_img.getTag())) {
-                check_img.setImageDrawable(context.getResources().getDrawable(R.drawable.check_circle_failed));
-                check_img.setTag("0");
+        ImportRulesPopup popup = new ImportRulesPopup(context).withListener((backup, delete) -> {
+            if (delete) {
+                deleteImportListener.ok(backup ? "backup" : null);
             } else {
-                check_img.setImageDrawable(context.getResources().getDrawable(R.drawable.check_circle));
-                check_img.setTag("1");
+                onlyImportListener.ok(backup ? "backup" : null);
             }
         });
-        alertDialog.show();
+        new XPopup.Builder(context)
+                .asCustom(popup)
+                .show();
     }
 
     private interface OnOkListener {
@@ -770,37 +873,7 @@ public class AutoImportHelper {
         CodeUtil.get(url, new CodeUtil.OnCodeGetListener() {
             @Override
             public void onSuccess(String s) {
-                if (StringUtil.isEmpty(s)) {
-                    ToastMgr.shortBottomCenter(context, "导入失败，规则为空");
-                    return;
-                }
-                List<Bookmark> ruleJOList = JSON.parseArray(s, Bookmark.class);
-                if (CollectionUtil.isEmpty(ruleJOList)) {
-                    ToastMgr.shortBottomCenter(context, "导入失败，规则为空");
-                    return;
-                }
-
-                GlobalDialogActivity.startLoading(context, "正在导入中，共" + ruleJOList.size() + "条规则");
-                HeavyTaskUtil.executeNewTask(() -> {
-                    int count = 0;
-                    for (int i = 0; i < ruleJOList.size(); i++) {
-                        if (StringUtil.isEmpty(ruleJOList.get(i).getUrl())) {
-                            continue;
-                        }
-                        count++;
-                        List<Bookmark> rule = LitePal.where("url = ?", ruleJOList.get(i).getUrl()).find(Bookmark.class);
-                        if (CollectionUtil.isNotEmpty(rule)) {
-                            String group = rule.get(0).getGroup();
-                            rule.get(0).setGroup(group);
-                            rule.get(0).setTitle(ruleJOList.get(i).getTitle());
-                            rule.get(0).save();
-                        } else {
-                            ruleJOList.get(i).save();
-                        }
-                    }
-                    EventBus.getDefault().postSticky(new LoadingDismissEvent("已成功导入" + count + "条规则"));
-                    EventBus.getDefault().post(new OnArticleListRuleChangedEvent());
-                });
+                importBookmarkByStr(context, s);
             }
 
             @Override
@@ -810,6 +883,80 @@ public class AutoImportHelper {
         });
     }
 
+    public static void importBookmarkByStr(Context context, String s){
+        if (StringUtil.isEmpty(s)) {
+            ToastMgr.shortBottomCenter(context, "导入失败，规则为空");
+            return;
+        }
+        List<Bookmark> ruleJOList = JSON.parseArray(s, Bookmark.class);
+        if (CollectionUtil.isEmpty(ruleJOList)) {
+            ToastMgr.shortBottomCenter(context, "导入失败，规则为空");
+            return;
+        }
+
+        GlobalDialogActivity.startLoading(context, "正在导入中，共" + ruleJOList.size() + "条规则");
+        HeavyTaskUtil.executeNewTask(() -> {
+            int count = 0;
+            for (int i = 0; i < ruleJOList.size(); i++) {
+                if (StringUtil.isEmpty(ruleJOList.get(i).getUrl())) {
+                    continue;
+                }
+                count++;
+                List<Bookmark> rule = LitePal.where("url = ?", ruleJOList.get(i).getUrl()).find(Bookmark.class);
+                if (CollectionUtil.isNotEmpty(rule)) {
+                    String group = rule.get(0).getGroup();
+                    rule.get(0).setGroup(group);
+                    rule.get(0).setTitle(ruleJOList.get(i).getTitle());
+                    rule.get(0).save();
+                } else {
+                    ruleJOList.get(i).save();
+                }
+            }
+            EventBus.getDefault().postSticky(new LoadingDismissEvent("已成功导入" + count + "条规则"));
+            EventBus.getDefault().post(new BookmarkRefreshEvent());
+        });
+    }
+
+    private static void importHomeRulesByText(Context context, String s) {
+        if (StringUtil.isEmpty(s)) {
+            ToastMgr.shortBottomCenter(context, "导入失败，规则为空");
+            return;
+        }
+        if (FilterUtil.hasFilterWord(s)) {
+            ToastMgr.shortBottomCenter(context, "规则含有违禁词，禁止导入");
+            return;
+        }
+        List<ArticleListRuleJO> ruleJOList = JSON.parseArray(s, ArticleListRuleJO.class);
+        if (CollectionUtil.isEmpty(ruleJOList)) {
+            ToastMgr.shortBottomCenter(context, "导入失败，规则为空");
+            return;
+        }
+        int c = LitePal.count(ArticleListRule.class);
+        if (ruleJOList.size() > 800 || c > 800) {
+            ToastMgr.shortBottomCenter(context, "规则数目过多，已有规则" + c + "条，欲导入规则" + ruleJOList.size() + "条，均不能超过800条！");
+            return;
+        }
+        GlobalDialogActivity.startLoading(context, "正在导入中，共" + ruleJOList.size() + "条规则");
+        HeavyTaskUtil.executeNewTask(() -> {
+            for (int i = 0; i < ruleJOList.size(); i++) {
+                List<ArticleListRule> rule = LitePal.where("title = ?", ruleJOList.get(i).getTitle()).find(ArticleListRule.class);
+                if (CollectionUtil.isNotEmpty(rule)) {
+                    String color = rule.get(0).getTitleColor();
+                    String group = rule.get(0).getGroup();
+                    rule.get(0).fromJO(ruleJOList.get(i));
+                    rule.get(0).setTitleColor(color);
+                    rule.get(0).setGroup(group);
+                    rule.get(0).save();
+                } else {
+                    new ArticleListRule().fromJO(ruleJOList.get(i)).save();
+                }
+            }
+            EventBus.getDefault().postSticky(new LoadingDismissEvent("已成功导入" + ruleJOList.size() + "条规则"));
+            EventBus.getDefault().post(new OnArticleListRuleChangedEvent());
+        });
+    }
+
+
     private static void importHomeRulesByUrl(Context context, String url) {
         if (StringUtil.isEmpty(url) || (!url.startsWith("http") && !url.startsWith("file")) && !url.startsWith("hiker://")) {
             ToastMgr.shortBottomCenter(context, "链接有误！");
@@ -818,42 +965,7 @@ public class AutoImportHelper {
         CodeUtil.get(url, new CodeUtil.OnCodeGetListener() {
             @Override
             public void onSuccess(String s) {
-                if (StringUtil.isEmpty(s)) {
-                    ToastMgr.shortBottomCenter(context, "导入失败，规则为空");
-                    return;
-                }
-                if (FilterUtil.hasFilterWord(s)) {
-                    ToastMgr.shortBottomCenter(context, "规则含有违禁词，禁止导入");
-                    return;
-                }
-                List<ArticleListRuleJO> ruleJOList = JSON.parseArray(s, ArticleListRuleJO.class);
-                if (CollectionUtil.isEmpty(ruleJOList)) {
-                    ToastMgr.shortBottomCenter(context, "导入失败，规则为空");
-                    return;
-                }
-                int c = LitePal.count(ArticleListRule.class);
-                if (ruleJOList.size() > 800 || c > 800) {
-                    ToastMgr.shortBottomCenter(context, "规则数目过多，已有规则" + c + "条，拟导入规则" + ruleJOList.size() + "条，均不能超过800条！");
-                    return;
-                }
-                GlobalDialogActivity.startLoading(context, "正在导入中，共" + ruleJOList.size() + "条规则");
-                HeavyTaskUtil.executeNewTask(() -> {
-                    for (int i = 0; i < ruleJOList.size(); i++) {
-                        List<ArticleListRule> rule = LitePal.where("title = ?", ruleJOList.get(i).getTitle()).find(ArticleListRule.class);
-                        if (CollectionUtil.isNotEmpty(rule)) {
-                            String color = rule.get(0).getTitleColor();
-                            String group = rule.get(0).getGroup();
-                            rule.get(0).fromJO(ruleJOList.get(i));
-                            rule.get(0).setTitleColor(color);
-                            rule.get(0).setGroup(group);
-                            rule.get(0).save();
-                        } else {
-                            new ArticleListRule().fromJO(ruleJOList.get(i)).save();
-                        }
-                    }
-                    EventBus.getDefault().postSticky(new LoadingDismissEvent("已成功导入" + ruleJOList.size() + "条规则"));
-                    EventBus.getDefault().post(new OnArticleListRuleChangedEvent());
-                });
+                importHomeRulesByText(context, s);
             }
 
             @Override

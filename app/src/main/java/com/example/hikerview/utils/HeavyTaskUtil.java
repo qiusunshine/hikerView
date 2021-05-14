@@ -16,9 +16,7 @@ import org.litepal.LitePal;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -31,21 +29,13 @@ import timber.log.Timber;
  */
 public class HeavyTaskUtil {
     private static final String TAG = "HeavyTaskUtil";
-    private static final String[] playPosFixWhiteList = new String[]{"m3u8.htv009.com"};
+    private static final String[] playPosFixWhiteList = new String[]{"m3u8.htv009.com", "127.0.0.1", ":11111/"};
     //这里的代码是拿的AsyncTask的源码，作用是创建合理可用的线程池容量
     private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
-    private static final int CORE_POOL_SIZE = Math.max(2, Math.min(CPU_COUNT - 1, 3));
-    private static LinkedBlockingDeque<Runnable> taskQueue = new LinkedBlockingDeque<>(4096);
+    private static final int CORE_POOL_SIZE = Math.max(2, Math.min(CPU_COUNT - 1, 3)) + 2;
+    private static LinkedBlockingDeque<Runnable> taskQueue = new LinkedBlockingDeque<>(8192);
     private static ExecutorService executorService = new ThreadPoolExecutor(CORE_POOL_SIZE, 6,
             10L, TimeUnit.SECONDS, taskQueue);
-
-    private static LinkedBlockingDeque<Runnable> bigTaskQueue = new LinkedBlockingDeque<>(2048);
-
-    private static ExecutorService bigTaskExecutorService = new ThreadPoolExecutor(2, 6,
-            30L, TimeUnit.SECONDS, bigTaskQueue);
-
-
-    private static ScheduledExecutorService scheduledExecutorService;
 
     public static void executeNewTask(Runnable command) {
 //        Log.d(TAG, "executeNewTask: CPU_COUNT=" + CPU_COUNT + ", CORE_POOL_SIZE=" + CORE_POOL_SIZE);
@@ -53,15 +43,15 @@ public class HeavyTaskUtil {
     }
 
     public static void executeBigTask(Runnable command) {
-        bigTaskExecutorService.execute(command);
+        executorService.execute(command);
     }
 
     public static ExecutorService getBigTaskExecutorService() {
-        return bigTaskExecutorService;
+        return executorService;
     }
 
     public static LinkedBlockingDeque<Runnable> getBigTaskQueue() {
-        return bigTaskQueue;
+        return taskQueue;
     }
 
     public static void saveNowPlayerPos(Context mContext, String lastUrl, long pos) {
@@ -73,7 +63,7 @@ public class HeavyTaskUtil {
     }
 
     public static void saveNowPlayerPos(Context mContext, String lastUrl, int pos, boolean canBelow) {
-        if(lastUrl.startsWith("content")){
+        if (lastUrl.startsWith("content")) {
             return;
         }
         lastUrl = HttpParser.getRealUrlFilterHeaders(lastUrl);
@@ -119,7 +109,7 @@ public class HeavyTaskUtil {
 
     public static int getPlayerPos(Context context, String playUrl) {
         try {
-            if(playUrl.startsWith("content")){
+            if (playUrl.startsWith("content")) {
                 return 0;
             }
             playUrl = HttpParser.getRealUrlFilterHeaders(playUrl);
@@ -147,7 +137,26 @@ public class HeavyTaskUtil {
                 return url;
             }
         }
-        return url.split("\\?")[0];
+        String[] simpleUrls = url.split("\\?");
+        if (simpleUrls.length < 2) {
+            return url;
+        }
+        String simpleUrl = simpleUrls[0];
+        String[] s = simpleUrl.split("://");
+        if (s.length > 1) {
+            //形如www.test.com/index.m3u8
+            String[] s2 = s[1].split("/");
+            if (s2.length <= 2) {
+                //链接形如http://www.test.com/index.m3u8格式，过于简单，一般只根据?前的内容无法直接定位具体的资源
+                return url;
+            }
+            String last = s2[s2.length - 1].split("\\.")[0];
+            if (last.length() < 5 || "index".equalsIgnoreCase(last) || "vplay".equalsIgnoreCase(last)) {
+                //链接形如http://www.test.com/src/index.m3u8格式，过于简单，一般只根据?前的内容无法直接定位具体的资源
+                return url;
+            }
+        }
+        return simpleUrl;
     }
 
 
@@ -266,7 +275,7 @@ public class HeavyTaskUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if (count > 1000) {
+        if (count >= 1000) {
             ViewHistory l = null;
             try {
                 l = LitePal.findFirst(ViewHistory.class);
@@ -287,12 +296,5 @@ public class HeavyTaskUtil {
         history.setGroup(group);
         history.setPicUrl(picUrl);
         history.save();
-    }
-
-    public synchronized static ScheduledExecutorService getScheduledExecutorService() {
-        if (scheduledExecutorService == null) {
-            scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        }
-        return scheduledExecutorService;
     }
 }

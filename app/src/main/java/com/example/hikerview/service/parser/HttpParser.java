@@ -26,37 +26,48 @@ public class HttpParser {
     private static final String TAG = "HttpParser";
 
     public static void parseSearchUrlForHtml(String sourceUrl, @NonNull OnSearchCallBack onSearchCallBack) {
-        parseSearchUrlForHtml("**", sourceUrl, onSearchCallBack);
+        String wd = sourceUrl.contains("%%") ? "%%" : "%%";
+        parseSearchUrlForHtml(wd, sourceUrl, onSearchCallBack);
     }
 
     public static String parseSearchUrl(String sourceUrl, String wd) {
         String[] d = sourceUrl.split(";");
         if (d.length == 1) {
-            return sourceUrl.replace("**", wd);
+            return replaceKey(sourceUrl, wd);
         } else if (d.length == 2) {
-            return d[0].replace("**", wd);
+            return replaceKey(d[0], wd);
         } else {
             wd = encodeUrl(wd, d[2]);
-            return d[0].replace("**", wd);
+            return replaceKey(d[0], wd);
         }
+    }
+
+    private static String replaceKey(String url, String key) {
+        if (StringUtil.isEmpty(url) || StringUtil.isEmpty(key)) {
+            return url;
+        }
+        if (url.contains("%%")) {
+            return url.replace("%%", key);
+        }
+        return url.replace("**", key);
     }
 
     public static void parseSearchUrlForHtml(String wd, String sourceUrl, @NonNull OnSearchCallBack onSearchCallBack) {
         String[] d = sourceUrl.split(";");
         if (d.length == 1) {
             wd = encodeUrl(wd, "UTF-8");
-            d[0] = d[0].replace("**", wd);
+            d[0] = replaceKey(d[0], wd);
             d[0] = parseParamsByJs(d[0]);
             get(d[0], null, null, onSearchCallBack);
         } else if (d.length == 2) {
             if ("get".equals(d[1]) || "*".equals(d[1])) {
                 wd = encodeUrl(wd, "UTF-8");
-                d[0] = d[0].replace("**", wd);
+                d[0] = replaceKey(d[0], wd);
                 d[0] = parseParamsByJs(d[0]);
                 get(d[0], null, getHeaders(sourceUrl), onSearchCallBack);
-            } else if ("post".equals(d[1])) {
+            } else if ("post".equalsIgnoreCase(d[1])) {
                 wd = encodeUrl(wd, "UTF-8");
-                d[0] = d[0].replace("**", wd);
+                d[0] = replaceKey(d[0], wd);
                 d[0] = parseParamsByJs(d[0]);
                 String[] ss = StringUtil.splitUrlByQuestionMark(d[0]);
                 String[] sss;
@@ -78,14 +89,18 @@ public class HttpParser {
                 post(ss[0], null, getHeaders(sourceUrl), params, onSearchCallBack);
             } else {
                 wd = encodeUrl(wd, d[1]);
-                d[0] = d[0].replace("**", wd);
+                d[0] = replaceKey(d[0], wd);
                 d[0] = parseParamsByJs(d[0]);
                 get(d[0], d[1], getHeaders(sourceUrl), onSearchCallBack);
             }
         } else {
             wd = encodeUrl(wd, d[2]);
-            if ("post".equals(d[1])) {
-                d[0] = d[0].replace("**", wd);
+            if ("post".equalsIgnoreCase(d[1])) {
+                if (StringUtil.isNotEmpty(d[2]) && !"utf-8".equalsIgnoreCase(d[2])) {
+                    //后面会自动编码
+                    wd = decodeUrl(wd, d[2]);
+                }
+                d[0] = replaceKey(d[0], wd);
                 d[0] = parseParamsByJs(d[0]);
                 String[] ss = StringUtil.splitUrlByQuestionMark(d[0]);
                 String[] sss;
@@ -106,7 +121,7 @@ public class HttpParser {
                 }
                 post(ss[0], d[2], getHeaders(sourceUrl), params, onSearchCallBack);
             } else {
-                d[0] = d[0].replace("**", wd);
+                d[0] = replaceKey(d[0], wd);
                 d[0] = parseParamsByJs(d[0]);
                 get(d[0], d[2], getHeaders(sourceUrl), onSearchCallBack);
             }
@@ -244,6 +259,7 @@ public class HttpParser {
         if (!header.startsWith("{") || !header.endsWith("}")) {
             return null;
         }
+        header = StringUtil.decodeConflictStr(header);
         Map<String, String> headers = new HashMap<>();
         String h = header.substring(1);
         h = h.substring(0, h.length() - 1);
@@ -277,10 +293,13 @@ public class HttpParser {
     public static void get(String url, @Nullable final String code, @Nullable Map<String, String> headers, @NonNull final OnSearchCallBack onSearchCallBack) {
 //        Log.d(TAG, "just get: "+url);
         try {
+            url = url.replace(" ", "");
+            url = StringUtil.decodeConflictStr(url);
+            String finalUrl = url;
             CodeUtil.get(url, code, headers, new CodeUtil.OnCodeGetListener() {
                 @Override
                 public void onSuccess(String s) {
-                    onSearchCallBack.onSuccess(url, s);
+                    onSearchCallBack.onSuccess(finalUrl, s);
                 }
 
                 @Override
@@ -297,10 +316,13 @@ public class HttpParser {
     public static void post(String url, @Nullable final String code, @Nullable Map<String, String> headers, HttpParams params, @NonNull final OnSearchCallBack onSearchCallBack) {
 //        Log.d(TAG, "just get: "+url);
         try {
+            url = url.replace(" ", "");
+            url = StringUtil.decodeConflictStr(url);
+            String finalUrl = url;
             CodeUtil.post(url, params, code, headers, new CodeUtil.OnCodeGetListener() {
                 @Override
                 public void onSuccess(String s) {
-                    onSearchCallBack.onSuccess(url, s);
+                    onSearchCallBack.onSuccess(finalUrl, s);
                 }
 
                 @Override

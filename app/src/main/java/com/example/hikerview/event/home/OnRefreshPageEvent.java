@@ -6,4 +6,14 @@ package com.example.hikerview.event.home;
  * 时间：At 13:46
  */
 public class OnRefreshPageEvent {
+
+    private boolean scrollTop;
+
+    public OnRefreshPageEvent(boolean scrollTop) {
+        this.scrollTop = scrollTop;
+    }
+
+    public boolean isScrollTop() {
+        return scrollTop;
+    }
 }

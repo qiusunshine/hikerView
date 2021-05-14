@@ -2,6 +2,8 @@ package com.example.hikerview.model;
 
 import androidx.annotation.NonNull;
 
+import com.example.hikerview.utils.StringUtil;
+
 import org.litepal.crud.LitePalSupport;
 
 /**
@@ -50,6 +52,16 @@ public class Bookmark extends LitePalSupport implements Comparable<Bookmark> {
 
     @Override
     public int compareTo(@NonNull Bookmark articleListRule) {
+        if (StringUtil.isEmpty(articleListRule.getUrl()) && StringUtil.isEmpty(getUrl())) {
+            //是分组
+            return getTitle().compareTo(articleListRule.getTitle());
+        }
+        if (StringUtil.isEmpty(getUrl())) {
+            return -1;
+        }
+        if (StringUtil.isEmpty(articleListRule.getUrl())) {
+            return 1;
+        }
         int n1 = getGroup().length();
         int n2 = articleListRule.getGroup().length();
         int min = Math.min(n1, n2);

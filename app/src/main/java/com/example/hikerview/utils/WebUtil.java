@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 
 import com.example.hikerview.R;
 import com.example.hikerview.event.WebViewUrlChangedEvent;
+import com.example.hikerview.event.web.WebUpdateUrlEvent;
 import com.example.hikerview.ui.browser.WebViewActivity;
 import com.example.hikerview.ui.setting.model.SettingConfig;
 import com.example.hikerview.ui.video.PlayerChooser;
@@ -52,11 +54,33 @@ public class WebUtil {
     }
 
     public static void goWeb(Context context, String url) {
+        goWeb(context, url, false);
+    }
+
+    public static void goWeb(Context context, String url, boolean newWindow) {
+        Timber.d("goWeb: webActivityExist=%s", webActivityExist);
+        if (context instanceof Activity && webActivityExist.get()) {
+            Activity activity = (Activity) context;
+            activity.finish();
+            EventBus.getDefault().post(new WebUpdateUrlEvent(url, newWindow));
+            return;
+        }
+        Intent intent = new Intent();
+        intent.setClass(context, WebViewActivity.class);
+        intent.putExtra("is_xiu_tan", false);
+        intent.putExtra("url", url);
+        context.startActivity(intent);
+    }
+
+    public static void goWebWithExtraData(Context context, String url, Bundle extraDataBundle) {
         Timber.d("goWeb: webActivityExist=%s", webActivityExist);
         if (context instanceof Activity && webActivityExist.get()) {
             Activity activity = (Activity) context;
             Intent intent = new Intent();
             intent.putExtra("url", url);
+            if (extraDataBundle != null) {
+                intent.putExtra("extraDataBundle", extraDataBundle);
+            }
             activity.setResult(101, intent);
             activity.finish();
             return;
@@ -65,6 +89,9 @@ public class WebUtil {
         intent.setClass(context, WebViewActivity.class);
         intent.putExtra("is_xiu_tan", false);
         intent.putExtra("url", url);
+        if (extraDataBundle != null) {
+            intent.putExtra("extraDataBundle", extraDataBundle);
+        }
         context.startActivity(intent);
     }
 
@@ -83,6 +110,10 @@ public class WebUtil {
         intent.putExtra("is_xiu_tan", false);
         String webHome = SettingConfig.professionalMode ? "https://movie.douban.com/tag/#/" : context.getResources().getString(R.string.search_engine);
         String defaultRightUrl = PreferenceMgr.getString(context, "defaultRightUrl", webHome);
+        if ("http://159.75.120.248/home".equals(defaultRightUrl) || "http://home.haikuoshijie.cn/home".equals(defaultRightUrl)) {
+            defaultRightUrl = webHome;
+            PreferenceMgr.put(context, "defaultRightUrl", webHome);
+        }
         intent.putExtra("url", defaultRightUrl);
         intent.putExtra("homeTabMode", "webhome");
         context.startActivity(intent, ActivityOptions.makeCustomAnimation(context, R.anim.alpha_no_trans, R.anim.alpha_no_trans).toBundle());
@@ -111,15 +142,6 @@ public class WebUtil {
         intent.putExtra("url", url);
         intent.putExtra("title", title);
         intent.putExtra("videoUrl", videoUrl);
-        context.startActivity(intent);
-    }
-
-    public static void goWebForDownload(Context context, String url) {
-        Intent intent = new Intent();
-        intent.setClass(context, WebViewActivity.class);
-        intent.putExtra("is_xiu_tan", false);
-        intent.putExtra("url", url);
-        intent.putExtra("autoPlay", -1);
         context.startActivity(intent);
     }
 

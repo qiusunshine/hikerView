@@ -16,8 +16,11 @@ public class PreferenceConstant {
     public static final String KEY_multipleDeviceSyncSilence = "multipleDeviceSyncSilence";
     public static final String KEY_deviceName = "deviceName";
     public static final String KEY_excludeSyncGroup = "excludeSyncGroup";
+    public static final String KEY_needSyncGroup = "needSyncGroup";
     public static final String KEY_oneScreen = "oneScreen";
     public static final String KEY_adBlock = "adBlock";
+    public static final String KEY_useNotch = "useNotch";
+    public static final String KEY_homeName = "homeName";
 
 
     /**
@@ -36,5 +39,17 @@ public class PreferenceConstant {
     public static final String KEY_webDavBackTime = "webDavBackTime";
     public static final String KEY_webDavLastBackup = "webDavLastBackup";
 
+    /**
+     * 小窗模式设置
+     *
+     * 文件，key
+     */
+    public static final String KEY_BACK_TO_PIP = "backToPIP";
+    public static final String KEY_BACKGROUND_TO_PIP = "backgroundToPIP";
+    public static final String KEY_DIRECT_FULLSCREEN = "directFullScreen";
+    public static final String KEY_DIRECT_FULLSCREEN_MODE = "directFullScreenMode";
+    public static final String KEY_DIRECT_BACK = "directBack";
 
+
+    public static final String KEY_autoHideHistoryBtn = "autoHideHistoryBtn";
 }

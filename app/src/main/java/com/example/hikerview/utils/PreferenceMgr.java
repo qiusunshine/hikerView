@@ -163,6 +163,15 @@ public class PreferenceMgr {
     }
 
     /**
+     * 查询某个key是否已经存在
+     */
+    public static boolean contains(Context context, String file, String key) {
+        SharedPreferences sp = context.getSharedPreferences(file,
+                Context.MODE_PRIVATE);
+        return sp.contains(key);
+    }
+
+    /**
      * 返回所有的键值对
      */
     public static Map<String, ?> getAll(Context context) {
@@ -186,7 +195,7 @@ public class PreferenceMgr {
         bitmap.compress(Bitmap.CompressFormat.PNG, 80, byStream);
         // 利用Base64将我们的字节数组输出流转换成String
         byte[] byteArray = byStream.toByteArray();
-        String imgString = new String(Base64.encodeToString(byteArray, Base64.DEFAULT));
+        String imgString = new String(Base64.encodeToString(byteArray, Base64.NO_WRAP));
         // 将String保存shareUtils
         PreferenceMgr.put(mContext, key, imgString);
     }
@@ -201,7 +210,7 @@ public class PreferenceMgr {
         String imgString = (String) PreferenceMgr.get(mContext, key, "");
         if (!imgString.equals("")) {
             // 利用Base64将我们string转换
-            byte[] byteArray = Base64.decode(imgString, Base64.DEFAULT);
+            byte[] byteArray = Base64.decode(imgString, Base64.NO_WRAP);
             ByteArrayInputStream byStream = new ByteArrayInputStream(byteArray);
             // 生成bitmap
             return BitmapFactory.decodeStream(byStream);

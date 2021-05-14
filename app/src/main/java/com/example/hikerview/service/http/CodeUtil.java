@@ -3,6 +3,7 @@ package com.example.hikerview.service.http;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.example.hikerview.ui.browser.util.CollectionUtil;
 import com.example.hikerview.ui.setting.model.SettingConfig;
 import com.example.hikerview.utils.FileUtil;
 import com.example.hikerview.utils.StringUtil;
@@ -12,9 +13,12 @@ import com.lzy.okgo.model.HttpParams;
 import com.lzy.okgo.request.PostRequest;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import okhttp3.FormBody;
 import timber.log.Timber;
 
 /**
@@ -39,13 +43,14 @@ public class CodeUtil {
             }
         }
         if (url.startsWith("hiker://files/")) {
-            String fileName = url.replace("hiker://files/", "");
+            String fileName = StringUtil.trimBlanks(url.replace("hiker://files/", ""));
             File file = new File(SettingConfig.rootDir + File.separator + fileName);
             if (file.exists()) {
                 listener.onSuccess(FileUtil.fileToString(file.getAbsolutePath()));
             } else {
                 listener.onFailure(404, url + "文件不存在");
             }
+            return;
         } else if (url.startsWith("file://") || url.startsWith("/")) {
             dealFileByPath(url, listener);
             return;
@@ -58,13 +63,11 @@ public class CodeUtil {
             charsetCode = charset;
         }
         HttpHeaders httpHeaders = new HttpHeaders();
-//        httpHeaders.put(HEAD_KEY_USER_AGENT, "Mozilla/5.0 (Linux; Android 9; MI 8 SE Build/PKQ1.181121.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36");
         if (headers != null && !headers.isEmpty()) {
             for (Map.Entry<String, String> entry : headers.entrySet()) {
                 httpHeaders.put(entry.getKey(), entry.getValue());
             }
         }
-//        JSEngine.getInstance().setUrl(url);
         OkGo.<String>get(url)
                 .headers(httpHeaders).execute(new CharsetStringCallback(charsetCode) {
             @Override
@@ -83,6 +86,9 @@ public class CodeUtil {
     }
 
     private static void dealFileByHiker(String url, OnCodeGetListener listener) {
+        if (url.startsWith("hiker://assets/")) {
+            listener.onSuccess(HikerRuleUtil.getAssetsFileByHiker(url));
+        }
         HikerRuleUtil.getRulesByHiker(url, listener);
     }
 
@@ -117,7 +123,6 @@ public class CodeUtil {
             charsetCode = charset;
         }
         HttpHeaders httpHeaders = new HttpHeaders();
-//        httpHeaders.put(HEAD_KEY_USER_AGENT, "Mozilla/5.0 (Linux; Android 9; MI 8 SE Build/PKQ1.181121.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36");
         if (headers != null && !headers.isEmpty()) {
             for (Map.Entry<String, String> entry : headers.entrySet()) {
                 httpHeaders.put(entry.getKey(), entry.getValue());
@@ -140,6 +145,20 @@ public class CodeUtil {
             }
         }
         request.params(map);
+        if (StringUtil.isNotEmpty(charsetCode) && !"UTF-8".equalsIgnoreCase(charsetCode)
+                && !map.isEmpty()) {
+            FormBody.Builder bodyBuilder = new FormBody.Builder(Charset.forName(charset));
+            for (String key : request.getParams().urlParamsMap.keySet()) {
+                List<String> urlValues = request.getParams().urlParamsMap.get(key);
+                if(CollectionUtil.isNotEmpty(urlValues)){
+                    for (String value : urlValues) {
+                        bodyBuilder.add(key, value);
+                    }
+                }
+            }
+            request.upRequestBody(bodyBuilder.build());
+            request.removeAllParams();
+        }
         request.headers(httpHeaders)
                 .execute(new CharsetStringCallback(charsetCode) {
                     @Override

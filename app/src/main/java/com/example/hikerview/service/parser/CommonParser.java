@@ -245,7 +245,8 @@ public class CommonParser {
 //                Log.d(TAG, "getUrlWithoutOr: " + url);
                 url = JSEngine.getInstance().evalJS(js, url);
 //                Log.d(TAG, "getUrlWithoutOr2: " + url);
-                if (url.toLowerCase().trim().startsWith("http")) {
+                if (url.toLowerCase().trim().startsWith("http")
+                        || url.toLowerCase().trim().startsWith("x5://")) {
 //                    Log.d(TAG, "getUrlWithoutOr2 startsWith: ");
                     return url.trim();
                 }
@@ -271,7 +272,7 @@ public class CommonParser {
         } else if (url.startsWith("/")) {
             if (StringUtil.isEmpty(movieRule.getBaseUrl())) {
                 return url;
-            }else if (movieRule.getBaseUrl().endsWith("/")) {
+            } else if (movieRule.getBaseUrl().endsWith("/")) {
                 return movieRule.getBaseUrl().substring(0, movieRule.getBaseUrl().length() - 1) + url;
             } else {
                 return movieRule.getBaseUrl() + url;
@@ -299,7 +300,7 @@ public class CommonParser {
             }
             if (StringUtil.isEmpty(movieRule.getBaseUrl())) {
                 return url;
-            }else if (movieRule.getBaseUrl().endsWith("/")) {
+            } else if (movieRule.getBaseUrl().endsWith("/")) {
                 return movieRule.getBaseUrl() + url;
             } else {
                 return lastUrl + "/" + url;

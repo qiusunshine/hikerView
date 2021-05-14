@@ -33,26 +33,13 @@ public class ScreenSwitchUtils {
     private SensorManager sm1;
     private Sensor sensor1;
     private boolean isLocked;
+    private boolean isTempLocked;
     private OrientationSensorListener1 listener1;
 
-    /**
-     * 返回ScreenSwitchUtils单例
-     **/
-//    public static ScreenSwitchUtils init(Context context) {
-//        if (mInstance == null) {
-//            synchronized (ScreenSwitchUtils.class) {
-//                if (mInstance == null) {
-//                    mInstance = new ScreenSwitchUtils(context);
-//                }
-//            }
-//        }
-//        return mInstance;
-//    }
-//
-//    public static void destroy() {
-//        mInstance = null;
-//    }
     public boolean isLocked() {
+        if (this.isTempLocked()) {
+            return true;
+        }
         return this.isLocked;
     }
 
@@ -84,7 +71,7 @@ public class ScreenSwitchUtils {
                             int orientation = msg.arg1;
                             if (orientation > 55 && orientation < 125) {
 //                            if (orientation > 45 && orientation < 135) {
-                                if (!isLocked) {
+                                if (!isLocked()) {
                                     try {
                                         if (mActivity.get() != null) {
                                             mActivity.get().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
@@ -96,7 +83,7 @@ public class ScreenSwitchUtils {
                                 isPortrait = false;
                             } else if (orientation > 125 && orientation < 235) {
 //                            } else if (orientation > 135 && orientation < 225) {
-//                            if (!isLocked) {
+//                            if (!isLocked()) {
 //                                try {
 //                                    if (mActivity.get() != null) {
 //                                        mActivity.get().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
@@ -118,7 +105,7 @@ public class ScreenSwitchUtils {
 //                                    isPortrait = true;
                             } else if (orientation > 235 && orientation < 305) {
 //                            } else if (orientation > 225 && orientation < 315) {
-                                if (!isLocked) {
+                                if (!isLocked()) {
                                     try {
                                         if (mActivity.get() != null) {
                                             mActivity.get().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -130,7 +117,7 @@ public class ScreenSwitchUtils {
                                 isPortrait = false;
                             } else if ((orientation > 305 && orientation < 360) || (orientation > 0 && orientation < 55)) {
 //                            } else if ((orientation > 315 && orientation < 360) || (orientation > 0 && orientation < 45)) {
-//                            if (!isLocked) {/
+//                            if (!isLocked()) {/
 //                                try {
 //                                    if (mActivity.get() != null) {
 //                                        mActivity.get().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -232,6 +219,14 @@ public class ScreenSwitchUtils {
 
     public boolean isPortrait() {
         return this.isPortrait;
+    }
+
+    public boolean isTempLocked() {
+        return isTempLocked;
+    }
+
+    public void setTempLocked(boolean tempLocked) {
+        isTempLocked = tempLocked;
     }
 
     /**
