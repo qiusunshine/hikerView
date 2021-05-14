@@ -19,7 +19,6 @@ import org.fourthline.cling.UpnpService;
 import org.fourthline.cling.model.message.UpnpMessage;
 import org.fourthline.cling.model.message.header.UpnpHeader;
 import org.fourthline.cling.transport.RouterException;
-import org.seamless.util.Exceptions;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,15 +68,8 @@ public abstract class ReceivingAsync<M extends UpnpMessage> implements Runnable 
         if (proceed) {
             try {
                 execute();
-            } catch (Exception ex) {
-                Throwable cause = Exceptions.unwrap(ex);
-                if (cause instanceof InterruptedException) {
-                    log.log(Level.INFO, "Interrupted protocol '" + getClass().getSimpleName() + "': " + ex, cause);
-                } else {
-                    throw new RuntimeException(
-                        "Fatal error while executing protocol '" + getClass().getSimpleName() + "': " + ex, ex
-                    );
-                }
+            } catch (Throwable ex) {
+                log.log(Level.INFO, "execute error '" + getClass().getSimpleName() + "': ", ex);
             }
         }
     }

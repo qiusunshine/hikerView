@@ -74,6 +74,6 @@ public class MySubsPopup extends BottomPopupView {
 
     @Override
     protected int getMaxHeight() {
-        return (int) (XPopupUtils.getWindowHeight(getContext()) * .85f);
+        return (int) (XPopupUtils.getScreenHeight(getContext()) * .85f);
     }
 }

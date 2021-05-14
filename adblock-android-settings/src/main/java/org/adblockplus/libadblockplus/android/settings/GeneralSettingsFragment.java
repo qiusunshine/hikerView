@@ -519,8 +519,9 @@ public class GeneralSettingsFragment
 
     private void refreshFilters() {
         if (loadingPopupView == null) {
-            loadingPopupView = new XPopup.Builder(getContext()).asLoading("正在刷新订阅地址，请稍候");
+            loadingPopupView = new XPopup.Builder(getContext()).asLoading();
         }
+        loadingPopupView.setTitle("正在刷新订阅地址，请稍候");
         loadingPopupView.show();
         new Thread(() -> {
             availableSubscriptions = getRecommendedSubscriptions();
