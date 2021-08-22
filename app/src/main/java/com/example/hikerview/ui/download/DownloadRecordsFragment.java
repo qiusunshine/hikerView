@@ -15,12 +15,16 @@ import com.alibaba.fastjson.JSON;
 import com.example.hikerview.R;
 import com.example.hikerview.model.DownloadRecord;
 import com.example.hikerview.ui.base.BaseFragment;
+import com.example.hikerview.ui.download.enums.SortType;
 import com.example.hikerview.ui.download.util.UUIDUtil;
 import com.example.hikerview.ui.video.PlayerChooser;
 import com.example.hikerview.ui.video.VideoChapter;
+import com.example.hikerview.ui.view.XGridLayoutManager;
 import com.example.hikerview.ui.webdlan.LocalServerParser;
 import com.example.hikerview.utils.ClipboardUtil;
 import com.example.hikerview.utils.FileUtil;
+import com.example.hikerview.utils.HeavyTaskUtil;
+import com.example.hikerview.utils.PreferenceMgr;
 import com.example.hikerview.utils.StringUtil;
 import com.example.hikerview.utils.ToastMgr;
 import com.lxj.xpopup.XPopup;
@@ -29,7 +33,12 @@ import org.litepal.LitePal;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
+import static com.example.hikerview.utils.PreferenceMgr.SETTING_CONFIG;
 
 /**
  * 作者：By 15968
@@ -40,8 +49,15 @@ public class DownloadRecordsFragment extends BaseFragment {
     private RecyclerView recyclerView;
     private DownloadRecordsAdapter adapter;
     private List<DownloadRecord> rules = new ArrayList<>();
+    private List<DownloadRecord> showList = new ArrayList<>();
     private boolean isSorting = false;
     private boolean isMultiDeleting = false;
+
+    public String getSelectFilm() {
+        return selectFilm;
+    }
+
+    private String selectFilm = null;
 
     @Override
     protected int initLayout() {
@@ -52,9 +68,9 @@ public class DownloadRecordsFragment extends BaseFragment {
     protected void initView() {
         recyclerView = findView(R.id.download_list_recycler_view);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-        adapter = new DownloadRecordsAdapter(getContext(), rules);
+        adapter = new DownloadRecordsAdapter(getContext(), showList);
         adapter.setOnItemClickListener(onItemClickListener);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 1);
+        XGridLayoutManager gridLayoutManager = new XGridLayoutManager(getContext(), 1);
         recyclerView.setLayoutManager(gridLayoutManager);
         recyclerView.setAdapter(adapter);
     }
@@ -83,6 +99,7 @@ public class DownloadRecordsFragment extends BaseFragment {
             getActivity().runOnUiThread(() -> {
                 this.rules.clear();
                 this.rules.addAll(rules);
+                updateShowList();
                 if (adapter != null) {
                     adapter.notifyDataSetChanged();
                 } else {
@@ -92,40 +109,103 @@ public class DownloadRecordsFragment extends BaseFragment {
         }
     }
 
+    public void backToHome() {
+        updateShowList(null);
+        adapter.notifyDataSetChanged();
+    }
+
+    private synchronized void updateShowList(String film) {
+        selectFilm = film;
+        updateShowList();
+    }
+
+    private synchronized void updateShowList() {
+        List<DownloadRecord> records = new ArrayList<>();
+        if (StringUtil.isNotEmpty(selectFilm)) {
+            for (DownloadRecord rule : rules) {
+                if (selectFilm.equals(rule.getFilm())) {
+                    records.add(rule);
+                }
+            }
+        } else {
+            //用来保证顺序
+            List<String> dirList = new ArrayList<>();
+            Map<String, Integer> countMap = new HashMap<>();
+            records.addAll(rules);
+            for (DownloadRecord rule : rules) {
+                if (StringUtil.isNotEmpty(rule.getFilm())) {
+                    if (!dirList.contains(rule.getFilm())) {
+                        dirList.add(rule.getFilm());
+                        countMap.put(rule.getFilm(), 1);
+                    } else {
+                        countMap.put(rule.getFilm(), countMap.get(rule.getFilm()) + 1);
+                    }
+                }
+            }
+            for (Iterator<DownloadRecord> iterator = records.iterator(); iterator.hasNext(); ) {
+                DownloadRecord next = iterator.next();
+                if (StringUtil.isNotEmpty(next.getFilm()) && countMap.containsKey(next.getFilm()) && countMap.get(next.getFilm()) > 1) {
+                    iterator.remove();
+                }
+            }
+            //删除只有一个item的文件夹
+            for (Iterator<String> iterator = dirList.iterator(); iterator.hasNext(); ) {
+                String next = iterator.next();
+                if (countMap.containsKey(next) && countMap.get(next) < 2) {
+                    iterator.remove();
+                }
+            }
+            for (int i = dirList.size() - 1; i >= 0; i--) {
+                DownloadRecord record = new DownloadRecord();
+                record.setSourcePageTitle(dirList.get(i));
+                record.setVideoType("dir");
+                record.setSourcePageUrl(String.valueOf(countMap.get(dirList.get(i))));
+                records.add(0, record);
+            }
+        }
+        showList.clear();
+        showList.addAll(records);
+    }
+
     private DownloadRecordsAdapter.OnItemClickListener onItemClickListener = new DownloadRecordsAdapter.OnItemClickListener() {
         @Override
         public void onClick(View view, int position) {
-            if (position < 0 || position >= rules.size()) {
+            if (position < 0 || position >= showList.size()) {
                 return;
             }
-            DownloadRecord record = rules.get(position);
-            if (!DownloadStatusEnum.SUCCESS.getCode().equals(record.getStatus())) {
-                onLongClick(view, position);
-                return;
-            }
+            DownloadRecord record = showList.get(position);
             if (isMultiDeleting) {
                 record.setSelected(!record.isSelected());
                 adapter.notifyItemChanged(position);
                 return;
             }
+            if ("dir".equals(record.getVideoType())) {
+                updateShowList(record.getSourcePageTitle());
+                adapter.notifyDataSetChanged();
+                return;
+            }
+            if (!DownloadStatusEnum.SUCCESS.getCode().equals(record.getStatus())) {
+                onLongClick(view, position);
+                return;
+            }
             List<VideoChapter> chapters = new ArrayList<>();
             for (int i = 0; i < position; i++) {
                 VideoChapter videoChapter = new VideoChapter();
-                videoChapter.setTitle(rules.get(i).getSourcePageTitle());
+                videoChapter.setTitle(showList.get(i).getSourcePageTitle());
                 videoChapter.setUse(false);
-                videoChapter.setDownloadRecord(rules.get(i));
+                videoChapter.setDownloadRecord(showList.get(i));
                 chapters.add(videoChapter);
             }
             VideoChapter videoChapter = new VideoChapter();
-            videoChapter.setTitle(rules.get(position).getSourcePageTitle());
+            videoChapter.setTitle(showList.get(position).getSourcePageTitle());
             videoChapter.setUrl(LocalServerParser.getRealUrl(getContext(), record));
-            videoChapter.setDownloadRecord(rules.get(position));
+            videoChapter.setDownloadRecord(showList.get(position));
             videoChapter.setUse(true);
             chapters.add(videoChapter);
-            for (int i = position + 1; i < rules.size(); i++) {
+            for (int i = position + 1; i < showList.size(); i++) {
                 VideoChapter chapter = new VideoChapter();
-                chapter.setTitle(rules.get(i).getSourcePageTitle());
-                chapter.setDownloadRecord(rules.get(i));
+                chapter.setTitle(showList.get(i).getSourcePageTitle());
+                chapter.setDownloadRecord(showList.get(i));
                 chapter.setUse(false);
                 chapters.add(chapter);
             }
@@ -137,18 +217,21 @@ public class DownloadRecordsFragment extends BaseFragment {
             if (isSorting || isMultiDeleting) {
                 return;
             }
-            if (position < 0 || position >= rules.size()) {
+            if (position < 0 || position >= showList.size()) {
                 return;
             }
-            String status = rules.get(position).getStatus();
+            DownloadRecord record = showList.get(position);
+            String status = showList.get(position).getStatus();
             String[] operations;
-            if (DownloadStatusEnum.SUCCESS.getCode().equals(status) || DownloadStatusEnum.ERROR.getCode().equals(status)
+
+            if ("dir".equals(record.getVideoType())) {
+                operations = new String[]{"删除下载", "重命名标题"};
+            } else if (DownloadStatusEnum.SUCCESS.getCode().equals(status) || DownloadStatusEnum.ERROR.getCode().equals(status)
                     || DownloadStatusEnum.CANCEL.getCode().equals(status) || DownloadStatusEnum.BREAK.getCode().equals(status)) {
-                operations = new String[]{"删除下载", "批量删除", "重新下载", "重命名标题", "长按拖拽排序", "复制下载链接"};
+                operations = new String[]{"删除下载", "批量删除", "重新下载", "重命名标题", "复制下载链接"};
             } else {
-                operations = new String[]{"取消下载任务"};
+                operations = new String[]{"取消下载", "批量取消"};
             }
-            DownloadRecord record = rules.get(position);
             new XPopup.Builder(getContext())
                     .asCenterList("请选择操作", operations, ((option, text) -> {
                         switch (text) {
@@ -156,8 +239,22 @@ public class DownloadRecordsFragment extends BaseFragment {
                                 new XPopup.Builder(getContext())
                                         .asConfirm("温馨提示", "确认删除该下载内容吗？", () -> {
                                             ToastMgr.shortBottomCenter(getContext(), "正在删除下载任务");
-                                            DownloadManager.instance().cancelTask(record.getTaskId());
-                                            FileUtil.deleteDirs(DownloadManager.instance().getDownloadDir(record.getFileName()));
+                                            List<DownloadRecord> list = new ArrayList<>();
+                                            if ("dir".equals(record.getVideoType())) {
+                                                for (DownloadRecord rule : rules) {
+                                                    if (record.getSourcePageTitle().equals(rule.getFilm())) {
+                                                        list.add(rule);
+                                                    }
+                                                }
+                                            } else {
+                                                list.add(record);
+                                            }
+                                            HeavyTaskUtil.executeNewTask(() -> {
+                                                for (DownloadRecord downloadRecord : list) {
+                                                    DownloadManager.instance().cancelTask(downloadRecord.getTaskId());
+                                                    FileUtil.deleteDirs(DownloadManager.instance().getDownloadDir(downloadRecord.getFileName()));
+                                                }
+                                            });
                                         }).show();
                                 break;
                             case "重命名标题":
@@ -168,13 +265,24 @@ public class DownloadRecordsFragment extends BaseFragment {
                                                 ToastMgr.shortBottomCenter(getContext(), "不能为空");
                                                 return;
                                             }
-                                            record.setSourcePageTitle(text1);
-                                            record.save();
+                                            if ("dir".equals(record.getVideoType())) {
+                                                for (DownloadRecord rule : rules) {
+                                                    if (record.getSourcePageTitle().equals(rule.getFilm())) {
+                                                        rule.setFilm(text1);
+                                                        rule.save();
+                                                    }
+                                                }
+                                            } else {
+                                                record.setSourcePageTitle(text1);
+                                                record.save();
+                                            }
+                                            updateShowList();
                                             adapter.notifyDataSetChanged();
                                         })
                                         .show();
                                 break;
                             case "批量删除":
+                            case "批量取消":
                                 batchDelete();
                                 break;
                             case "复制下载链接":
@@ -186,14 +294,21 @@ public class DownloadRecordsFragment extends BaseFragment {
                                 DownloadTask downloadTask = new DownloadTask(
                                         UUIDUtil.genUUID(), null, null, null, record.getSourcePageUrl(),
                                         record.getSourcePageUrl(), record.getSourcePageTitle(), 0L);
+                                downloadTask.setFilm(record.getFilm());
                                 DownloadManager.instance().addTask(downloadTask);
                                 ToastMgr.shortBottomCenter(getContext(), "已加入下载队列");
                                 break;
-                            case "取消下载任务":
+                            case "取消下载":
                                 ToastMgr.shortBottomCenter(getContext(), "正在取消下载任务");
                                 DownloadManager.instance().cancelTask(record.getTaskId());
                                 break;
                             case "长按拖拽排序":
+                                int type = PreferenceMgr.getInt(getContext(), SETTING_CONFIG, "download_sort", 0);
+                                SortType sortType = SortType.getByCode(type);
+                                if (SortType.NAME.equals(sortType)) {
+                                    ToastMgr.shortBottomCenter(getContext(), "当前排序方式为按名称排序，不支持手动排序");
+                                    break;
+                                }
                                 isSorting = true;
                                 if (getActivity() instanceof DownloadRecordsActivity) {
                                     ((DownloadRecordsActivity) getActivity()).showSortSaveBtn();
@@ -210,7 +325,7 @@ public class DownloadRecordsFragment extends BaseFragment {
 
     void batchDelete() {
         new XPopup.Builder(getContext())
-                .asConfirm("温馨提示", "请点击下载项来勾选要删除的内容", () -> {
+                .asConfirm("温馨提示", "请点击下载项来勾选要删除/取消的内容", () -> {
                     isMultiDeleting = true;
                     if (getActivity() instanceof DownloadRecordsActivity) {
                         ((DownloadRecordsActivity) getActivity()).showDeleteBtn();

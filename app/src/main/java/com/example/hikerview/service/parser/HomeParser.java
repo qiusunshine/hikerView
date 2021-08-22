@@ -2,6 +2,7 @@ package com.example.hikerview.service.parser;
 
 import android.text.TextUtils;
 
+import com.alibaba.fastjson.JSON;
 import com.example.hikerview.constants.ArticleColTypeEnum;
 import com.example.hikerview.model.MovieRule;
 import com.example.hikerview.ui.base.BaseCallback;
@@ -129,7 +130,8 @@ public class HomeParser {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            callback.error("解析引擎解析失败", e.toString(), "404", e);
+            callback.error("解析失败", e.toString(), "404", e);
+            JSEngine.getInstance().log(e.getMessage(), JSON.toJSON(movieChoose));
         }
     }
 

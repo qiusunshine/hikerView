@@ -70,7 +70,18 @@ public class MyStatusBarUtil {
     }
 
     private static void changeToDarkStatusBar(@NonNull Activity activity) {
-        //TODO
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return;
+        }
+        Window window = activity.getWindow();
+        if (window == null) {
+            return;
+        }
+        View decorView = window.getDecorView();
+        if (decorView == null) {
+            return;
+        }
+        decorView.setSystemUiVisibility(decorView.getSystemUiVisibility() & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
     }
 
     public static boolean isDark(int color) {

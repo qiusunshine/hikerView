@@ -257,7 +257,7 @@ public class StringUtil {
         if (isWebUrl(str)) {
             return true;
         }
-        return !containsChinese(str) && str.contains(".");
+        return !containsChinese(str) && str.contains(".") && !str.contains(" ");
     }
 
     public static String getDom(String url) {
@@ -426,7 +426,7 @@ public class StringUtil {
         if (isEmpty(title)) {
             return title;
         }
-        return title.replace("①", "")
+        String rTitle = title.replace("①", "")
                 .replace("②", "")
                 .replace("③", "")
                 .replace("④", "")
@@ -436,6 +436,11 @@ public class StringUtil {
                 .replace("⑧", "")
                 .replace("⑨", "")
                 .replace("⑩", "");
+        String[] rTitleSplit = rTitle.split("@@");
+        if (rTitleSplit.length > 0) {
+            rTitle = rTitleSplit[0];
+        }
+        return rTitle;
     }
 
     /**

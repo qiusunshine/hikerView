@@ -1,5 +1,6 @@
 package com.example.hikerview.service.parser;
 
+import com.alibaba.fastjson.JSON;
 import com.example.hikerview.model.MovieRule;
 import com.example.hikerview.ui.browser.model.SearchEngine;
 import com.example.hikerview.ui.home.model.SearchResult;
@@ -126,6 +127,7 @@ public class SearchParser {
             e.printStackTrace();
             isOk = false;
             callBackError(callback, "findList：msg：" + e.toString());
+            JSEngine.getInstance().log(e.getMessage(), JSON.toJSON(searchEngine));
         }
         if (isOk) {
             callBackSuccess(callback, listBeanList);

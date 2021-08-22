@@ -15,4 +15,6 @@ public interface SearchJsCallBack<T> {
      * 显示请求错误提示
      */
     void showErr(String msg);
+
+    void onUpdate(String action, String data);
 }

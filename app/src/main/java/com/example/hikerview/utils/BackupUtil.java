@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import com.example.hikerview.ui.Application;
 import com.example.hikerview.ui.browser.model.JSManager;
+import com.example.hikerview.ui.browser.util.CollectionUtil;
 import com.example.hikerview.ui.view.colorDialog.PromptDialog;
 import com.lxj.xpopup.XPopup;
 
@@ -18,6 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import timber.log.Timber;
 
 /**
  * 作者：By 15968
@@ -33,23 +36,17 @@ public class BackupUtil {
         List<String> filePaths = new ArrayList<>();
         String dbPath = UriUtils.getRootDir(context) + File.separator + "backup" + File.separator + BackupUtil.getDBFileNameWithVersion();
         filePaths.add(dbPath);
-        File jsDir = new File(JSManager.getJsDirPath());
-        if (!jsDir.exists()) {
-            jsDir.mkdirs();
-        }
-        File[] jsFiles = jsDir.listFiles();
-        if (jsFiles != null) {
-            for (File jsFile : jsFiles) {
-                filePaths.add(jsFile.getAbsolutePath());
-            }
-        }
-        //模板
-        String rulesPath = UriUtils.getRootDir(Application.getContext()) + File.separator + "rules";
-        File dir = new File(rulesPath);
-        if (dir.exists()) {
-            File templateFile = new File(rulesPath + File.separator + "rule_template.json");
-            if(templateFile.exists()){
-                filePaths.add(templateFile.getAbsolutePath());
+        //第三方规则的文件
+        String rulesZipFilePath = UriUtils.getCacheDir(context) + File.separator + "rules.zip";
+        List<String> ruleFiles = scanRuleFiles();
+        if (CollectionUtil.isNotEmpty(ruleFiles)) {
+            try {
+                FileUtil.deleteFile(rulesZipFilePath);
+                if (ZipUtils.zipFiles(ruleFiles, rulesZipFilePath)) {
+                    filePaths.add(rulesZipFilePath);
+                }
+            } catch (Exception e) {
+                Timber.e(e, "rulesZip: ");
             }
         }
         String zipFilePath = UriUtils.getRootDir(context) + File.separator + "backup" + File.separator + "hiker.zip";
@@ -68,6 +65,22 @@ public class BackupUtil {
                             .makeText(Application.application.getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_SHORT)
                             .show());
         }
+    }
+
+    public static List<String> scanRuleFiles() {
+        List<String> ruleFiles = new ArrayList<>();
+        String rulesPath = UriUtils.getRootDir(Application.getContext()) + File.separator + "rules";
+        File file = new File(rulesPath);
+        if (!file.exists()) {
+            return ruleFiles;
+        }
+        File[] files = file.listFiles();
+        if (files != null && files.length > 0) {
+            for (File file1 : files) {
+                ruleFiles.add(file1.getAbsolutePath());
+            }
+        }
+        return ruleFiles;
     }
 
     public static void backupDB(Context context, boolean silence) {
@@ -114,6 +127,68 @@ public class BackupUtil {
     }
 
 
+    public static void recoveryDBAndJsNow(Context context) {
+        String zipFilePath = UriUtils.getRootDir(context) + File.separator + "backup" + File.separator + "hiker.zip";
+        try {
+            String fileDirPath = UriUtils.getRootDir(context) + File.separator + "backup" + File.separator + "hiker";
+            FileUtil.deleteDirs(fileDirPath);
+            new File(fileDirPath).mkdirs();
+            ZipUtils.unzipFile(zipFilePath, fileDirPath);
+            String dbFilePath = fileDirPath + File.separator + BackupUtil.getDBFileNameWithVersion();
+            File dbFile = new File(dbFilePath);
+            String dbNewFilePath = UriUtils.getRootDir(context) + File.separator + "backup" + File.separator + BackupUtil.getDBFileNameWithVersion();
+            boolean dbExist = dbFile.exists();
+            if (dbExist) {
+                FileUtil.copyFile(dbFile.getAbsolutePath(), dbNewFilePath);
+            }
+
+            int fileNum = 0;
+            File rulesFile = new File(fileDirPath + File.separator + "rules.zip");
+            if (rulesFile.exists()) {
+                //新版带规则文件
+                String rulesDir = fileDirPath + File.separator + "rules";
+                ZipUtils.unzipFile(rulesFile.getAbsolutePath(), rulesDir);
+                fileNum = FileUtil.getFileCount(rulesDir);
+                FileUtil.copyDirectiory(UriUtils.getRootDir(Application.getContext()) + File.separator + "rules", rulesDir);
+            } else {
+                File jsFile = new File(fileDirPath);
+                File[] jsFiles = jsFile.listFiles();
+                String templateFilePath = fileDirPath + File.separator + "rule_template.json";
+                File templateFile = new File(templateFilePath);
+                if (templateFile.exists()) {
+                    String templateNewFilePath = UriUtils.getRootDir(context) + File.separator + "rules" + File.separator + "rule_template.json";
+                    FileUtil.copyFile(templateFile.getAbsolutePath(), templateNewFilePath);
+                }
+                if (jsFiles != null) {
+                    for (File jsFilePath : jsFiles) {
+                        if (!jsFilePath.getName().endsWith(".js")) {
+                            jsFilePath.delete();
+                        } else {
+                            fileNum++;
+                        }
+                    }
+                }
+                FileUtil.deleteDirs(JSManager.getJsDirPath());
+                FileUtil.copyDirectiory(JSManager.getJsDirPath(), jsFile.getAbsolutePath());
+            }
+            int finalFileNum = fileNum;
+            String title = "";
+            if (!dbExist) {
+                title = "已恢复" + finalFileNum + "个应用插件，没有获取到适合当前版本的db文件";
+            } else {
+                title = "已恢复" + finalFileNum + "个应用插件，是否立即恢复db文件（包括小程序规则、历史记录、收藏等）？";
+            }
+            new XPopup.Builder(context)
+                    .asConfirm("恢复完成", title, () -> {
+                        if (dbExist) {
+                            BackupUtil.recoveryDBNow(context);
+                        }
+                    }).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void recoveryDBAndJs(Context context) {
         String zipFilePath = UriUtils.getRootDir(context) + File.separator + "backup" + File.separator + "hiker.zip";
         new PromptDialog(context)
@@ -121,54 +196,7 @@ public class BackupUtil {
                 .setSpannedContentByStr("确定从备份文件（" + zipFilePath + "）恢复数据吗？当前支持的数据库版本为" + LitePal.getDatabase().getVersion() + "，注意“如果备份和恢复时的数据库版本不一致会导致软件启动闪退！”")
                 .setPositiveListener("确定恢复", dialog1 -> {
                     dialog1.dismiss();
-                    try {
-                        String fileDirPath = UriUtils.getRootDir(context) + File.separator + "backup" + File.separator + "hiker";
-                        FileUtil.deleteDirs(fileDirPath);
-                        new File(fileDirPath).mkdirs();
-                        ZipUtils.unzipFile(zipFilePath, fileDirPath);
-                        String dbFilePath = fileDirPath + File.separator + BackupUtil.getDBFileNameWithVersion();
-                        File dbFile = new File(dbFilePath);
-                        String dbNewFilePath = UriUtils.getRootDir(context) + File.separator + "backup" + File.separator + BackupUtil.getDBFileNameWithVersion();
-                        File jsFile = new File(fileDirPath);
-                        File[] jsFiles = jsFile.listFiles();
-                        boolean dbExist = dbFile.exists();
-                        int jsFileNum = 0;
-                        if (dbExist) {
-                            FileUtil.copyFile(dbFile.getAbsolutePath(), dbNewFilePath);
-                        }
-                        String templateFilePath = fileDirPath + File.separator + "rule_template.json";
-                        File templateFile = new File(templateFilePath);
-                        if (templateFile.exists()) {
-                            String templateNewFilePath = UriUtils.getRootDir(context) + File.separator + "rules" + File.separator + "rule_template.json";
-                            FileUtil.copyFile(templateFile.getAbsolutePath(), templateNewFilePath);
-                        }
-                        if (jsFiles != null) {
-                            for (File jsFilePath : jsFiles) {
-                                if (!jsFilePath.getName().endsWith(".js")) {
-                                    jsFilePath.delete();
-                                } else {
-                                    jsFileNum++;
-                                }
-                            }
-                        }
-                        FileUtil.deleteDirs(JSManager.getJsDirPath());
-                        FileUtil.copyDirectiory(JSManager.getJsDirPath(), jsFile.getAbsolutePath());
-                        int finalJsFileNum = jsFileNum;
-                        String title = "";
-                        if (!dbExist) {
-                            title = "已恢复" + finalJsFileNum + "个JS插件，没有获取到适合当前版本的db文件";
-                        } else {
-                            title = "已恢复" + finalJsFileNum + "个JS插件，是否立即恢复db文件（包括首页规则、历史记录、收藏等）？";
-                        }
-                        new XPopup.Builder(context)
-                                .asConfirm("恢复完成", title, () -> {
-                                    if (dbExist) {
-                                        BackupUtil.recoveryDBNow(context);
-                                    }
-                                }).show();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    recoveryDBAndJsNow(context);
                 }).show();
 
     }

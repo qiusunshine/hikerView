@@ -25,8 +25,8 @@ import com.example.hikerview.utils.ToastMgr;
  */
 public class DownloadChooser {
 
-    public static void startDownload(Activity context, @Nullable String mTitle, @Nullable String mUrl) {
-        DownloadDialogUtil.showEditDialog(context, mTitle, mUrl);
+    public static void startDownload(Activity context, @Nullable String mTitle, @Nullable String mUrl, @Nullable String film) {
+        DownloadDialogUtil.showEditDialog(context, mTitle, mUrl, film);
     }
 
     public static void startDownloadByThird(Activity context, String name, String url) {

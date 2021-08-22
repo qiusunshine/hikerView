@@ -15,6 +15,11 @@ public class TimeUtil {
         return formatter.format(new Date(timestamp));
     }
 
+    public static String formatTime(long timestamp, String pattern) {
+        DateFormat formatter = new SimpleDateFormat(pattern);
+        return formatter.format(new Date(timestamp));
+    }
+
 
     public static String getSecondTimestamp() {
         return getSecondTimestamp(new Date(System.currentTimeMillis()));
@@ -53,5 +58,29 @@ public class TimeUtil {
             int second = sec % 60; // 不足 60 的就是秒，够 60 就是分
             return (hour > 0 ? (hour + " 小时 ") : "") + (minute > 0 ? (minute + " 分 ") : "") + (second + " 秒");
         }
+    }
+
+
+    /**
+     * 通过时间秒毫秒数判断两个时间的间隔
+     *
+     * @param timestamp1
+     * @param timestamp2
+     * @return
+     */
+    public static int differentDaysByMillisecond(long timestamp1, long timestamp2) {
+        int days = (int) (Math.abs(timestamp2 - timestamp1) / (1000 * 3600 * 24));
+        return days;
+    }
+
+    /**
+     * 通过时间秒毫秒数判断两个时间的间隔
+     *
+     * @param date1
+     * @param date2
+     * @return
+     */
+    public static int differentDaysByMillisecond(Date date1, Date date2) {
+        return differentDaysByMillisecond(date1.getTime(), date2.getTime());
     }
 }

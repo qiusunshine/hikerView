@@ -1,5 +1,6 @@
 package com.example.hikerview.ui.download;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -19,6 +20,7 @@ import com.example.hikerview.model.DownloadRecord;
 import com.example.hikerview.ui.base.BaseSlideActivity;
 import com.example.hikerview.ui.browser.util.CollectionUtil;
 import com.example.hikerview.ui.download.enums.SortType;
+import com.example.hikerview.ui.setting.file.FileBrowserActivity;
 import com.example.hikerview.ui.view.EnhanceTabLayout;
 import com.example.hikerview.ui.view.colorDialog.PromptDialog;
 import com.example.hikerview.utils.DisplayUtil;
@@ -26,6 +28,7 @@ import com.example.hikerview.utils.FileUtil;
 import com.example.hikerview.utils.HeavyTaskUtil;
 import com.example.hikerview.utils.MyStatusBarUtil;
 import com.example.hikerview.utils.PreferenceMgr;
+import com.example.hikerview.utils.StringUtil;
 import com.example.hikerview.utils.ToastMgr;
 import com.google.android.material.tabs.TabLayout;
 import com.lxj.xpopup.XPopup;
@@ -120,18 +123,33 @@ public class DownloadRecordsActivity extends BaseSlideActivity {
         findView(R.id.menu_icon).setOnClickListener(this::clickMenu);
     }
 
+    private DownloadRecordsFragment getDownloadFragment() {
+        return viewPager.getCurrentItem() == 0 ? downloadedFragment : downloadingFragment;
+    }
+
     private void clickMenu(View view) {
         new XPopup.Builder(getContext())
                 .atView(view)
-                .asAttachList(new String[]{"排序方式", "批量删除"}, null,
+                .asAttachList(new String[]{"排序方式", "批量删除", "文件管理", "查看其它文件"}, null,
                         (position, text) -> {
                             switch (text) {
                                 case "排序方式":
                                     setSortType(view);
                                     break;
                                 case "批量删除":
-                                    DownloadRecordsFragment fragment = viewPager.getCurrentItem() == 0 ? downloadedFragment : downloadingFragment;
+                                    DownloadRecordsFragment fragment = getDownloadFragment();
                                     fragment.batchDelete();
+                                    break;
+                                case "文件管理":
+                                    Intent intent2 = new Intent(getContext(), FileBrowserActivity.class);
+                                    intent2.putExtra("path", DownloadConfig.rootPath);
+                                    startActivity(intent2);
+                                    break;
+                                case "查看其它文件":
+                                    String path = DownloadDialogUtil.getApkDownloadPath(getContext());
+                                    Intent intent = new Intent(getContext(), FileBrowserActivity.class);
+                                    intent.putExtra("path", path);
+                                    startActivity(intent);
                                     break;
                             }
                         })
@@ -176,6 +194,11 @@ public class DownloadRecordsActivity extends BaseSlideActivity {
                     if (o2.getFileName() == null) {
                         return 1;
                     }
+                    if (o1.getFileName().length() > 2 && o2.getFileName().length() > 2) {
+                        if (o1.getFileName().length() != o2.getFileName().length() && o1.getFileName().substring(0, 2).equals(o2.getFileName().substring(0, 2))) {
+                            return o1.getFileName().length() - o2.getFileName().length();
+                        }
+                    }
                     return o1.getFileName().compareTo(o2.getFileName());
                 });
             } else {
@@ -198,6 +221,10 @@ public class DownloadRecordsActivity extends BaseSlideActivity {
 
     @Override
     public void onBackPressed() {
+        if (StringUtil.isNotEmpty(getDownloadFragment().getSelectFilm())) {
+            getDownloadFragment().backToHome();
+            return;
+        }
         if (!"新增".equals(addBtn.getText().toString())) {
             new XPopup.Builder(getContext())
                     .asConfirm("温馨提示", "排序结果还没有保存哦，建议先点击右上角保存按钮来保存排序结果再退出当前页面，当然也可以选择不保存，确定不保存强制退出该页面？",
@@ -233,20 +260,20 @@ public class DownloadRecordsActivity extends BaseSlideActivity {
                     }).show();
         } else {
             List<DownloadRecord> records = new ArrayList<>();
-            for (DownloadRecord rule : downloadedFragment.getRules()) {
+            for (DownloadRecord rule : getDownloadFragment().getRules()) {
                 if (rule.isSelected()) {
                     records.add(rule);
                 }
             }
             if (CollectionUtil.isEmpty(records)) {
-                downloadedFragment.setMultiDeleting(false);
+                getDownloadFragment().setMultiDeleting(false);
                 clearBtn.setText("清空");
                 ToastMgr.shortCenter(getContext(), "没有选中要删除的内容");
                 return;
             }
             new XPopup.Builder(getContext())
                     .asConfirm("温馨提示", "确认删除选中的" + records.size() + "项内容？", () -> {
-                        downloadedFragment.setMultiDeleting(false);
+                        getDownloadFragment().setMultiDeleting(false);
                         clearBtn.setText("清空");
                         if (loadingPopupView == null) {
                             loadingPopupView = new XPopup.Builder(getContext()).asLoading();

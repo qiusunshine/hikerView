@@ -3,6 +3,7 @@ package com.example.hikerview.service.http;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.example.hikerview.ui.browser.model.UrlDetector;
 import com.example.hikerview.ui.browser.util.CollectionUtil;
 import com.example.hikerview.ui.setting.model.SettingConfig;
 import com.example.hikerview.utils.FileUtil;
@@ -36,6 +37,7 @@ public class CodeUtil {
     public static void get(String url, final String charset, Map<String, String> headers, final OnCodeGetListener listener) {
         long start = System.currentTimeMillis();
         url = url.replace(" ", "");
+        url = UrlDetector.clearTag(url);
         url = StringUtil.decodeConflictStr(url);
         if (headers != null) {
             for (String key : headers.keySet()) {
@@ -108,6 +110,7 @@ public class CodeUtil {
 
     public static void post(String url, HttpParams params, final String charset, Map<String, String> headers, final OnCodeGetListener listener) {
         url = url.replace(" ", "");
+        url = UrlDetector.clearTag(url);
         url = StringUtil.decodeConflictStr(url);
         if (headers != null) {
             for (String key : headers.keySet()) {

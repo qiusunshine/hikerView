@@ -75,11 +75,15 @@ public class RemoteServerManager {
 //        }
     }
 
-    public void destroyServer(){
+    public void destroyServer() {
         if (server != null) {
             server.shutdown();
             server = null;
         }
+    }
+
+    public boolean isServerAlive() {
+        return server != null && server.isRunning();
     }
 
     public DlanUrlDTO getUrlDTO() {

@@ -1,23 +1,41 @@
 package com.example.hikerview.utils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaScannerConnection;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.Toast;
 
+import com.annimon.stream.function.Consumer;
+import com.bumptech.glide.Glide;
+import com.example.hikerview.ui.browser.util.CollectionUtil;
 import com.example.hikerview.ui.view.PopImageLoaderNoView;
+import com.lxj.xpopup.enums.ImageType;
+import com.lxj.xpopup.interfaces.XPopupImageLoader;
 import com.lxj.xpopup.util.XPopupUtils;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import timber.log.Timber;
 
 /**
  * 作者：By hdy
@@ -359,7 +377,7 @@ public class ImgUtil {
      * @param picUrl  picUrl
      * @param baseUrl baseUrl
      */
-    public static void savePic2Gallery(Context context, String picUrl, String baseUrl, OnSaveListener listener){
+    public static void savePic2Gallery(Context context, String picUrl, String baseUrl, OnSaveListener listener) {
 
         com.lxj.xpopup.util.XPermission.create(context, com.lxj.xpopup.util.PermissionConstants.STORAGE)
                 .callback(new com.lxj.xpopup.util.XPermission.SimpleCallback() {
@@ -377,8 +395,128 @@ public class ImgUtil {
 
     }
 
-    public interface OnSaveListener{
+    /**
+     * 保存到相册
+     *
+     * @param context context
+     * @param picUrls picUrls
+     * @param baseUrl baseUrl
+     */
+    public static void savePic2Gallery(Context context, List<String> picUrls, String baseUrl, Consumer<Integer> completeListener) {
+        com.lxj.xpopup.util.XPermission.create(context, com.lxj.xpopup.util.PermissionConstants.STORAGE)
+                .callback(new com.lxj.xpopup.util.XPermission.SimpleCallback() {
+                    @Override
+                    public void onGranted() {
+                        //save bitmap to album.
+                        saveBmpToAlbum(context, new PopImageLoaderNoView(baseUrl), picUrls, completeListener);
+                    }
+
+                    @Override
+                    public void onDenied() {
+                        Toast.makeText(context, "没有保存权限，保存功能无法使用！", Toast.LENGTH_SHORT).show();
+                    }
+                }).request();
+
+    }
+
+
+    public static void saveBmpToAlbum(final Context context, final XPopupImageLoader imageLoader, List<String> uriList,
+                                      Consumer<Integer> completeListener) {
+        if (CollectionUtil.isEmpty(uriList)) {
+            return;
+        }
+        final Handler mainHandler = new Handler(Looper.getMainLooper());
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            int success = 0;
+            for (int i = 0; i < uriList.size(); i++) {
+                String uri = uriList.get(i);
+                File source = imageLoader.getImageFile(context, uri);
+                if (source == null) {
+                    continue;
+                }
+                //1. create path
+                String dirPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + Environment.DIRECTORY_PICTURES;
+                File dirFile = new File(dirPath);
+                if (!dirFile.exists()) {
+                    dirFile.mkdirs();
+                }
+                try {
+                    ImageType type = ImageHeaderParser.getImageType(new FileInputStream(source));
+                    String ext = getFileExt(type);
+                    final File target = new File(dirPath, System.currentTimeMillis() + "." + ext);
+                    if (target.exists()) target.delete();
+                    target.createNewFile();
+                    //2. save
+                    writeFileFromIS(target, new FileInputStream(source));
+                    //3. notify
+                    MediaScannerConnection.scanFile(context, new String[]{target.getAbsolutePath()},
+                            new String[]{"image/" + ext}, (path, uri1) -> mainHandler.post(() -> {
+
+                            }));
+                    success++;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    mainHandler.post(() -> {
+                        Toast.makeText(context, "没有保存权限，保存功能无法使用！", Toast.LENGTH_SHORT).show();
+                    });
+                    break;
+                }
+            }
+            if (completeListener != null) {
+                completeListener.accept(success);
+            }
+        });
+    }
+
+    private static boolean writeFileFromIS(final File file, final InputStream is) {
+        OutputStream os = null;
+        try {
+            os = new BufferedOutputStream(new FileOutputStream(file));
+            byte data[] = new byte[8192];
+            int len;
+            while ((len = is.read(data, 0, 8192)) != -1) {
+                os.write(data, 0, len);
+            }
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (os != null) {
+                    os.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static String getFileExt(ImageType type) {
+        switch (type) {
+            case GIF:
+                return "gif";
+            case PNG:
+            case PNG_A:
+                return "png";
+            case WEBP:
+            case WEBP_A:
+                return "webp";
+            case JPEG:
+                return "jpeg";
+        }
+        return "jpeg";
+    }
+
+    public interface OnSaveListener {
         void success();
+
         void failed(String msg);
     }
 
@@ -428,5 +566,38 @@ public class ImgUtil {
         Uri uri = Uri.fromFile(file);
         intent.setData(uri);
         context.sendBroadcast(intent);
+    }
+
+    public static void downloadImgByGlide(Activity context, String urls, String filePathList) {
+        HeavyTaskUtil.executeNewTask(() -> {
+            String[] ors = urls.split("\\|\\|");
+            for (String url : ors) {
+                if (StringUtil.isNotEmpty(url)) {
+                    try {
+                        downloadImgByGlideSync(context, url, filePathList);
+                        //只要有一个下载成功就结束
+                        return;
+                    } catch (Exception e) {
+                        Timber.e(e);
+                    }
+                }
+            }
+        });
+    }
+
+
+    private static void downloadImgByGlideSync(Activity context, String url, String filePath) throws ExecutionException, InterruptedException, IOException {
+        File file = Glide.with(context).downloadOnly().load(url).submit().get();
+        if (file != null && file.exists()) {
+            File out = new File(filePath);
+            if (out.exists()) {
+                out.delete();
+            } else if (!out.getParentFile().exists()) {
+                out.getParentFile().mkdirs();
+            }
+            FileUtil.copy(file, out);
+        } else {
+            throw new IOException("file not found");
+        }
     }
 }

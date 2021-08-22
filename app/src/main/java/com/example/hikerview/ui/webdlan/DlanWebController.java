@@ -3,17 +3,21 @@ package com.example.hikerview.ui.webdlan;
 import com.alibaba.fastjson.JSON;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
+import com.example.hikerview.constants.ArticleColTypeEnum;
 import com.example.hikerview.constants.JSONPreFilter;
 import com.example.hikerview.constants.PreferenceConstant;
 import com.example.hikerview.constants.UAEnum;
 import com.example.hikerview.event.OnArticleListRuleChangedEvent;
+import com.example.hikerview.event.video.PlayChapterEvent;
 import com.example.hikerview.model.BigTextDO;
 import com.example.hikerview.ui.Application;
 import com.example.hikerview.ui.browser.model.JSManager;
 import com.example.hikerview.ui.browser.util.CollectionUtil;
+import com.example.hikerview.ui.home.model.ArticleListPageRule;
 import com.example.hikerview.ui.home.model.ArticleListRule;
 import com.example.hikerview.ui.home.model.ArticleListRuleJO;
 import com.example.hikerview.ui.js.model.JsRule;
+import com.example.hikerview.ui.video.VideoPlayerActivity;
 import com.example.hikerview.ui.webdlan.model.JsDTO;
 import com.example.hikerview.utils.FilterUtil;
 import com.example.hikerview.utils.PreferenceMgr;
@@ -90,6 +94,12 @@ public class DlanWebController {
         }
     }
 
+    @GetMapping(path = "/getColTypes")
+    @ResponseBody
+    String getColTypes() {
+        return JSON.toJSONString(ArticleColTypeEnum.getCodeArray());
+    }
+
     @GetMapping(path = "/getJsContent")
     @ResponseBody
     String getJsContent(@RequestParam(name = "name") String name) {
@@ -125,6 +135,47 @@ public class DlanWebController {
             return url;
         } else {
             return JSON.toJSONString(RemoteServerManager.instance().getUrlDTO());
+        }
+    }
+
+    @GetMapping(path = "/getPlayList")
+    @ResponseBody
+    String getPlayList() {
+        List<String> chapters = VideoPlayerActivity.getChapters();
+        return JSON.toJSONString(chapters);
+    }
+
+    @GetMapping(path = "/playMe")
+    @ResponseBody
+    String playMe(@RequestParam(name = "title") String title, @RequestParam(name = "index") String index) {
+        try {
+            PlayChapterEvent event = new PlayChapterEvent(Integer.parseInt(index), title);
+            if (!EventBus.getDefault().hasSubscriberForEvent(event.getClass())) {
+                return Boolean.FALSE.toString();
+            } else {
+                EventBus.getDefault().post(event);
+                return Boolean.TRUE.toString();
+            }
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            return Boolean.FALSE.toString();
+        }
+    }
+
+    @GetMapping(path = "/playNext")
+    @ResponseBody
+    String playNext() {
+        try {
+            PlayChapterEvent event = new PlayChapterEvent(-1, null);
+            if (!EventBus.getDefault().hasSubscriberForEvent(event.getClass())) {
+                return Boolean.FALSE.toString();
+            } else {
+                EventBus.getDefault().post(event);
+                return Boolean.TRUE.toString();
+            }
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            return Boolean.FALSE.toString();
         }
     }
 
@@ -226,6 +277,17 @@ public class DlanWebController {
                 rule.setSdetail_find_rule(articleListRule.getSdetail_find_rule());
                 rule.setUa(articleListRule.getUa());
                 rule.setPreRule(articleListRule.getPreRule());
+                rule.setLast_chapter_rule(articleListRule.getLast_chapter_rule());
+
+                try {
+                    List<ArticleListPageRule> pageRules = articleListRule.getPageList();
+                    for (ArticleListPageRule pageRule : pageRules) {
+                        pageRule.setPath(StringUtils.replace(pageRule.getPath(), "hiker://page/", ""));
+                    }
+                    rule.setPages(JSON.toJSONString(pageRules));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 rule.save();
             } else {
                 articleListRule.save();

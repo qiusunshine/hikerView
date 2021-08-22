@@ -9,6 +9,7 @@ import java.util.Map;
  */
 
 public class DlanUrlDTO {
+    private String title;
     private String url;
     private Map<String, String> headers;
     private int jumpStartDuration, jumpEndDuration;
@@ -50,5 +51,13 @@ public class DlanUrlDTO {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

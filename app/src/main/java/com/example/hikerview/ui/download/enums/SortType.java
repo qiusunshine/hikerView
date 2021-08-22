@@ -7,8 +7,8 @@ package com.example.hikerview.ui.download.enums;
  */
 
 public enum SortType {
-    DEFAULT(0, "默认排序"),
-    NAME(1, "按名称排序");
+    DEFAULT(1, "按时间排序"),
+    NAME(0, "按名称排序");
 
 
     private int code;

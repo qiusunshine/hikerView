@@ -14,6 +14,8 @@ import android.net.Uri;
 
 import androidx.core.content.FileProvider;
 
+import com.example.hikerview.R;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -186,7 +188,13 @@ public class FilesInAppUtil {
 
     public static Uri getUri(Context context, String url) {
         if (url.startsWith("file:") || url.startsWith("content") || url.startsWith("/")) {
-            return FileProvider.getUriForFile(context, "com.example.hikerview.provider", new File(url.replaceFirst("file://", "")));
+            try {
+                String authority = context.getResources().getString(R.string.authority);
+                return FileProvider.getUriForFile(context, authority, new File(url.replaceFirst("file://", "")));
+            } catch (Exception e) {
+                e.printStackTrace();
+                return Uri.parse(url);
+            }
         } else {
             return Uri.parse(url);
         }

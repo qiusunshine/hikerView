@@ -2,7 +2,9 @@ package com.example.hikerview.utils;
 
 import android.content.Context;
 
+import com.annimon.stream.function.Consumer;
 import com.example.hikerview.ui.Application;
+import com.example.hikerview.ui.setting.model.SettingConfig;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -34,6 +36,41 @@ import timber.log.Timber;
  */
 
 public class FileUtil {
+
+    public static String getFilePath(String url) {
+        if (url.startsWith("hiker://files/")) {
+            String fileName = url.replace("hiker://files/", "");
+            File file = new File(SettingConfig.rootDir + File.separator + fileName);
+            return file.getAbsolutePath();
+        } else if (url.startsWith("file://")) {
+            url = url.replace("file://", "");
+            File file = new File(url);
+            return file.getAbsolutePath();
+        }
+        return null;
+    }
+
+    public static String getExistFilePath(String url) {
+        if (url.startsWith("hiker://files/")) {
+            String fileName = url.replace("hiker://files/", "");
+            File file = new File(SettingConfig.rootDir + File.separator + fileName);
+            if (file.exists()) {
+                return file.getAbsolutePath();
+            } else {
+                return null;
+            }
+        } else if (url.startsWith("file://")) {
+            url = url.replace("file://", "");
+            File file = new File(url);
+            if (file.exists()) {
+                return file.getAbsolutePath();
+            } else {
+                return null;
+            }
+        }
+        return null;
+    }
+
     //private static final Log Debug = LogFactory.getLog(FileUtil.class);
 
     // 获取从classpath根目录开始读取文件注意转化成中文
@@ -106,6 +143,38 @@ public class FileUtil {
             copyFile(is, os, true);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * 复制文件
+     *
+     * @param source 输入文件
+     * @param target 输出文件
+     */
+    public static void copy(File source, File target) {
+        FileInputStream fileInputStream = null;
+        FileOutputStream fileOutputStream = null;
+        try {
+            fileInputStream = new FileInputStream(source);
+            fileOutputStream = new FileOutputStream(target);
+            byte[] buffer = new byte[1024];
+            while (fileInputStream.read(buffer) > 0) {
+                fileOutputStream.write(buffer);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fileInputStream != null) {
+                    fileInputStream.close();
+                }
+                if (fileOutputStream != null) {
+                    fileOutputStream.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -555,6 +624,44 @@ public class FileUtil {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+
+
+    public static void scanFiles(String dir, Consumer<String> consumer) {
+        File file = new File(dir);
+        if (!file.exists()) {
+            return;
+        }
+        if (file.isFile()) {
+            consumer.accept(file.getAbsolutePath());
+        } else {
+            File[] files = file.listFiles();
+            if (files != null && files.length > 0) {
+                for (File file1 : files) {
+                    scanFiles(file1.getAbsolutePath(), consumer);
+                }
+            }
+        }
+    }
+
+    public static int getFileCount(String dir) {
+        File file = new File(dir);
+        if (!file.exists()) {
+            return 0;
+        }
+        if (file.isFile()) {
+            return 1;
+        } else {
+            int count = 0;
+            File[] files = file.listFiles();
+            if (files != null && files.length > 0) {
+                for (File file1 : files) {
+                    count = count + getFileCount(file1.getAbsolutePath());
+                }
+            }
+            return count;
         }
     }
 }

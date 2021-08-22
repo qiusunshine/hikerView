@@ -31,7 +31,7 @@ public class UriUtils {
      * other file-based ContentProviders.
      *
      * @param context The context.
-     * @param uri The Uri to query.
+     * @param uri     The Uri to query.
      */
     public static String getPath(final Context context, final Uri uri) {
 
@@ -76,7 +76,7 @@ public class UriUtils {
                 }
 
                 final String selection = "_id=?";
-                final String[] selectionArgs = new String[] {
+                final String[] selectionArgs = new String[]{
                         split[1]
                 };
 
@@ -99,9 +99,9 @@ public class UriUtils {
      * Get the value of the data column for this Uri. This is useful for
      * MediaStore Uris, and other file-based ContentProviders.
      *
-     * @param context The context.
-     * @param uri The Uri to query.
-     * @param selection (Optional) Filter used in the query.
+     * @param context       The context.
+     * @param uri           The Uri to query.
+     * @param selection     (Optional) Filter used in the query.
      * @param selectionArgs (Optional) Selection arguments used in the query.
      * @return The value of the _data column, which is typically a file path.
      */
@@ -170,9 +170,11 @@ public class UriUtils {
             }
         });
     }
+
     /**
      * 从content获取路径
-     * @param context context
+     *
+     * @param context    context
      * @param contentUri contentUri
      * @return
      */
@@ -180,7 +182,7 @@ public class UriUtils {
         String fileName = getFileName(contentUri);
         if (!TextUtils.isEmpty(fileName)) {
             File copyFile = new File(copyToFilePath);
-            if(!copyFile.exists()){
+            if (!copyFile.exists()) {
                 copyFile(context, contentUri, copyFile);
             }
             return copyFile.getAbsolutePath();
@@ -188,11 +190,20 @@ public class UriUtils {
         return null;
     }
 
-    public static String getRootDir(Context context){
-        if(!Objects.requireNonNull(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)).exists()){
-            Objects.requireNonNull(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)).mkdir();
+    public static String getRootDir(Context context) {
+        if (!Objects.requireNonNull(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)).exists()) {
+            Objects.requireNonNull(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)).mkdirs();
         }
         return Objects.requireNonNull(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)).getAbsolutePath();
+    }
+
+    public static String getCacheDir(Context context) {
+        String path = getRootDir(context) + File.separator + "cache";
+        File file = new File(path);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        return path;
     }
 
     public static String getFileName(Uri uri) {
@@ -244,8 +255,10 @@ public class UriUtils {
         }
         return count;
     }
+
     public interface LoadListener {
         void success(String s);
+
         void failed(String msg);
     }
 }

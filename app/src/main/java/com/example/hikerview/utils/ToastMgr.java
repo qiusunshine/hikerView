@@ -13,16 +13,25 @@ import android.widget.Toast;
 public class ToastMgr {
 
     public static void shortBottomCenter(Context context, String message) {
+        if(context == null){
+            return;
+        }
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
     }
 
     public static void shortCenter(Context context, String message) {
+        if(context == null){
+            return;
+        }
         Toast toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
         toast.setGravity(Gravity.CENTER, 0, 0);
         toast.show();
     }
 
     public static void longCenter(Context context, String message) {
+        if(context == null){
+            return;
+        }
         Toast toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
         toast.setGravity(Gravity.CENTER, 0, 0);
         toast.show();

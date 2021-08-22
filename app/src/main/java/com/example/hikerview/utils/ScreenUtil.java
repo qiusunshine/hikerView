@@ -4,6 +4,8 @@ package com.example.hikerview.utils;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
 import android.util.DisplayMetrics;
@@ -20,33 +22,33 @@ import java.lang.reflect.Method;
  */
 public class ScreenUtil {
 
-    private static int screenHeight = -1;
-    private static int screenWidth = -1;
-
     public static int getScreenHeight(Activity activity) {
-        if (screenHeight < 0) {
-            WindowManager manager = (activity).getWindowManager();
-            DisplayMetrics outMetrics = new DisplayMetrics();
-            manager.getDefaultDisplay().getMetrics(outMetrics);
-            screenHeight = outMetrics.heightPixels;
-            if (outMetrics.widthPixels > screenHeight) {
-                screenHeight = outMetrics.widthPixels;
-            }
+        WindowManager manager = (activity).getWindowManager();
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        manager.getDefaultDisplay().getMetrics(outMetrics);
+        int screenHeight = outMetrics.heightPixels;
+        if (!isOrientation(activity) && outMetrics.widthPixels > screenHeight) {
+            screenHeight = outMetrics.widthPixels;
         }
         return screenHeight;
     }
 
     public static int getScreenWidth(Activity activity) {
-        if (screenWidth < 0) {
-            WindowManager manager = (activity).getWindowManager();
-            DisplayMetrics outMetrics = new DisplayMetrics();
-            manager.getDefaultDisplay().getMetrics(outMetrics);
-            screenWidth = outMetrics.widthPixels;
-            if (outMetrics.heightPixels < screenWidth) {
-                screenWidth = outMetrics.heightPixels;
-            }
+        WindowManager manager = (activity).getWindowManager();
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        manager.getDefaultDisplay().getMetrics(outMetrics);
+        int screenWidth = outMetrics.widthPixels;
+        if (!isOrientation(activity) && outMetrics.heightPixels < screenWidth) {
+            screenWidth = outMetrics.heightPixels;
         }
         return screenWidth;
+    }
+
+    public static int getScreenMin(Activity activity) {
+        WindowManager manager = (activity).getWindowManager();
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        manager.getDefaultDisplay().getMetrics(outMetrics);
+        return Math.min(outMetrics.widthPixels, outMetrics.heightPixels);
     }
 
     /**
@@ -138,5 +140,16 @@ public class ScreenUtil {
     public static boolean isRtl(Resources res) {
         return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) &&
                 (res.getConfiguration().getLayoutDirection() == View.LAYOUT_DIRECTION_RTL);
+    }
+
+    public static boolean isTablet(Context context) {
+        return (context.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
+    }
+
+    public static boolean isOrientation(Activity activity) {
+        if (activity == null || activity.getResources() == null) {
+            return false;
+        }
+        return activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
     }
 }

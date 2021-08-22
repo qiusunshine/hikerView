@@ -3,6 +3,7 @@ package com.example.hikerview.service.parser;
 import android.text.TextUtils;
 
 import com.example.hikerview.model.MovieRule;
+import com.example.hikerview.ui.home.model.ArticleListRule;
 import com.example.hikerview.utils.StringUtil;
 
 import org.jsoup.Jsoup;
@@ -372,5 +373,76 @@ public class CommonParser {
             eleHtml.add(getUrl(element3, ss4[ss4.length - 1], movieRule, ""));
         }
         return eleHtml;
+    }
+
+    public static String parsePageClassUrl(String urlWithUa, int page, ArticleListRule articleListRule) {
+        if (StringUtil.isEmpty(urlWithUa)) {
+            return urlWithUa;
+        }
+        if (articleListRule == null) {
+            articleListRule = new ArticleListRule();
+        }
+        if (articleListRule.getClass_url() == null) {
+            articleListRule.setClass_url("");
+        }
+        if (articleListRule.getYear_url() == null) {
+            articleListRule.setYear_url("");
+        }
+        if (articleListRule.getArea_url() == null) {
+            articleListRule.setArea_url("");
+        }
+        if (articleListRule.getSort_url() == null) {
+            articleListRule.setSort_url("");
+        }
+        String[] allUrl = urlWithUa.split(";");
+        String url;
+        String[] urls = allUrl[0].split("\\[firstPage=");
+        if (page == 1 && urls.length > 1) {
+            url = urls[1].split("]")[0];
+        } else if (urls[0].contains("fypage@")) {
+            //fypage@-1@*2@/fyclass
+            String[] strings = urls[0].split("fypage@");
+            String[] pages = strings[1].split("@");
+            for (int i = 0; i < pages.length - 1; i++) {
+                if (pages[i].startsWith("-")) {
+                    page = page - Integer.parseInt(pages[i].replace("-", ""));
+                } else if (pages[i].startsWith("+")) {
+                    page = page + Integer.parseInt(pages[i].replace("+", ""));
+                } else if (pages[i].startsWith("*")) {
+                    page = page * Integer.parseInt(pages[i].replace("*", ""));
+                } else if (pages[i].startsWith("/")) {
+                    page = page / Integer.parseInt(pages[i].replace("/", ""));
+                }
+            }
+            //前缀 + page + 后缀
+            url = strings[0] + page + pages[pages.length - 1];
+        } else {
+            url = urls[0].replace("fypage", page + "");
+        }
+        if (url.contains("fyAll")) {
+            if ("class".equals(articleListRule.getFirstHeader())) {
+                url = url.replace("fyAll", articleListRule.getClass_url());
+            } else if ("area".equals(articleListRule.getFirstHeader())) {
+                url = url.replace("fyAll", articleListRule.getArea_url());
+            } else if ("year".equals(articleListRule.getFirstHeader())) {
+                url = url.replace("fyAll", articleListRule.getYear_url());
+            } else if ("sort".equals(articleListRule.getFirstHeader())) {
+                url = url.replace("fyAll", articleListRule.getSort_url());
+            } else {
+                url = url.replace("fyAll", articleListRule.getClass_url());
+            }
+        } else {
+            url = url.replace("fyclass", articleListRule.getClass_url())
+                    .replace("fyyear", articleListRule.getYear_url())
+                    .replace("fyarea", articleListRule.getArea_url())
+                    .replace("fysort", articleListRule.getSort_url());
+        }
+        StringBuilder builder = new StringBuilder(url);
+        if (allUrl.length > 1) {
+            for (int i = 1; i < allUrl.length; i++) {
+                builder.append(";").append(allUrl[i]);
+            }
+        }
+        return builder.toString();
     }
 }

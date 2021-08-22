@@ -45,7 +45,15 @@ class DownloadRecordsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == -1) {
+            return new DirHolder(LayoutInflater.from(context).inflate(R.layout.item_download_dir, parent, false));
+        }
         return new RuleHolder(LayoutInflater.from(context).inflate(R.layout.item_download, parent, false));
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return "dir".equals(list.get(position).getVideoType()) ? -1 : 0;
     }
 
     public String getStatus(DownloadRecord downloadTask) {
@@ -83,22 +91,40 @@ class DownloadRecordsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             }
             holder.downloaded.setText(FileUtil.getFormatedFileSize(record.getTotalDownloaded()));
 //            holder.total.setText(FileUtil.getFormatedFileSize(record.getSize()));
-            holder.bg.setOnClickListener(v -> {
-                if (onItemClickListener != null) {
-                    if (holder.getAdapterPosition() >= 0) {
-                        onItemClickListener.onClick(v, holder.getAdapterPosition());
-                    }
-                }
-            });
-            holder.bg.setOnLongClickListener(v -> {
-                if (onItemClickListener != null) {
-                    if (holder.getAdapterPosition() >= 0) {
-                        onItemClickListener.onLongClick(v, holder.getAdapterPosition());
-                    }
-                }
-                return true;
-            });
+            bindClick(holder.bg, holder);
+        } else if (viewHolder instanceof DirHolder) {
+            DirHolder holder = (DirHolder) viewHolder;
+            DownloadRecord record = list.get(position);
+            String title = record.getSourcePageTitle() + "（" + record.getSourcePageUrl() + "）";
+//            if (record.getSaveTime() > 0) {
+//                title = title + " - " + TimeUtil.formatTime(record.getSaveTime());
+//            }
+            holder.title.setText(title);
+            if (record.isSelected()) {
+                holder.bg.setBackground(context.getDrawable(R.drawable.ripple_disabled_grey));
+            } else {
+                holder.bg.setBackground(context.getDrawable(R.drawable.ripple_white));
+            }
+            bindClick(holder.bg, holder);
         }
+    }
+
+    private void bindClick(View bg, RecyclerView.ViewHolder holder) {
+        bg.setOnClickListener(v -> {
+            if (onItemClickListener != null) {
+                if (holder.getAdapterPosition() >= 0) {
+                    onItemClickListener.onClick(v, holder.getAdapterPosition());
+                }
+            }
+        });
+        bg.setOnLongClickListener(v -> {
+            if (onItemClickListener != null) {
+                if (holder.getAdapterPosition() >= 0) {
+                    onItemClickListener.onLongClick(v, holder.getAdapterPosition());
+                }
+            }
+            return true;
+        });
     }
 
     @Override
@@ -118,6 +144,17 @@ class DownloadRecordsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 //            total = itemView.findViewById(R.id.item_download_total);
             downloaded = itemView.findViewById(R.id.item_download_downloaded);
             speed = itemView.findViewById(R.id.item_download_speed);
+        }
+    }
+
+    private class DirHolder extends RecyclerView.ViewHolder {
+        TextView title;
+        View bg;
+
+        DirHolder(View itemView) {
+            super(itemView);
+            bg = itemView.findViewById(R.id.item_download_bg);
+            title = itemView.findViewById(R.id.item_download_title);
         }
     }
 }

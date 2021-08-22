@@ -9,6 +9,7 @@ import com.example.hikerview.model.ViewCollection;
 import com.example.hikerview.model.ViewHistory;
 import com.example.hikerview.ui.Application;
 import com.example.hikerview.ui.bookmark.model.BookmarkModel;
+import com.example.hikerview.ui.browser.util.CollectionUtil;
 import com.example.hikerview.ui.home.model.ArticleListRule;
 import com.example.hikerview.ui.home.model.ArticleListRuleModel;
 import com.example.hikerview.utils.FilesInAppUtil;
@@ -18,6 +19,7 @@ import com.example.hikerview.utils.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.litepal.LitePal;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -41,9 +43,17 @@ public class HikerRuleUtil {
         } else if (url.startsWith("download")) {
             return JSON.toJSONString(LitePal.findAll(DownloadRecord.class), JSONPreFilter.getSimpleFilter());
         } else if (url.startsWith("collection")) {
-            return JSON.toJSONString(LitePal.findAll(ViewCollection.class), JSONPreFilter.getSimpleFilter());
+            List<ViewCollection> list = LitePal.findAll(ViewCollection.class);
+            if (CollectionUtil.isNotEmpty(list)) {
+                Collections.sort(list);
+            }
+            return JSON.toJSONString(list, JSONPreFilter.getSimpleFilter());
         } else if (url.startsWith("history")) {
-            return JSON.toJSONString(LitePal.findAll(ViewHistory.class), JSONPreFilter.getSimpleFilter());
+            List<ViewHistory> list = LitePal.findAll(ViewHistory.class);
+            if (CollectionUtil.isNotEmpty(list)) {
+                Collections.sort(list);
+            }
+            return JSON.toJSONString(list, JSONPreFilter.getSimpleFilter());
         } else {
             return "";
         }
@@ -61,6 +71,8 @@ public class HikerRuleUtil {
             } else {
                 return js;
             }
+        } else if (url.equals("beautify.js")) {
+            return FilesInAppUtil.getAssetsString(Application.getContext(), url);
         } else {
             return "";
         }
@@ -74,6 +86,8 @@ public class HikerRuleUtil {
             url = url.replace("hiker://", "");
             if (url.startsWith("empty")) {
                 listener.onSuccess(StringUtils.replaceOnce(url, "empty", ""));
+            } else if (url.startsWith("page")) {
+                listener.onSuccess(url);
             } else if (url.startsWith("home")) {
                 HeavyTaskUtil.executeNewTask(() -> {
                     List<ArticleListRule> rules = LitePal.findAll(ArticleListRule.class);

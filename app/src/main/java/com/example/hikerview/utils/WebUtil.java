@@ -6,10 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.alibaba.fastjson.JSON;
 import com.example.hikerview.R;
+import com.example.hikerview.constants.ArticleColTypeEnum;
 import com.example.hikerview.event.WebViewUrlChangedEvent;
 import com.example.hikerview.event.web.WebUpdateUrlEvent;
 import com.example.hikerview.ui.browser.WebViewActivity;
+import com.example.hikerview.ui.home.FilmListActivity;
+import com.example.hikerview.ui.home.model.ArticleListRule;
 import com.example.hikerview.ui.setting.model.SettingConfig;
 import com.example.hikerview.ui.video.PlayerChooser;
 
@@ -17,9 +21,6 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import timber.log.Timber;
 
 /**
  * 作者：By hdy
@@ -31,18 +32,22 @@ public class WebUtil {
     private static final String TAG = "WebUtil";
     private static String showingUrl = "";
 
-    public static void setWebActivityExist(boolean webActivityExist) {
-        WebUtil.webActivityExist.set(webActivityExist);
+    public static WebViewActivity getWebViewActivity() {
+        return webViewActivity;
+    }
+
+    private static WebViewActivity webViewActivity;
+
+    public static void setWebActivity(WebViewActivity webActivity) {
+        webViewActivity = webActivity;
     }
 
     public static boolean isWebActivityExist() {
-        return webActivityExist.get();
+        return webViewActivity != null;
     }
 
-    public static AtomicBoolean webActivityExist = new AtomicBoolean(false);
-
     public static void goWebForce(Context context, String url) {
-        if (webActivityExist.get()) {
+        if (webViewActivity != null) {
             EventBus.getDefault().post(new WebViewUrlChangedEvent(url));
             return;
         }
@@ -58,8 +63,7 @@ public class WebUtil {
     }
 
     public static void goWeb(Context context, String url, boolean newWindow) {
-        Timber.d("goWeb: webActivityExist=%s", webActivityExist);
-        if (context instanceof Activity && webActivityExist.get()) {
+        if (context instanceof Activity && webViewActivity != null) {
             Activity activity = (Activity) context;
             activity.finish();
             EventBus.getDefault().post(new WebUpdateUrlEvent(url, newWindow));
@@ -73,8 +77,7 @@ public class WebUtil {
     }
 
     public static void goWebWithExtraData(Context context, String url, Bundle extraDataBundle) {
-        Timber.d("goWeb: webActivityExist=%s", webActivityExist);
-        if (context instanceof Activity && webActivityExist.get()) {
+        if (context instanceof Activity && webViewActivity != null) {
             Activity activity = (Activity) context;
             Intent intent = new Intent();
             intent.putExtra("url", url);
@@ -132,7 +135,7 @@ public class WebUtil {
     }
 
     public static void goWebFromHistoryVideo(Context context, String url, String title, String videoUrl) {
-        if (webActivityExist.get()) {
+        if (webViewActivity != null) {
             PlayerChooser.startPlayer(context, title, videoUrl);
             return;
         }
@@ -236,6 +239,21 @@ public class WebUtil {
             return;
         }
         FileUtil.stringToFile(content, homeIndex);
+    }
+
+    public static void goX5Page(Context context, String title, String url){
+        ArticleListRule articleListRule1 = new ArticleListRule();
+        articleListRule1.setUrl("hiker://empty");
+        articleListRule1.setFind_rule("js:setResult([{\n" +
+                "    url:\"" + url + "\",\n" +
+                "desc:\"100%&&float\"\n" +
+                "}]);");
+        articleListRule1.setCol_type(ArticleColTypeEnum.X5_WEB_VIEW.getCode());
+        articleListRule1.setTitle(title);
+        Intent intent = new Intent(context, FilmListActivity.class);
+        intent.putExtra("data", JSON.toJSONString(articleListRule1));
+        intent.putExtra("title", title);
+        context.startActivity(intent);
     }
 
     public static String getShowingUrl() {

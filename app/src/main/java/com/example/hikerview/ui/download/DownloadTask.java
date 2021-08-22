@@ -23,6 +23,7 @@ public class DownloadTask {
     private long currentSpeed;//当前速度
     private long lastClearSpeedTime;//最后一次重置lastDurationDownloadSize的时间, 用于计算瞬时速度
     private AtomicLong lastDurationDownloadSize = new AtomicLong(0);//由WorkThread累加，由清零线程消除，清零线程计算速度放到currentSpeed并更新lastClearSpeedTime
+    private String film;
 
     public DownloadTask(String taskId, String fileName, String videoType, String fileExtension, String url, String sourcePageUrl, String sourcePageTitle, Long size) {
         this.taskId = taskId;
@@ -145,5 +146,13 @@ public class DownloadTask {
 
     public void setTotalDownloaded(AtomicLong totalDownloaded) {
         this.totalDownloaded = totalDownloaded;
+    }
+
+    public String getFilm() {
+        return film;
+    }
+
+    public void setFilm(String film) {
+        this.film = film;
     }
 }

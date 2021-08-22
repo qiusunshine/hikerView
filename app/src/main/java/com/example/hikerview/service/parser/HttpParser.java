@@ -83,7 +83,7 @@ public class HttpParser {
                     }
                     String[] kk = sss[i].split("=");
                     if (kk.length >= 2) {
-                        params.put(kk[0], kk[1]);
+                        params.put(kk[0], StringUtil.arrayToString(kk, 1, "="));
                     }
                 }
                 post(ss[0], null, getHeaders(sourceUrl), params, onSearchCallBack);
@@ -116,7 +116,7 @@ public class HttpParser {
                     }
                     String[] kk = sss[i].split("=");
                     if (kk.length >= 2) {
-                        params.put(kk[0], kk[1]);
+                        params.put(kk[0], StringUtil.arrayToString(kk, 1, "="));
                     }
                 }
                 post(ss[0], d[2], getHeaders(sourceUrl), params, onSearchCallBack);
@@ -409,6 +409,31 @@ public class HttpParser {
             e.printStackTrace();
         }
         return url;
+    }
+
+    public static Map<String, String> getParamsByUrl(String url) {
+        if (StringUtil.isEmpty(url)) {
+            return new HashMap<>();
+        }
+        String[] d = url.split(";");
+        Map<String, String> params = new HashMap<>();
+        String[] ss = StringUtil.splitUrlByQuestionMark(d[0]);
+        String[] sss;
+        if (ss.length > 1) {
+            sss = ss[1].split("&");
+        } else {
+            sss = new String[]{};
+        }
+        for (int i = 0; i < sss.length; i++) {
+            if (TextUtils.isEmpty(sss[i])) {
+                continue;
+            }
+            String[] kk = sss[i].split("=");
+            if (kk.length >= 2) {
+                params.put(kk[0], StringUtil.decodeConflictStr(StringUtil.arrayToString(kk, 1, "=")));
+            }
+        }
+        return params;
     }
 
 }

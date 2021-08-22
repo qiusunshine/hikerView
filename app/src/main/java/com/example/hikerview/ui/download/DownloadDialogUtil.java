@@ -1,6 +1,7 @@
 package com.example.hikerview.ui.download;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +9,7 @@ import android.widget.EditText;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 
 import com.example.hikerview.R;
 import com.example.hikerview.ui.browser.util.HttpRequestUtil;
@@ -17,8 +19,11 @@ import com.example.hikerview.utils.PreferenceMgr;
 import com.example.hikerview.utils.StringUtil;
 import com.example.hikerview.utils.ToastMgr;
 import com.king.app.updater.AppUpdater;
+import com.king.app.updater.constant.Constants;
 import com.king.app.updater.http.OkHttpManager;
 import com.lxj.xpopup.XPopup;
+
+import java.io.File;
 
 /**
  * 作者：By 15968
@@ -47,7 +52,11 @@ public class DownloadDialogUtil {
     }
 
     public static void showEditDialog(Activity context, @Nullable String mTitle, @Nullable String mUrl) {
-        if(StringUtil.isNotEmpty(mUrl)){
+        showEditDialog(context, mTitle, mUrl, null);
+    }
+
+    public static void showEditDialog(Activity context, @Nullable String mTitle, @Nullable String mUrl, @Nullable String film) {
+        if (StringUtil.isNotEmpty(mUrl)) {
             mUrl = DownloadChooser.getCanDownloadUrl(context, mUrl);
             mUrl = PlayerChooser.getThirdPlaySource(mUrl);
         }
@@ -87,6 +96,7 @@ public class DownloadDialogUtil {
                         dialog.dismiss();
                         DownloadTask downloadTask = new DownloadTask(
                                 UUIDUtil.genUUID(), null, null, null, url, url, title, 0L);
+                        downloadTask.setFilm(film);
                         DownloadManager.instance().addTask(downloadTask);
                         ToastMgr.shortBottomCenter(context, "已加入下载队列");
                     }
@@ -103,5 +113,31 @@ public class DownloadDialogUtil {
             }
         });
         alertDialog.show();
+    }
+
+    public static String getApkDownloadPath(Context context) {
+        try {
+            File[] files1 = ContextCompat.getExternalFilesDirs(context, Constants.DEFAULT_DIR);
+            String filePath = null;
+            try {
+                if (files1.length > 0) {
+                    filePath = files1[0].getAbsolutePath();
+                } else {
+                    filePath = context.getExternalFilesDir(Constants.DEFAULT_DIR).getAbsolutePath();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (filePath != null && filePath.length() > 0) {
+                File dir = new File(filePath);
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
+                return filePath;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

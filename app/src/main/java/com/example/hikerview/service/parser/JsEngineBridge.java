@@ -3,6 +3,7 @@ package com.example.hikerview.service.parser;
 import android.os.Looper;
 import android.text.TextUtils;
 
+import com.alibaba.fastjson.JSON;
 import com.example.hikerview.constants.ArticleColTypeEnum;
 import com.example.hikerview.model.MovieRule;
 import com.example.hikerview.ui.base.BaseCallback;
@@ -70,8 +71,16 @@ public class JsEngineBridge {
                 }
 
                 @Override
+                public void onUpdate(String action, String data) {
+                    ArticleList articleList = new ArticleList();
+                    articleList.setTitle(data);
+                    callback.bindObjectToView(action, articleList);
+                }
+
+                @Override
                 public void showErr(String msg) {
                     callback.error("JS解析失败", msg, "404", null);
+                    JSEngine.getInstance().log(msg, JSON.toJSON(articleListRule));
                 }
             });
         } else {
@@ -104,8 +113,16 @@ public class JsEngineBridge {
                 }
 
                 @Override
+                public void onUpdate(String action, String data) {
+                    ArticleList articleList = new ArticleList();
+                    articleList.setTitle(data);
+                    callback.bindObjectToView(action, articleList);
+                }
+
+                @Override
                 public void showErr(String msg) {
                     callback.error("JS解析失败", msg, "404", null);
+                    JSEngine.getInstance().log(msg, JSON.toJSON(articleListRule));
                 }
             })).start();
         }
@@ -127,8 +144,14 @@ public class JsEngineBridge {
                 }
 
                 @Override
+                public void onUpdate(String action, String data) {
+                    callback.onUpdate(action, data);
+                }
+
+                @Override
                 public void showErr(String msg) {
                     callback.showErr(msg);
+                    JSEngine.getInstance().log(msg, JSON.toJSON(searchEngine));
                 }
             });
         }else {
@@ -139,11 +162,58 @@ public class JsEngineBridge {
                 }
 
                 @Override
+                public void onUpdate(String action, String data) {
+                    callback.onUpdate(action, data);
+                }
+
+                @Override
                 public void showErr(String msg) {
                     callback.showErr(msg);
+                    JSEngine.getInstance().log(msg, JSON.toJSON(searchEngine));
                 }
             })).start();
         }
+    }
+
+    public static void parseLastChapterCallback(String url, String res, ArticleListRule articleListRule, String rule, BaseParseCallback<String> callBack) {
+        if(Looper.myLooper() != Looper.getMainLooper()){
+            JSEngine.getInstance().parseLastChapterRule(url, res, articleListRule, rule, new JSEngine.OnFindCallBack<String>() {
+                @Override
+                public void onSuccess(String data) {
+                    callBack.success(data);
+                }
+
+                @Override
+                public void onUpdate(String action, String data) {
+
+                }
+
+                @Override
+                public void showErr(String msg) {
+                    callBack.error(msg);
+                    JSEngine.getInstance().log(msg, JSON.toJSON(articleListRule));
+                }
+            });
+        } else {
+            new Thread(() -> JSEngine.getInstance().parseLastChapterRule(url, res, articleListRule, rule, new JSEngine.OnFindCallBack<String>() {
+                @Override
+                public void onSuccess(String data) {
+                    callBack.success(data);
+                }
+
+                @Override
+                public void onUpdate(String action, String data) {
+
+                }
+
+                @Override
+                public void showErr(String msg) {
+                    callBack.error(msg);
+                    JSEngine.getInstance().log(msg, JSON.toJSON(articleListRule));
+                }
+            })).start();
+        }
+
     }
 
 }

@@ -31,6 +31,8 @@ public class DlanListPop extends CenterPopupView {
     private String title;
     private DeviceListAdapter adapter;
 
+    private Runnable afterShowTask;
+
     public DlanListPop(@NonNull Activity context, List<ClingDevice> devices) {
         super(context);
         this.devices = devices;
@@ -112,4 +114,19 @@ public class DlanListPop extends CenterPopupView {
         return R.layout.item_dlan_ui_device_pop_layout;
     }
 
+    public Runnable getAfterShowTask() {
+        return afterShowTask;
+    }
+
+    public void setAfterShowTask(Runnable afterShowTask) {
+        this.afterShowTask = afterShowTask;
+    }
+
+    @Override
+    protected void onShow() {
+        super.onShow();
+        if (afterShowTask != null) {
+            afterShowTask.run();
+        }
+    }
 }

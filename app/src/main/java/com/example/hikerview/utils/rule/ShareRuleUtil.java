@@ -10,6 +10,7 @@ import com.example.hikerview.model.SharedAdUrl;
 import com.example.hikerview.ui.browser.util.CollectionUtil;
 import com.example.hikerview.ui.home.model.ArticleListRule;
 import com.example.hikerview.ui.home.model.ArticleListRuleJO;
+import com.example.hikerview.ui.rules.service.RuleImporterManager;
 import com.example.hikerview.ui.rules.utils.PublishHelper;
 import com.example.hikerview.utils.AutoImportHelper;
 import com.example.hikerview.utils.ClipboardUtil;
@@ -38,7 +39,7 @@ public class ShareRuleUtil {
      */
     public static void shareRuleByMoreWay(Activity activity, ArticleListRule rule) {
         new XPopup.Builder(activity)
-                .asCenterList("请选择操作", new String[]{"明文口令分享", "完整编码分享", "提交到云仓库", "云剪贴板分享", "云剪贴板分享2"},
+                .asCenterList("请选择操作", new String[]{"明文口令分享", "完整编码分享", "提交到云仓库", "云剪贴板分享", "云剪贴板分享2", "云剪贴板分享3", "云剪贴板分享4"},
                         ((option, text) -> {
                             if (activity == null || activity.isFinishing()) {
                                 return;
@@ -66,10 +67,16 @@ public class ShareRuleUtil {
                                         AutoImportHelper.shareWithCommand(activity, JSON.toJSONString(ruleJO, JSONPreFilter.getSimpleFilter()), AutoImportHelper.HOME_RULE);
                                         break;
                                     case "云剪贴板分享":
-                                        shareRuleByPasteme(activity, rule, shareRulePrefix);
+                                        shareRuleByCloudClip(activity, rule, shareRulePrefix, RuleImporterManager.Importer.Num1);
                                         break;
                                     case "云剪贴板分享2":
-                                        shareRuleByNetCut(activity, rule, shareRulePrefix);
+                                        shareRuleByCloudClip(activity, rule, shareRulePrefix, RuleImporterManager.Importer.Num2);
+                                        break;
+                                    case "云剪贴板分享3":
+                                        shareRuleByCloudClip(activity, rule, shareRulePrefix, RuleImporterManager.Importer.Num3);
+                                        break;
+                                    case "云剪贴板分享4":
+                                        shareRuleByCloudClip(activity, rule, shareRulePrefix, RuleImporterManager.Importer.Num4);
                                         break;
                                     case "提交到云仓库":
                                         PublishHelper.publishRule(activity, rule);
@@ -82,24 +89,8 @@ public class ShareRuleUtil {
                 .show();
     }
 
-    private static void shareRuleByPasteme(Activity activity, ArticleListRule rule1, String shareRulePrefix) {
-        try {
-            ArticleListRuleJO ruleJO1 = new ArticleListRuleJO(rule1);
-            String rule = JSON.toJSONString(ruleJO1, JSONPreFilter.getSimpleFilter());
-            if (FilterUtil.hasFilterWord(rule)) {
-                ToastMgr.shortBottomCenter(activity, "规则含有违禁词，禁止分享");
-                return;
-            }
-            String base64Rule = "base64://@" + ruleJO1.getTitle() + "@" + new String(Base64.encode(rule.getBytes(), Base64.NO_WRAP));
-            String paste = AutoImportHelper.getCommand(shareRulePrefix, StringUtil.replaceLineBlank(base64Rule), AutoImportHelper.HOME_RULE_V2);
 
-            AutoImportHelper.shareByPasteme(activity, paste, ruleJO1.getTitle());
-        } catch (Exception e) {
-            ToastMgr.shortCenter(activity, e.getMessage());
-        }
-    }
-
-    private static void shareRuleByNetCut(Activity activity, ArticleListRule rule1, String shareRulePrefix) {
+    private static void shareRuleByCloudClip(Activity activity, ArticleListRule rule1, String shareRulePrefix, RuleImporterManager.Importer importer) {
         try {
             ArticleListRuleJO ruleJO3 = new ArticleListRuleJO(rule1);
             String originalRuls = JSON.toJSONString(ruleJO3, JSONPreFilter.getSimpleFilter());
@@ -110,7 +101,7 @@ public class ShareRuleUtil {
             String base64Rule = "base64://@" + ruleJO3.getTitle() + "@" + new String(Base64.encode(originalRuls.getBytes(), Base64.NO_WRAP));
             String paste = AutoImportHelper.getCommand(shareRulePrefix, StringUtil.replaceLineBlank(base64Rule), AutoImportHelper.HOME_RULE_V2);
 
-            AutoImportHelper.shareByNetCut(activity, paste, ruleJO3.getTitle(), "规则名");
+            RuleImporterManager.share(importer, activity, paste, ruleJO3.getTitle(), "小程序");
         } catch (Exception e) {
             ToastMgr.shortCenter(activity, e.getMessage());
         }
