@@ -26,6 +26,12 @@ public class AnimUtils {
                 .alpha(0.1f);
     }
 
+    public static ViewPropertyAnimatorCompat setOutAnimX(View view, int offset, boolean ab) {
+        return ViewCompat.animate(view).translationX(ab ? view.getWidth() + offset : -view.getWidth() - offset)
+                .setDuration(500)
+                .alpha(0.1f);
+    }
+
     public static ViewPropertyAnimatorCompat setInAnimX(View view) {
         return ViewCompat.animate(view).translationX(0)
                 .setDuration(500)

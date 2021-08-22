@@ -57,10 +57,16 @@ abstract class BaseView extends FrameLayout {
     protected View exoLoadingLayout, exoPlayPreviewLayout, exoPreviewPlayBtn, exoBarrageLayout;
     /***水印,封面图占位,显示音频和亮度布图*/
     protected ImageView exoPlayWatermark, exoPreviewImage, exoPreviewBottomImage;
+
     /***手势管理布局view***/
     protected final GestureControlView mGestureControlView;
     /***意图管理布局view***/
     protected final ActionControlView mActionControlView;
+
+    public LockControlView getmLockControlView() {
+        return mLockControlView;
+    }
+
     /*** 锁屏管理布局***/
     protected final LockControlView mLockControlView;
     /***锁屏管理布局***/
@@ -71,6 +77,11 @@ abstract class BaseView extends FrameLayout {
     protected AlertDialog alertDialog;
     private boolean networkNotify = true;
     protected ExoPlayerListener mExoPlayerListener;
+
+    public AppCompatImageView getExoControlsBack() {
+        return exoControlsBack;
+    }
+
     /***返回按钮*/
     protected AppCompatImageView exoControlsBack;
 
@@ -79,7 +90,45 @@ abstract class BaseView extends FrameLayout {
     }
 
     /***是否在上面,是否横屏,是否列表播放 默认false,是否切换按钮*/
-    protected boolean isLand, isListPlayer, isShowVideoSwitch, isVerticalFullScreen;
+    protected boolean isLand;
+    protected boolean isListPlayer;
+    protected boolean isShowVideoSwitch;
+    protected boolean isVerticalFullScreen;
+    protected boolean isPipMode;
+
+    protected boolean isLandLayout;
+
+    /**
+     * 在屏幕中央展示提示信息
+     *
+     * @param text
+     */
+    public void showNotice(String text) {
+        if (mGestureControlView != null) {
+            mGestureControlView.showNotice(text);
+        }
+    }
+
+    public String getNotice() {
+        if (mGestureControlView != null) {
+            return mGestureControlView.getNotice();
+        } else {
+            return null;
+        }
+    }
+
+    public boolean isLand() {
+        return isLand;
+    }
+
+    public boolean isLandLayout() {
+        return isLandLayout;
+    }
+
+    public void setLandLayout(boolean landLayout) {
+        isLandLayout = landLayout;
+    }
+
     /**
      * 是否显示返回按钮
      **/
@@ -207,18 +256,6 @@ abstract class BaseView extends FrameLayout {
         setSystemUiVisibility = ((Activity) getContext()).getWindow().getDecorView().getSystemUiVisibility();
 
         exoPreviewPlayBtn = playerView.findViewById(R.id.exo_preview_play);
-
-        playerView.setDoubleClickListener(new ExoPlayerView.OnDoubleClickListener() {
-            @Override
-            public void click() {
-                if(isLock()){
-                    return;
-                }
-                if (getPlay() != null) {
-                    getPlay().setStartOrPause(!getPlay().isPlaying());
-                }
-            }
-        });
     }
 
     /**
@@ -233,6 +270,20 @@ abstract class BaseView extends FrameLayout {
     public boolean isVerticalFullScreen() {
         return isVerticalFullScreen;
     }
+
+    /**
+     * 是否开启竖屏全屏
+     *
+     * @param verticalFullScreen isWGh  默认 false  true 开启
+     */
+    public void setPipMode(boolean verticalFullScreen) {
+        isPipMode = verticalFullScreen;
+    }
+
+    public boolean isPipMode() {
+        return isPipMode;
+    }
+
 
     /**
      * On destroy.
@@ -325,34 +376,54 @@ abstract class BaseView extends FrameLayout {
         alertDialog.show();
     }
 
+    public void toPortraitLayout() {
+        if (!isLandLayout) {
+            return;
+        }
+        ViewGroup parent = (ViewGroup) playerView.getParent();
+        if (parent != null) {
+            parent.removeView(playerView);
+        }
+        LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        addView(playerView, params);
+        isLandLayout = false;
+    }
+
+    public void toLandLayout() {
+        if (isLandLayout) {
+            return;
+        }
+        ViewGroup parent = (ViewGroup) playerView.getParent();
+        if (parent != null) {
+            parent.removeView(playerView);
+        }
+        ViewGroup contentView = ((Activity) getContext()).findViewById(android.R.id.content);
+        LayoutParams params = new LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        );
+        contentView.addView(playerView, params);
+        isLandLayout = true;
+    }
+
     /***
      * 设置内容横竖屏内容
      *
      * @param newConfig 旋转对象
      */
     protected void scaleLayout(int newConfig) {
+        if (isPipMode) {
+            toLandLayout();
+            return;
+        }
         if (isVerticalFullScreen()) {
             scaleVerticalLayout();
             return;
         }
         if (newConfig == Configuration.ORIENTATION_PORTRAIT) {
-            ViewGroup parent = (ViewGroup) playerView.getParent();
-            if (parent != null) {
-                parent.removeView(playerView);
-            }
-            LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            addView(playerView, params);
+            toPortraitLayout();
         } else {
-            ViewGroup parent = (ViewGroup) playerView.getParent();
-            if (parent != null) {
-                parent.removeView(playerView);
-            }
-            ViewGroup contentView = ((Activity) getContext()).findViewById(android.R.id.content);
-            LayoutParams params = new LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-            );
-            contentView.addView(playerView, params);
+            toLandLayout();
         }
     }
 
@@ -400,6 +471,9 @@ abstract class BaseView extends FrameLayout {
                     public void run() {
                         if (parent != null) {
                             parent.removeView(playerView);
+                        }
+                        if (playerView.getParent() != null) {
+                            ((ViewGroup) playerView.getParent()).removeView(playerView);
                         }
                         BaseView.this.addView(playerView);
                     }

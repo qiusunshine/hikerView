@@ -2,9 +2,11 @@ package com.google.android.exoplayer2.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * author  yangc
@@ -14,10 +16,11 @@ import android.widget.FrameLayout;
  */
 public class ExoPlayerView extends PlayerView {
     private static final String TAG = "ExoPlayerView";
-    private final static int DOUBLE_TAP_TIMEOUT = 300;
-    private MotionEvent mCurrentDownEvent;
-    private MotionEvent mPreviousUpEvent;
-    private OnDoubleClickListener doubleClickListener;
+    /**
+     * 自动管理还是手动管理
+     */
+    private boolean autoShowController = true;
+    private List<OnTouchListener> touchListeners;
 
     public ExoPlayerView(Context context) {
         this(context, null);
@@ -31,9 +34,15 @@ public class ExoPlayerView extends PlayerView {
         super(context, attrs, defStyleAttr);
     }
 
-
     public PlayerControlView getControllerView() {
         return controller;
+    }
+
+    public void addTouchListener(OnTouchListener touchListener) {
+        if (touchListeners == null) {
+            touchListeners = new ArrayList<>();
+        }
+        touchListeners.add(touchListener);
     }
 
     public FrameLayout getContentFrameLayout() {
@@ -45,60 +54,49 @@ public class ExoPlayerView extends PlayerView {
     }
 
     @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        Log.d(TAG, "dispatchTouchEvent: " + ev.getAction());
-        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            if (isConsideredDoubleTap(mCurrentDownEvent, mPreviousUpEvent, ev)) {
-                if (getDoubleClickListener() != null) {
-                    getDoubleClickListener().click();
-                }
-            }
-            mCurrentDownEvent = MotionEvent.obtain(ev);
-        } else if (ev.getAction() == MotionEvent.ACTION_UP) {
-            mPreviousUpEvent = MotionEvent.obtain(ev);
-        }
-        return super.dispatchTouchEvent(ev);
-    }
-
-    @Override
     public boolean onTouchEvent(MotionEvent ev) {
+        if (touchListeners != null && !touchListeners.isEmpty()) {
+            for (OnTouchListener touchListener : touchListeners) {
+                touchListener.onTouch(this, ev);
+            }
+        }
         if (!useController || player == null || ev.getActionMasked() != MotionEvent.ACTION_DOWN) {
             return false;
         }
         if (!controllerHideOnTouch) {
             return false;
-        } else if (!controller.isVisible()) {
+        }
+        if (autoShowController) {
+            if (!controller.isVisible()) {
+                controller.setInAnim();
+                maybeShowController(true);
+            } else if (controllerHideOnTouch) {
+                controller.setOutAnim();
+            }
+        }
+        return true;
+    }
+
+    public void reverseController() {
+        if (!useController || player == null) {
+            return;
+        }
+        if (!controllerHideOnTouch) {
+            return;
+        }
+        if (!controller.isVisible()) {
             controller.setInAnim();
             maybeShowController(true);
         } else if (controllerHideOnTouch) {
             controller.setOutAnim();
         }
-        return true;
     }
 
-    private boolean isConsideredDoubleTap(MotionEvent firstDown, MotionEvent firstUp, MotionEvent secondDown) {
-        if (firstDown == null || firstUp == null) {
-            return false;
-        }
-        if (secondDown.getEventTime() - firstUp.getEventTime() > DOUBLE_TAP_TIMEOUT) {
-            return false;
-        }
-        int deltaX = (int) firstUp.getX() - (int) secondDown.getX();
-        int deltaY = (int) firstUp.getY() - (int) secondDown.getY();
-        return deltaX * deltaX + deltaY * deltaY < 10000;
+    public boolean isAutoShowController() {
+        return autoShowController;
     }
 
-    public OnDoubleClickListener getDoubleClickListener() {
-        return doubleClickListener;
+    public void setAutoShowController(boolean autoShowController) {
+        this.autoShowController = autoShowController;
     }
-
-    public void setDoubleClickListener(OnDoubleClickListener doubleClickListener) {
-        this.doubleClickListener = doubleClickListener;
-    }
-
-    public interface OnDoubleClickListener {
-        void click();
-    }
-
-
 }

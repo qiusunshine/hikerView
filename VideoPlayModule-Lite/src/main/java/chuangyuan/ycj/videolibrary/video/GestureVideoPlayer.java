@@ -69,6 +69,8 @@ public class GestureVideoPlayer extends ExoUserPlayer {
     /***手势音频接口实例***/
     private OnGestureVolumeListener onGestureVolumeListener;
 
+    private OnDoubleTapListener onDoubleTapListener;
+
     /**
      * Instantiates a new Gesture video player.
      *
@@ -115,6 +117,7 @@ public class GestureVideoPlayer extends ExoUserPlayer {
         super(activity, playerView, listener);
         intiViews();
         gestureDetector = new GestureDetector(activity, new PlayerGestureListener(this));
+        videoPlayerView.getPlayerView().setAutoShowController(false);
     }
 
     /**
@@ -129,6 +132,7 @@ public class GestureVideoPlayer extends ExoUserPlayer {
         super(activity, mediaSourceBuilder, playerView);
         intiViews();
         gestureDetector = new GestureDetector(activity, new PlayerGestureListener(this));
+        videoPlayerView.getPlayerView().setAutoShowController(false);
     }
 
     private void intiViews() {
@@ -167,7 +171,7 @@ public class GestureVideoPlayer extends ExoUserPlayer {
                 newPosition = -1;
             }
         }
-        if (player.getPlaybackParameters() != null && player.getPlaybackParameters().speed != VideoPlayerManager.PLAY_SPEED) {
+        if (player != null && player.getPlaybackParameters() != null && player.getPlaybackParameters().speed != VideoPlayerManager.PLAY_SPEED) {
             player.setPlaybackParameters(new PlaybackParameters(VideoPlayerManager.PLAY_SPEED, 1f));
         }
         getPlayerViewListener().showGestureView(View.GONE);
@@ -316,13 +320,16 @@ public class GestureVideoPlayer extends ExoUserPlayer {
             if (!controllerHideOnTouch) {
                 return false;
             } else if (getPlayerViewListener().isLock()) {
+                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                    videoPlayerView.getmLockControlView().reverse();
+                }
                 return false;
             } else if (activity == null || (!VideoPlayUtils.isLand(activity) && !getVideoPlayerView().isNowVerticalFullScreen())) {
                 //竖屏（非竖屏全屏）不执行手势
+                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                    videoPlayerView.getPlayerView().reverseController();
+                }
                 return false;
-            }
-            if (gestureDetector != null && gestureDetector.onTouchEvent(event)) {
-                return true;
             }
             // 处理手势结束
             switch (event.getAction() & MotionEvent.ACTION_MASK) {
@@ -331,9 +338,20 @@ public class GestureVideoPlayer extends ExoUserPlayer {
                     break;
                 default:
             }
+            if (gestureDetector != null && gestureDetector.onTouchEvent(event)) {
+                return true;
+            }
             return false;
         }
     };
+
+    public OnDoubleTapListener getOnDoubleTapListener() {
+        return onDoubleTapListener;
+    }
+
+    public void setOnDoubleTapListener(OnDoubleTapListener onDoubleTapListener) {
+        this.onDoubleTapListener = onDoubleTapListener;
+    }
 
     /****
      * 手势监听类
@@ -344,6 +362,12 @@ public class GestureVideoPlayer extends ExoUserPlayer {
         private boolean toSeek;
         private boolean isNowVerticalFullScreen = false;
         private WeakReference<GestureVideoPlayer> weakReference;
+
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+            videoPlayerView.getPlayerView().reverseController();
+            return super.onSingleTapUp(e);
+        }
 
         @Override
         public void onLongPress(MotionEvent e) {
@@ -358,6 +382,23 @@ public class GestureVideoPlayer extends ExoUserPlayer {
 
         @Override
         public boolean onDoubleTap(MotionEvent e) {
+            if (onDoubleTapListener != null) {
+                if (activity == null || activity.isFinishing()) {
+                    return true;
+                }
+                int width = getPlayerViewListener().getWidth();
+                int gap = width / 6;
+                int right = width - gap;
+                DoubleTapArea tapArea;
+                if (e.getX() < gap) {
+                    tapArea = DoubleTapArea.LEFT;
+                } else if (e.getX() > right) {
+                    tapArea = DoubleTapArea.RIGHT;
+                } else {
+                    tapArea = DoubleTapArea.CENTER;
+                }
+                onDoubleTapListener.onDoubleTap(e, tapArea);
+            }
             return true;
         }
 
@@ -410,4 +451,16 @@ public class GestureVideoPlayer extends ExoUserPlayer {
             return super.onScroll(e1, e2, distanceX, distanceY);
         }
     }
+
+    public enum DoubleTapArea {
+        LEFT,
+        CENTER,
+        RIGHT
+    }
+
+
+    public interface OnDoubleTapListener {
+        void onDoubleTap(MotionEvent e, DoubleTapArea tapArea);
+    }
+
 }

@@ -4,13 +4,15 @@ import android.content.Context;
 
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
-import com.google.android.exoplayer2.upstream.DefaultDataSource;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.Util;
 
 import java.util.Map;
+
+import chuangyuan.ycj.videolibrary.upstream.DefaultDataSource;
+import chuangyuan.ycj.videolibrary.upstream.DefaultDataSourceFactory;
+import chuangyuan.ycj.videolibrary.upstream.DefaultHttpDataSource;
+import chuangyuan.ycj.videolibrary.upstream.DefaultHttpDataSourceFactory;
 
 /**
  * 作者：By 15968
@@ -22,7 +24,7 @@ public class HttpDefaultDataSourceFactory implements DataSource.Factory {
     private final Context context;
     private final DataSource.Factory baseDataSourceFactory;
 
-    private final static String DEFAULT_UA = "Mozilla/5.0 (Linux; U; Android 10; zh-CN; ELE-AL00 Build/HUAWEIELE-AL00) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.108 UCBrowser/12.8.6.1066 Mobile Safari/537.36";
+    private final static String DEFAULT_UA = "Mozilla/5.0 (Linux; Android 11; Mi 10 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.152 Mobile Safari/537.36";
 
     /**
      * Instantiates a new J default data source factory.
@@ -33,7 +35,8 @@ public class HttpDefaultDataSourceFactory implements DataSource.Factory {
     public HttpDefaultDataSourceFactory(Context context) {
         String userAgent = Util.getUserAgent(context, context.getPackageName());
         this.context = context.getApplicationContext();
-        DefaultHttpDataSourceFactory httpDataSourceFactory = new DefaultHttpDataSourceFactory(userAgent, null);
+        DefaultHttpDataSourceFactory httpDataSourceFactory = new DefaultHttpDataSourceFactory(userAgent, null,
+                DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, true);
         this.baseDataSourceFactory = new DefaultDataSourceFactory(context, null, httpDataSourceFactory);
     }
 
@@ -50,7 +53,8 @@ public class HttpDefaultDataSourceFactory implements DataSource.Factory {
                 userAgent = headers.get("user-Agent");
             }
         }
-        DefaultHttpDataSourceFactory httpDataSourceFactory = new DefaultHttpDataSourceFactory(userAgent, null);
+        DefaultHttpDataSourceFactory httpDataSourceFactory = new DefaultHttpDataSourceFactory(userAgent, null,
+                DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, true);
         if (headers != null && !headers.isEmpty()) {
             for (String s : headers.keySet()) {
                 httpDataSourceFactory.getDefaultRequestProperties().set(s, headers.get(s));

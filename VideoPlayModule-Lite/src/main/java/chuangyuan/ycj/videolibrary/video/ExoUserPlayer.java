@@ -74,7 +74,7 @@ public class ExoUserPlayer {
     /***当前活动*/
     Activity activity;
     /*** 播放view实例***/
-    private VideoPlayerView videoPlayerView;
+    protected VideoPlayerView videoPlayerView;
     /*** 获取网速大小,获取最后的时间戳,获取当前进度 ***/
     private Long lastTotalRxBytes = 0L, lastTimeStamp = 0L, resumePosition = 0L;
     /*** 是否循环播放  0 不开启,获取当前视频窗口位置***/

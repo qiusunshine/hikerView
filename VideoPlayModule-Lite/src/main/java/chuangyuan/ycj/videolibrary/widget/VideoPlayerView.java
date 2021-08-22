@@ -24,6 +24,7 @@ import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.ui.AnimUtils;
 import com.google.android.exoplayer2.ui.PlayerControlView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import chuangyuan.ycj.videolibrary.R;
@@ -47,6 +48,13 @@ public final class VideoPlayerView extends BaseView {
     }
 
     private boolean isNowVerticalFullScreen = false;
+    private OnLayoutChangeListener onLayoutChangeListener;
+
+    private List<View> bottomAnimateViews = new ArrayList<>();
+
+    private List<View> topAnimateViews = new ArrayList<>();
+
+    private View rightAnimateView;
 
     /**
      * Instantiates a new Video player view.
@@ -178,6 +186,9 @@ public final class VideoPlayerView extends BaseView {
     void doOnConfigurationChanged(int newConfig) {
         //横屏
         fullScreen(newConfig == Configuration.ORIENTATION_LANDSCAPE, true);
+        if (getOnLayoutChangeListener() != null) {
+            getOnLayoutChangeListener().change(newConfig == Configuration.ORIENTATION_LANDSCAPE ? Layout.LAND : Layout.VERTICAL);
+        }
         scaleLayout(newConfig);
     }
 
@@ -278,7 +289,7 @@ public final class VideoPlayerView extends BaseView {
     /****
      * 监听返回键
      ***/
-    private void exitFullView() {
+    public void exitFullView() {
         if (isNowVerticalFullScreen) {
             verticalFullScreen();
         }
@@ -337,18 +348,53 @@ public final class VideoPlayerView extends BaseView {
     private AnimUtils.AnimatorListener animatorListener = new AnimUtils.AnimatorListener() {
         @Override
         public void show(boolean isIn) {
-            mLockControlView.updateLockCheckBox(isIn);
+//            mLockControlView.updateLockCheckBox(isIn);
             if (isIn) {
                 if (isLand) {
-                    showLockState(VISIBLE);
+//                    showLockState(VISIBLE);
                 }
                 AnimUtils.setInAnim(exoControlsBack).start();
+                for (View topAnimateView : topAnimateViews) {
+                    AnimUtils.setInAnim(topAnimateView).start();
+                }
+                for (View bottomAnimateView : bottomAnimateViews) {
+                    AnimUtils.setInAnim(bottomAnimateView).start();
+                }
+                if (rightAnimateView != null) {
+                    AnimUtils.setInAnimX(rightAnimateView).start();
+                }
             } else {
                 AnimUtils.setOutAnim(exoControlsBack, false).start();
+                for (View topAnimateView : topAnimateViews) {
+                    AnimUtils.setOutAnim(topAnimateView, false).start();
+                }
+                for (View bottomAnimateView : bottomAnimateViews) {
+                    AnimUtils.setOutAnim(bottomAnimateView, true).start();
+                }
+                if (rightAnimateView != null) {
+                    AnimUtils.setOutAnimX(rightAnimateView, true).start();
+                }
             }
 
         }
     };
+
+    public void enterFullScreen() {
+        if (isNowVerticalFullScreen) {
+            verticalFullScreen();
+            return;
+        }
+        //切竖屏portrait screen
+        if (VideoPlayUtils.getOrientation(getContext()) == Configuration.ORIENTATION_LANDSCAPE) {
+            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            doOnConfigurationChanged(Configuration.ORIENTATION_PORTRAIT);
+            //切横屏landscape
+        } else if (VideoPlayUtils.getOrientation(getContext()) == Configuration.ORIENTATION_PORTRAIT) {
+            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            doOnConfigurationChanged(Configuration.ORIENTATION_LANDSCAPE);
+        }
+    }
+
     /***
      * 点击事件监听
      */
@@ -357,21 +403,9 @@ public final class VideoPlayerView extends BaseView {
         public void onClick(View v) {
 
             if (v.getId() == R.id.exo_video_fullscreen || v.getId() == R.id.sexo_video_fullscreen) {
-                if (isNowVerticalFullScreen) {
-                    verticalFullScreen();
-                    return;
-                }
-                //切竖屏portrait screen
-                if (VideoPlayUtils.getOrientation(getContext()) == Configuration.ORIENTATION_LANDSCAPE) {
-                    activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                    doOnConfigurationChanged(Configuration.ORIENTATION_PORTRAIT);
-                    //切横屏landscape
-                } else if (VideoPlayUtils.getOrientation(getContext()) == Configuration.ORIENTATION_PORTRAIT) {
-                    activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                    doOnConfigurationChanged(Configuration.ORIENTATION_LANDSCAPE);
-                }
+                enterFullScreen();
             } else if (v.getId() == R.id.exo_controls_back) {
-                activity.finish();
+                activity.onBackPressed();
             } else if (v.getId() == R.id.exo_player_error_btn_id) {
                 if (VideoPlayUtils.isNetworkAvailable(getContext())) {
                     showErrorState(View.GONE);
@@ -567,6 +601,11 @@ public final class VideoPlayerView extends BaseView {
             return playerView == null ? 0 : playerView.getHeight();
         }
 
+        @Override
+        public int getWidth() {
+            return playerView == null ? 0 : playerView.getWidth();
+        }
+
         @SuppressLint("ClickableViewAccessibility")
         @Override
         public void setPlatViewOnTouchListener(OnTouchListener listener) {
@@ -628,15 +667,63 @@ public final class VideoPlayerView extends BaseView {
 
     public void verticalFullScreen() {
         if (isNowVerticalFullScreen) {
+            if (getOnLayoutChangeListener() != null) {
+                getOnLayoutChangeListener().change(Layout.VERTICAL);
+            }
             fullScreen(false, false);
             setLand(false);
             scaleVerticalLayout();
             isNowVerticalFullScreen = false;
         } else {
+            if (getOnLayoutChangeListener() != null) {
+                getOnLayoutChangeListener().change(Layout.VERTICAL_LAND);
+            }
             fullScreen(true, false);
             setLand(true);
             scaleVerticalLayout();
             isNowVerticalFullScreen = true;
         }
+    }
+
+    public OnLayoutChangeListener getOnLayoutChangeListener() {
+        return onLayoutChangeListener;
+    }
+
+    public void setOnLayoutChangeListener(OnLayoutChangeListener onLayoutChangeListener) {
+        this.onLayoutChangeListener = onLayoutChangeListener;
+    }
+
+    public List<View> getBottomAnimateViews() {
+        return bottomAnimateViews;
+    }
+
+    public void setBottomAnimateViews(List<View> bottomAnimateViews) {
+        this.bottomAnimateViews = bottomAnimateViews;
+    }
+
+    public List<View> getTopAnimateViews() {
+        return topAnimateViews;
+    }
+
+    public void setTopAnimateViews(List<View> topAnimateViews) {
+        this.topAnimateViews = topAnimateViews;
+    }
+
+    public View getRightAnimateView() {
+        return rightAnimateView;
+    }
+
+    public void setRightAnimateView(View rightAnimateView) {
+        this.rightAnimateView = rightAnimateView;
+    }
+
+    public enum Layout {
+        VERTICAL,
+        LAND,
+        VERTICAL_LAND
+    }
+
+    public interface OnLayoutChangeListener {
+        void change(Layout layout);
     }
 }

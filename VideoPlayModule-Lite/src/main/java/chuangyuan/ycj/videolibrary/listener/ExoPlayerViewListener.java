@@ -148,6 +148,12 @@ public interface ExoPlayerViewListener {
     int getHeight();
 
     /***
+     * 获取view 宽度
+     * @return int height
+     */
+    int getWidth();
+
+    /***
      * 手势操作OnTouch 事件
      * @param listener 实例
      */

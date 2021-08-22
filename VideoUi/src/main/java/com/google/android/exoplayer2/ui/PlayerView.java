@@ -960,7 +960,7 @@ public class PlayerView extends FrameLayout {
   }
 
   /** Shows the playback controls, but only if forced or shown indefinitely. */
-  protected void maybeShowController(boolean isForced) {
+  public void maybeShowController(boolean isForced) {
     if (isPlayingAd() && controllerHideDuringAds) {
       return;
     }

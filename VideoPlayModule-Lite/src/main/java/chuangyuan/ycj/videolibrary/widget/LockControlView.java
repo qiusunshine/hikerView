@@ -15,6 +15,7 @@ import androidx.appcompat.widget.AppCompatCheckBox;
 import com.google.android.exoplayer2.ui.AnimUtils;
 
 import chuangyuan.ycj.videolibrary.R;
+import chuangyuan.ycj.videolibrary.utils.VideoPlayUtils;
 
 /**
  * author  yangc
@@ -24,7 +25,7 @@ import chuangyuan.ycj.videolibrary.R;
  */
 
 @SuppressLint("ViewConstructor")
-class LockControlView extends FrameLayout implements View.OnClickListener, AnimUtils.AnimatorListener {
+public class LockControlView extends FrameLayout implements View.OnClickListener, AnimUtils.AnimatorListener {
     private static final String TAG = "LockControlView";
     /***进度条控件*/
     private ExoDefaultTimeBar exoPlayerLockProgress;
@@ -37,6 +38,7 @@ class LockControlView extends FrameLayout implements View.OnClickListener, AnimU
     private boolean isOpenLock = true;
     private boolean isProgress = false;
     private View exoControllerRight, exoControllerLeft;
+    private int lockMarginLeft;
 
 
     public LockControlView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr, @NonNull final BaseView baseView) {
@@ -50,7 +52,21 @@ class LockControlView extends FrameLayout implements View.OnClickListener, AnimU
         exoControllerLeft = baseView.getPlaybackControlView().findViewById(R.id.exo_controller_left);
         lockCheckBox.setVisibility(GONE);
         lockCheckBox.setOnClickListener(this);
-        mBaseView.getPlaybackControlView().setAnimatorListener(this);
+//        mBaseView.getPlaybackControlView().setAnimatorListener(this);
+        lockMarginLeft = VideoPlayUtils.dip2px(getContext(), 10);
+//        mBaseView.getPlayerView().addTouchListener(new OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//                if (!mBaseView.getPlayerView().getUseController() || mBaseView.getPlay() == null || event.getActionMasked() != MotionEvent.ACTION_DOWN) {
+//                    return false;
+//                }
+//                if (!mBaseView.getPlayerView().getControllerHideOnTouch()) {
+//                    return false;
+//                }
+//                show(!mBaseView.getPlaybackControlView().isVisible());
+//                return false;
+//            }
+//        });
         mBaseView.getPlaybackControlView().addUpdateProgressListener(new AnimUtils.UpdateProgressListener() {
             @Override
             public void updateProgress(long position, long bufferedPosition, long duration) {
@@ -83,12 +99,16 @@ class LockControlView extends FrameLayout implements View.OnClickListener, AnimU
         removeCallback();
     }
 
+    public void showLockState(int visibility) {
+        showLockState(visibility, true);
+    }
+
     /***
      * 显示隐藏出锁屏页
      *
      * @param visibility 状态
      */
-    public void showLockState(int visibility) {
+    public void showLockState(int visibility, boolean animate) {
         Log.d(TAG, "showLockState: " + visibility);
         if (exoPlayLockLayout != null) {
             if (mBaseView.isLand) {
@@ -96,7 +116,14 @@ class LockControlView extends FrameLayout implements View.OnClickListener, AnimU
                     mBaseView.getPlaybackControlView().hideNo();
                     mBaseView.showBackView(GONE, true);
                 }
-                lockCheckBox.setVisibility(visibility);
+                if (visibility != VISIBLE) {
+                    updateLockCheckBox(false);
+                } else {
+                    lockCheckBox.setVisibility(visibility);
+                    if (animate) {
+                        updateLockCheckBox(true);
+                    }
+                }
             } else {
                 lockCheckBox.setVisibility(GONE);
             }
@@ -105,11 +132,10 @@ class LockControlView extends FrameLayout implements View.OnClickListener, AnimU
             } else {
                 exoPlayerLockProgress.setVisibility(GONE);
             }
-
         }
     }
 
-    public int getLockState(){
+    public int getLockState() {
         return lockCheckBox.getVisibility();
     }
 
@@ -129,7 +155,7 @@ class LockControlView extends FrameLayout implements View.OnClickListener, AnimU
         public void run() {
             if (mBaseView.isLand) {
                 if (lockCheckBox.getVisibility() == VISIBLE) {
-                    AnimUtils.setOutAnimX(lockCheckBox, false).start();
+                    AnimUtils.setOutAnimX(lockCheckBox, lockMarginLeft, false).start();
                 } else {
                     AnimUtils.setInAnimX(lockCheckBox).start();
                 }
@@ -159,11 +185,11 @@ class LockControlView extends FrameLayout implements View.OnClickListener, AnimU
         Log.d(TAG, "updateLockCheckBox: " + isIn + ", getTranslationX" + lockCheckBox.getTranslationX());
         if (!mBaseView.isLand) return;
         if (lockCheckBox.isChecked()) {
-            if(!isIn && lockCheckBox.getTranslationX() < 0){
+            if (!isIn && lockCheckBox.getTranslationX() < 0) {
                 return;
             }
             if (lockCheckBox.getTranslationX() == 0) {
-                AnimUtils.setOutAnimX(lockCheckBox, false).start();
+                AnimUtils.setOutAnimX(lockCheckBox, lockMarginLeft, false).start();
             } else {
                 AnimUtils.setInAnimX(lockCheckBox).start();
             }
@@ -172,7 +198,7 @@ class LockControlView extends FrameLayout implements View.OnClickListener, AnimU
                 AnimUtils.setInAnimX(lockCheckBox).start();
             } else {
                 if (lockCheckBox.getTag() == null) {
-                    AnimUtils.setOutAnimX(lockCheckBox, false).start();
+                    AnimUtils.setOutAnimX(lockCheckBox, lockMarginLeft, false).start();
                 } else {
                     lockCheckBox.setTag(null);
                 }
@@ -181,6 +207,10 @@ class LockControlView extends FrameLayout implements View.OnClickListener, AnimU
         }
 
 
+    }
+
+    private boolean inScreen() {
+        return lockCheckBox.getTranslationX() == 0;
     }
 
     public void removeCallback() {
@@ -195,7 +225,8 @@ class LockControlView extends FrameLayout implements View.OnClickListener, AnimU
             mBaseView.getPlaybackControlView().setOutAnim();
             boolean shouldShowIndefinitely = mBaseView.playerView.shouldShowControllerIndefinitely();
             if (!shouldShowIndefinitely) {
-                postDelayed(hideAction, mBaseView.playerView.getControllerShowTimeoutMs());
+//                postDelayed(hideAction, mBaseView.playerView.getControllerShowTimeoutMs());
+                AnimUtils.setOutAnimX(lockCheckBox, lockMarginLeft, false).start();
             }
         } else {
             lockCheckBox.setTag(null);
@@ -213,12 +244,16 @@ class LockControlView extends FrameLayout implements View.OnClickListener, AnimU
         isProgress = progress;
     }
 
+    public void reverse() {
+        show(!inScreen());
+    }
+
     @Override
     public void show(boolean isIn) {
         Log.d(TAG, "show: " + isIn);
         if (!mBaseView.isLand) return;
         if (isIn) {
-            showLockState(VISIBLE);
+            showLockState(VISIBLE, false);
             updateLockCheckBox(true);
             if (exoControllerRight != null) {
                 AnimUtils.setInAnimX(exoControllerRight).start();
