@@ -1,0 +1,62 @@
+<!--
+  ~ Copyright (C) 2018 Light Team Software
+  ~
+  ~ This file is part of ModPE IDE.
+  ~
+  ~ ModPE IDE is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ ModPE IDE is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
+
+    <!-- Gutter -->
+    <com.github.ahmadaghazadeh.editor.widget.GutterView
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:id="@+id/gutter"/>
+
+    <!--android:dropDownAnchor="@id/tab_layout"-->
+
+    <!-- Редактор кода -->
+    <!-- Ошибка InflateException может появляться когда в классе есть некоторые implement'ы -->
+    <com.github.ahmadaghazadeh.editor.processor.TextProcessor
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbarStyle="insideInset"
+        android:layerType="software"
+        android:id="@+id/editor"
+        android:textColor="?attr/colorDocText"
+        android:background="?attr/colorDocBackground"
+        android:popupBackground="?attr/colorDropDown"
+        android:bufferType="spannable"
+        android:gravity="top|start"
+       />
+    <!--    -->
+    <!---->
+    <!---->
+    <!-- -->
+    <!-- -->
+    <!---->
+    <!---->
+
+    <!-- Fast Scroller -->
+    <com.github.ahmadaghazadeh.editor.widget.FastScrollerView
+        android:layout_width="@dimen/fastscroller_width"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:id="@+id/fast_scroller"/>
+
+</RelativeLayout>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.hiker.editor.editor.jsc.ZoomCodePaneView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/js_edit_code_pane_bg"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.hiker.editor.editor.jsc.CodePaneBg
+        android:id="@+id/js_edit_code_pane"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+</com.hiker.editor.editor.jsc.ZoomCodePaneView>
