@@ -13,10 +13,13 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.example.hikerview.ui.download.util.UUIDUtil;
 import com.example.hikerview.utils.ClipboardUtil;
+import com.example.hikerview.utils.FileUtil;
 import com.example.hikerview.utils.FilesInAppUtil;
 import com.example.hikerview.utils.StringUtil;
 import com.example.hikerview.utils.TaskUtil;
 import com.example.hikerview.utils.ToastMgr;
+
+import java.io.File;
 
 /**
  * 作者：By hdy
@@ -202,7 +205,9 @@ public class DownloadChooser {
             android.app.DownloadManager.Request request = new android.app.DownloadManager.Request(Uri.parse(url));
             //指定下载路径和下载文件名
             request.setNotificationVisibility(android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-            request.setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, name);
+            String end = FileUtil.getExtension(url).split("#")[0].split("\\?")[0];
+            request.setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOCUMENTS,
+                    "download" + File.separator + StringUtil.filenameFilter(name) + "." + end);
             //获取下载管理器
             android.app.DownloadManager downloadManager = (android.app.DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
             //将下载任务加入下载队列，否则不会进行下载

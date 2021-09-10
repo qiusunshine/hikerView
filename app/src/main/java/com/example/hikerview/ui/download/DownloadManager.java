@@ -1,5 +1,6 @@
 package com.example.hikerview.ui.download;
 
+import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -10,28 +11,43 @@ import com.example.hikerview.event.ShowToastMessageEvent;
 import com.example.hikerview.model.DownloadRecord;
 import com.example.hikerview.ui.Application;
 import com.example.hikerview.ui.browser.util.CollectionUtil;
+import com.example.hikerview.ui.download.merge.VideoProcessManager;
+import com.example.hikerview.ui.download.merge.VideoProcessThreadHandler;
 import com.example.hikerview.ui.download.util.HttpRequestUtil;
 import com.example.hikerview.ui.download.util.ThreadUtil;
 import com.example.hikerview.ui.download.util.UUIDUtil;
 import com.example.hikerview.ui.download.util.VideoFormatUtil;
 import com.example.hikerview.utils.FileUtil;
 import com.example.hikerview.utils.HeavyTaskUtil;
-import com.example.hikerview.utils.PinyinUtil;
+import com.example.hikerview.utils.StringUtil;
+import com.example.hikerview.utils.ToastMgr;
+import com.example.hikerview.utils.UriUtils;
+import com.jeffmony.m3u8library.listener.IVideoTransformListener;
 
+import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.greenrobot.eventbus.EventBus;
 import org.litepal.LitePal;
 
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
+import java.security.Security;
+import java.security.spec.AlgorithmParameterSpec;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -45,10 +61,25 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
+import timber.log.Timber;
+
 /**
  * Created by xm on 17/8/19.
  */
 public class DownloadManager {
+    /**
+     *
+     * 解决java不支持AES/CBC/PKCS7Padding模式解密
+     *
+     */
+    static {
+        Security.addProvider(new BouncyCastleProvider());
+    }
+
     private static final String TAG = "DownloadManager";
     private volatile static DownloadManager sInstance;
     //最大同时进行任务数 maxConcurrentTask
@@ -63,9 +94,9 @@ public class DownloadManager {
     private DownloadManager() {
         DownloadConfig.loadConfig(Application.getContext());
         //启动时把之前正在下载的设置为下载失败
-        LitePal.where("status = ? or status = ? or status = ? or status = ?"
+        LitePal.where("status = ? or status = ? or status = ? or status = ? or status = ?"
                 , DownloadStatusEnum.READY.getCode(), DownloadStatusEnum.LOADING.getCode(),
-                DownloadStatusEnum.RUNNING.getCode(), DownloadStatusEnum.SAVING.getCode())
+                DownloadStatusEnum.RUNNING.getCode(), DownloadStatusEnum.SAVING.getCode(), DownloadStatusEnum.MERGING.getCode())
                 .findAsync(DownloadRecord.class).listen(lastRunRecords -> {
             if (!CollectionUtil.isEmpty(lastRunRecords)) {
                 for (DownloadRecord record : lastRunRecords) {
@@ -173,7 +204,9 @@ public class DownloadManager {
                 if (failedReason != null) {
                     records.get(0).setFailedReason(failedReason);
                 }
-                records.get(0).setFinishedTime(System.currentTimeMillis());
+                if (records.get(0).getFinishedTime() <= 0) {
+                    records.get(0).setFinishedTime(System.currentTimeMillis());
+                }
                 records.get(0).save();
             }
         } catch (Exception e) {
@@ -347,8 +380,8 @@ public class DownloadManager {
                 } else {
                     adjustTitle = title.replace(File.separator, "");
                 }
-                adjustTitle = adjustTitle.replace(" ", "").replace("-", "");
-                fileName = PinyinUtil.instance().getPinyin(adjustTitle) + "_" + System.currentTimeMillis();
+                adjustTitle = adjustTitle.replace(" ", "-");
+                fileName = StringUtil.filenameFilter(adjustTitle) + "_" + System.currentTimeMillis();
             } catch (Exception e) {
                 fileName = UUIDUtil.genUUID();
             }
@@ -649,6 +682,9 @@ public class DownloadManager {
                     taskFailed(downloadTask);
                     return;
                 }
+                if (DownloadConfig.autoMerge) {
+                    autoMerge(downloadTask);
+                }
                 taskFinished(downloadTask.getTaskId(), DownloadStatusEnum.SUCCESS.getCode());
             } catch (Exception e) {
                 System.out.println(Thread.currentThread().getName() + " (" + this.getState() + ") catch InterruptedException.");
@@ -715,6 +751,38 @@ public class DownloadManager {
                 }
             }
             FileUtil.stringToFile(newM3u8FileContent, outputPath + File.separator + newM3u8FileName);
+        }
+    }
+
+    private void autoMerge(DownloadTask downloadTask) {
+        try {
+            List<DownloadRecord> records = LitePal.where("taskId = ?", downloadTask.getTaskId()).limit(1).find(DownloadRecord.class);
+            if (!CollectionUtil.isEmpty(records)) {
+                if (records.get(0).getFinishedTime() <= 0) {
+                    //先更新下完成时间，合并时间不算在里面
+                    records.get(0).setFinishedTime(System.currentTimeMillis());
+                    records.get(0).save();
+                }
+                transformM3U8ToMp4(Application.getContext(), records.get(0), new IVideoTransformListener() {
+                    @Override
+                    public void onTransformProgress(float progress) {
+
+                    }
+
+                    @Override
+                    public void onTransformFailed(Exception e) {
+                        VideoProcessThreadHandler.runOnUiThread(() -> {
+                            ToastMgr.shortCenter(Application.getContext(), downloadTask.getSourcePageTitle() + "合并mp4失败");
+                        });
+                    }
+
+                    @Override
+                    public void onTransformFinished() {
+
+                    }
+                }, true);
+            }
+        } catch (Exception ignored) {
         }
     }
 
@@ -1045,7 +1113,7 @@ public class DownloadManager {
                     FileUtil.deleteDirs(downloadTempDir);
                 }
 
-                downloadTempFile.renameTo(new File(finalDir + File.separator + "video." + downloadTask.getFileExtension()));
+                downloadTempFile.renameTo(new File(finalDir + File.separator + downloadTask.getFileName() + "." + downloadTask.getFileExtension()));
 
                 String videoTitleFilePath = finalDir + File.separator + "videoTitle";
                 String videoName = TextUtils.isEmpty(downloadTask.getSourcePageTitle()) ? downloadTask.getFileName() : downloadTask.getSourcePageTitle();
@@ -1140,6 +1208,341 @@ public class DownloadManager {
 
     public void setTaskThreadMap(Hashtable<String, DownloadThread> taskThreadMap) {
         this.taskThreadMap = taskThreadMap;
+    }
+
+    private static String getContent(Context context, String m3u8Path, String www,
+                                     IVideoTransformListener listener, boolean sync) {
+        File m3u8 = new File(m3u8Path);
+        if (!m3u8.exists()) {
+            if (!sync) {
+                ToastMgr.shortCenter(context, "找不到m3u8文件");
+            }
+            if (listener != null) {
+                listener.onTransformFailed(new Exception("找不到m3u8文件"));
+            }
+            return null;
+        }
+        //转成绝对地址
+        List<String> fileString = new ArrayList<>();
+        try (BufferedReader os = new BufferedReader(new FileReader(m3u8Path))) {
+            String valueString;
+            boolean hasTs = false;
+            while ((valueString = os.readLine()) != null) {
+                if (valueString.startsWith("/")) {
+                    if (!hasTs && valueString.endsWith(".m3u8")) {
+                        return getContent(context, valueString.replace("/", www + "/"), www, listener, sync);
+                    }
+                    fileString.add(valueString.replace("/", www + "/"));
+                    hasTs = true;
+                } else {
+                    fileString.add(valueString);
+                }
+            }
+        } catch (IOException e) {
+            Timber.d(e, "文件异常%s", e.getMessage());
+        }
+        return StringUtil.listToString(fileString, "\n");
+    }
+
+    public static void transformM3U8ToMp4(Context context, DownloadRecord record, IVideoTransformListener listener) {
+        transformM3U8ToMp4(context, record, listener, false);
+    }
+
+    private static void transformM3U8ToMp4(Context context, DownloadRecord record,
+                                           IVideoTransformListener listener, boolean sync) {
+        if (!"player/m3u8".equals(record.getVideoType())) {
+            if (!sync) {
+                ToastMgr.shortCenter(context, "仅支持m3u8格式的合并");
+            }
+            if (listener != null) {
+                listener.onTransformFailed(new Exception("仅支持m3u8格式的合并"));
+            }
+            return;
+        }
+        String www = UriUtils.getRootDir(context) + File.separator + "download" + File.separator + record.getFileName();
+        String m3u8Path = www + File.separator + "index.m3u8";
+        String m3u8Path2 = www + File.separator + "index2.m3u8";
+        String mp4Path = www + File.separator + record.getFileName() + ".mp4";
+        String content = getContent(context, m3u8Path, www, listener, sync);
+        if (content == null) {
+            return;
+        }
+        M3U8Key m3U8Key = getKey(m3u8Path, content);
+        if (m3U8Key != null) {
+            //需要解密
+            Runnable task = () -> {
+                List<String> fileString = new ArrayList<>();
+                String[] s = content.split("\n");
+                for (String valueString : s) {
+                    if (valueString.startsWith("/")) {
+                        try (InputStream inputStream = new FileInputStream(valueString)) {
+                            byte[] c = decrypt(FileUtil.fileToBytes(valueString), inputStream.available(), m3U8Key);
+                            String newFilePath = valueString.replace(".ts", ".xy");
+                            FileUtil.bytesToFile(newFilePath, c);
+                            fileString.add(newFilePath);
+                        } catch (Throwable e) {
+                            e.printStackTrace();
+                        }
+                    } else if (!valueString.contains("EXT-X-KEY")) {
+                        fileString.add(valueString);
+                    }
+                }
+                String newContent = StringUtil.listToString(fileString, "\n");
+                transformInner(context, record, newContent, m3u8Path2, mp4Path, www, listener, sync);
+            };
+            if (sync) {
+                task.run();
+            } else {
+                HeavyTaskUtil.executeNewTask(task);
+            }
+            return;
+        }
+        transformInner(context, record, content, m3u8Path2, mp4Path, www, listener, sync);
+    }
+
+    private static void transformInner(Context context, DownloadRecord record, String content,
+                                       String m3u8Path2, String mp4Path, String www,
+                                       IVideoTransformListener listener, boolean sync) {
+        try {
+            FileUtil.stringToFile(content, m3u8Path2);
+        } catch (IOException e) {
+            e.printStackTrace();
+            if (sync) {
+                if (listener != null) {
+                    listener.onTransformFailed(e);
+                }
+            } else {
+                VideoProcessThreadHandler.runOnUiThread(() -> {
+                    ToastMgr.shortCenter(context, "出错：" + e.getMessage());
+                    if (listener != null) {
+                        listener.onTransformFailed(e);
+                    }
+                });
+            }
+            return;
+        }
+
+        VideoProcessManager.getInstance()
+                .transformM3U8ToMp4(m3u8Path2, mp4Path, new IVideoTransformListener() {
+                    @Override
+                    public void onTransformProgress(float v) {
+                        if (listener != null) {
+                            listener.onTransformProgress(v);
+                        }
+                    }
+
+                    @Override
+                    public void onTransformFailed(Exception e) {
+                        Timber.e(e);
+                        if (sync) {
+                            if (listener != null) {
+                                listener.onTransformFailed(e);
+                            }
+                        } else {
+                            VideoProcessThreadHandler.runOnUiThread(() -> {
+                                ToastMgr.shortCenter(context, "合并失败：" + e.getMessage());
+                                if (listener != null) {
+                                    listener.onTransformFailed(e);
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onTransformFinished() {
+                        Runnable delTask = () -> {
+                            record.setVideoType("normal");
+                            record.setFileExtension("mp4");
+                            record.save();
+                            File dir = new File(www);
+                            if (dir.isDirectory()) {
+                                File[] ts = dir.listFiles();
+                                if (ts != null && ts.length > 0) {
+                                    for (File file : ts) {
+                                        if (file.getAbsolutePath().endsWith(".ts")
+                                                || file.getAbsolutePath().endsWith(".m3u8")
+                                                || file.getAbsolutePath().endsWith(".xy")) {
+                                            file.delete();
+                                        }
+                                    }
+                                }
+                            }
+                        };
+                        if (sync) {
+                            delTask.run();
+                            if (listener != null) {
+                                listener.onTransformFinished();
+                            }
+                        } else {
+                            new Thread(() -> {
+                                delTask.run();
+                                VideoProcessThreadHandler.runOnUiThread(() -> {
+                                    ToastMgr.shortCenter(context, "合并完成");
+                                    if (listener != null) {
+                                        listener.onTransformFinished();
+                                    }
+                                });
+                            }).start();
+                        }
+                    }
+                }, sync);
+    }
+
+    private static class M3U8Key {
+        //解密算法名称
+        private String method;
+
+        //密钥
+        private String key = "";
+
+        //密钥字节
+        private byte[] keyBytes = new byte[16];
+
+        //key是否为字节
+        private boolean isByte = false;
+
+        //IV
+        private String iv = "";
+
+        private String keyContent;
+    }
+
+
+    /**
+     * 解密ts
+     *
+     * @param sSrc   ts文件字节数组
+     * @param length
+     * @return 解密后的字节数组
+     */
+    private static byte[] decrypt(byte[] sSrc, int length, M3U8Key m3U8Key) throws Exception {
+        String sKey = m3U8Key.keyContent;
+        String iv = m3U8Key.iv;
+        String method = m3U8Key.method;
+        boolean isByte = m3U8Key.isByte;
+        byte[] keyBytes = m3U8Key.keyBytes;
+        if (StringUtil.isNotEmpty(method) && !method.contains("AES"))
+            return sSrc;
+        // 判断Key是否正确
+        if (StringUtils.isEmpty(sKey))
+            return null;
+        // 判断Key是否为16位
+        if (sKey.length() != 16 && !isByte) {
+            return sSrc;
+        }
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+        SecretKeySpec keySpec = new SecretKeySpec(isByte ? keyBytes : sKey.getBytes(StandardCharsets.UTF_8), "AES");
+        byte[] ivByte;
+        if (iv.startsWith("0x"))
+            ivByte = hexStringToByteArray(iv.substring(2));
+        else ivByte = iv.getBytes();
+        if (ivByte.length != 16)
+            ivByte = new byte[16];
+        //如果m3u8有IV标签，那么IvParameterSpec构造函数就把IV标签后的内容转成字节数组传进去
+        AlgorithmParameterSpec paramSpec = new IvParameterSpec(ivByte);
+        cipher.init(Cipher.DECRYPT_MODE, keySpec, paramSpec);
+        return cipher.doFinal(sSrc, 0, length);
+    }
+
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        if ((len & 1) == 1) {
+            s = "0" + s;
+            len++;
+        }
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i + 1), 16));
+        }
+        return data;
+    }
+
+    /**
+     * 获取ts解密的密钥，并把ts片段加入set集合
+     *
+     * @param url     密钥链接，如果无密钥的m3u8，则此字段可为空
+     * @param content 内容，如果有密钥，则此字段可以为空
+     * @return ts是否需要解密，null为不解密
+     */
+    private static M3U8Key getKey(String url, String content) {
+        String[] split = content.split("\n");
+        M3U8Key m3U8Key = new M3U8Key();
+        for (String s : split) {
+            //如果含有此字段，则获取加密算法以及获取密钥的链接
+            if (s.contains("EXT-X-KEY")) {
+                String[] split1 = s.split(",");
+                for (String s1 : split1) {
+                    if (s1.contains("METHOD")) {
+                        m3U8Key.method = s1.split("=", 2)[1];
+                        continue;
+                    }
+                    if (s1.contains("URI")) {
+                        m3U8Key.key = s1.split("=", 2)[1];
+                        continue;
+                    }
+                    if (s1.contains("IV"))
+                        m3U8Key.iv = s1.split("=", 2)[1];
+                }
+            }
+        }
+        if (!StringUtil.isEmpty(m3U8Key.key)) {
+            String relativeUrl = url.substring(0, url.lastIndexOf("/") + 1);
+            m3U8Key.key = m3U8Key.key.replace("\"", "");
+            m3U8Key.keyContent = getUrlContent(isUrl(m3U8Key.key) ? m3U8Key.key : mergeUrl(relativeUrl, m3U8Key.key), true, m3U8Key).toString().replaceAll("\\s+", "");
+            return m3U8Key;
+        }
+        return null;
+    }
+
+    private static StringBuilder getUrlContent(String urls, boolean isKey, M3U8Key m3U8Key) {
+        StringBuilder content = new StringBuilder();
+        try (InputStream inputStream = new FileInputStream(urls);
+             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            if (isKey) {
+                byte[] bytes = new byte[128];
+                int len;
+                len = inputStream.read(bytes);
+                m3U8Key.isByte = true;
+                if (len == 1 << 4) {
+                    m3U8Key.keyBytes = Arrays.copyOf(bytes, 16);
+                    content.append("isByte");
+                } else {
+                    content.append(new String(Arrays.copyOf(bytes, len)));
+                }
+                return content;
+            }
+            while ((line = bufferedReader.readLine()) != null) {
+                content.append(line).append("\n");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return content;
+    }
+
+    public static boolean isUrl(String str) {
+        if (StringUtil.isEmpty(str))
+            return false;
+        str = str.trim();
+        return str.matches("^(http|https)://.+");
+    }
+
+    private static String mergeUrl(String start, String end) {
+        if (end.startsWith("/"))
+            end = end.replaceFirst("/", "");
+        int position = 0;
+        String subEnd, tempEnd = end;
+        while ((position = end.indexOf("/", position)) != -1) {
+            subEnd = end.substring(0, position + 1);
+            if (start.endsWith(subEnd)) {
+                tempEnd = end.replaceFirst(subEnd, "");
+                break;
+            }
+            ++position;
+        }
+        return start + tempEnd;
     }
 
 

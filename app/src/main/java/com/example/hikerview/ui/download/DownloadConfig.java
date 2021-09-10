@@ -23,6 +23,7 @@ public class DownloadConfig {
     public static int normalFileHeaderCheckRetryCountOnFail = 20;
     public static long normalFileSplitSize = 2000000;
     public static int normalFileDownloadThreadNum = 6;
+    public static boolean autoMerge = true;
 
     public static void loadConfig(Context context) {
         rootPath = PreferenceMgr.getString(context, "download", "rootPath", UriUtils.getRootDir(context) + File.separator + "download");
@@ -39,6 +40,7 @@ public class DownloadConfig {
         normalFileHeaderCheckRetryCountOnFail = PreferenceMgr.getInt(context, "download", "normalFileHeaderCheckRetryCountOnFail", normalFileHeaderCheckRetryCountOnFail);
         normalFileSplitSize = PreferenceMgr.getLong(context, "download", "normalFileSplitSize", normalFileSplitSize);
         normalFileDownloadThreadNum = PreferenceMgr.getInt(context, "download", "normalFileDownloadThreadNum", normalFileDownloadThreadNum);
+        autoMerge = PreferenceMgr.getBoolean(context, "download", "autoMerge", autoMerge);
     }
 
     public static void setThreadNum(Context context, int m3U8Num, int normalNum){

@@ -130,7 +130,7 @@ public class DownloadRecordsActivity extends BaseSlideActivity {
     private void clickMenu(View view) {
         new XPopup.Builder(getContext())
                 .atView(view)
-                .asAttachList(new String[]{"排序方式", "批量删除", "文件管理", "查看其它文件"}, null,
+                .asAttachList(new String[]{"排序方式", "批量删除", "文件管理", "APK文件"}, null,
                         (position, text) -> {
                             switch (text) {
                                 case "排序方式":
@@ -145,7 +145,7 @@ public class DownloadRecordsActivity extends BaseSlideActivity {
                                     intent2.putExtra("path", DownloadConfig.rootPath);
                                     startActivity(intent2);
                                     break;
-                                case "查看其它文件":
+                                case "APK文件":
                                     String path = DownloadDialogUtil.getApkDownloadPath(getContext());
                                     Intent intent = new Intent(getContext(), FileBrowserActivity.class);
                                     intent.putExtra("path", path);

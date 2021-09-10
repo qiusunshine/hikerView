@@ -25,12 +25,16 @@ import com.example.hikerview.utils.ClipboardUtil;
 import com.example.hikerview.utils.FileUtil;
 import com.example.hikerview.utils.HeavyTaskUtil;
 import com.example.hikerview.utils.PreferenceMgr;
+import com.example.hikerview.utils.ShareUtil;
 import com.example.hikerview.utils.StringUtil;
 import com.example.hikerview.utils.ToastMgr;
+import com.jeffmony.m3u8library.listener.IVideoTransformListener;
 import com.lxj.xpopup.XPopup;
+import com.lxj.xpopup.impl.LoadingPopupView;
 
 import org.litepal.LitePal;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,6 +56,7 @@ public class DownloadRecordsFragment extends BaseFragment {
     private List<DownloadRecord> showList = new ArrayList<>();
     private boolean isSorting = false;
     private boolean isMultiDeleting = false;
+    private LoadingPopupView transformLoadingPopup;
 
     public String getSelectFilm() {
         return selectFilm;
@@ -228,7 +233,13 @@ public class DownloadRecordsFragment extends BaseFragment {
                 operations = new String[]{"删除下载", "重命名标题"};
             } else if (DownloadStatusEnum.SUCCESS.getCode().equals(status) || DownloadStatusEnum.ERROR.getCode().equals(status)
                     || DownloadStatusEnum.CANCEL.getCode().equals(status) || DownloadStatusEnum.BREAK.getCode().equals(status)) {
-                operations = new String[]{"删除下载", "批量删除", "重新下载", "重命名标题", "复制下载链接"};
+                if (DownloadStatusEnum.SUCCESS.getCode().equals(status) && "player/m3u8".equals(record.getVideoType())) {
+                    operations = new String[]{"删除下载", "批量删除", "重新下载", "重命名标题", "复制下载链接", "合并为MP4格式"};
+                } else if (DownloadStatusEnum.SUCCESS.getCode().equals(status) && "normal".equals(record.getVideoType())) {
+                    operations = new String[]{"删除下载", "批量删除", "重新下载", "重命名标题", "复制下载链接", "分享视频文件", "复制文件路径"};
+                } else {
+                    operations = new String[]{"删除下载", "批量删除", "重新下载", "重命名标题", "复制下载链接"};
+                }
             } else {
                 operations = new String[]{"取消下载", "批量取消"};
             }
@@ -288,6 +299,48 @@ public class DownloadRecordsFragment extends BaseFragment {
                             case "复制下载链接":
                                 ClipboardUtil.copyToClipboard(getContext(), record.getSourcePageUrl());
                                 break;
+                            case "分享视频文件":
+                                ShareUtil.findChooserToSend(getContext(), getMp4Path(record));
+                                break;
+                            case "复制文件路径":
+                                ClipboardUtil.copyToClipboard(getContext(), getMp4Path(record));
+                                break;
+                            case "合并为MP4格式":
+                                transformLoadingPopup = new XPopup.Builder(getContext())
+                                        .asLoading("合并中");
+                                transformLoadingPopup.show();
+                                DownloadManager.transformM3U8ToMp4(getContext(), record, new IVideoTransformListener() {
+                                    @Override
+                                    public void onTransformProgress(float v) {
+                                        if (getActivity() == null || getActivity().isFinishing() || isDetached()) {
+                                            return;
+                                        }
+                                        if (transformLoadingPopup != null) {
+                                            transformLoadingPopup.setTitle("合并中" + Math.round(v) + "%");
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onTransformFailed(Exception e) {
+                                        if (getActivity() == null || getActivity().isFinishing() || isDetached()) {
+                                            return;
+                                        }
+                                        if (transformLoadingPopup != null) {
+                                            transformLoadingPopup.dismiss();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onTransformFinished() {
+                                        if (getActivity() == null || getActivity().isFinishing() || isDetached()) {
+                                            return;
+                                        }
+                                        if (transformLoadingPopup != null) {
+                                            transformLoadingPopup.dismiss();
+                                        }
+                                    }
+                                });
+                                break;
                             case "重新下载":
                                 DownloadManager.instance().cancelTask(record.getTaskId());
                                 FileUtil.deleteDirs(DownloadManager.instance().getDownloadDir(record.getFileName()));
@@ -322,6 +375,15 @@ public class DownloadRecordsFragment extends BaseFragment {
                     .show();
         }
     };
+
+    private String getMp4Path(DownloadRecord downloadRecord){
+        String dir = DownloadManager.instance().getDownloadDir(downloadRecord.getFileName());
+        String path = dir + File.separator + "video." + downloadRecord.getFileExtension();
+        if(new File(path).exists()){
+            return path;
+        }
+        return dir + File.separator + downloadRecord.getFileName() + "." + downloadRecord.getFileExtension();
+    }
 
     void batchDelete() {
         new XPopup.Builder(getContext())

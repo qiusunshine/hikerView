@@ -3,6 +3,7 @@ package com.example.hikerview.ui.download;
 import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -55,7 +56,28 @@ public class DownloadDialogUtil {
         showEditDialog(context, mTitle, mUrl, null);
     }
 
+    public static String getFileName(String url) {
+        if (StringUtil.isEmpty(url)) {
+            return url;
+        }
+        String[] s = url.split("#");
+        url = s[0];
+        s = url.split("\\?");
+        url = s[0];
+        int start = url.lastIndexOf("/");
+        if (start != -1 && start < url.length() - 1) {
+            return url.substring(start + 1);
+        } else {
+            //没有/直接取base64
+            return new String(Base64.encode(url.getBytes(), Base64.NO_WRAP));
+        }
+    }
+
     public static void showEditDialog(Activity context, @Nullable String mTitle, @Nullable String mUrl, @Nullable String film) {
+        if (StringUtil.isNotEmpty(mTitle) && mTitle.equals(mUrl)) {
+            //尝试提取一下文件名
+            mTitle = getFileName(mTitle);
+        }
         if (StringUtil.isNotEmpty(mUrl)) {
             mUrl = DownloadChooser.getCanDownloadUrl(context, mUrl);
             mUrl = PlayerChooser.getThirdPlaySource(mUrl);

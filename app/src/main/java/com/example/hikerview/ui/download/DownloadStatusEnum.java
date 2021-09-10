@@ -13,6 +13,7 @@ public enum DownloadStatusEnum {
     RUNNING("running", "下载中"),
     BREAK("break", "下载中断"),
     SAVING("saving", "保存中"),
+    MERGING("merging", "合并中"),
     CANCEL("cancel", "下载取消"),
     SUCCESS("success", "下载完成"),
     ERROR("error", "下载失败"),
