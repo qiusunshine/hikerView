@@ -1,0 +1,286 @@
+apply plugin: 'com.android.application'
+
+def getVersionName() {
+    def name = "5.12"
+    return name
+}
+def publishDate = "1011"
+def dbVersion = "45"
+
+def getVersionCode() {// 获取版本号
+    def versionFile = file('version.properties')// 读取第一步新建的文件
+    if (versionFile.canRead()) {// 判断文件读取异常
+        Properties versionProps = new Properties()
+        versionProps.load(new FileInputStream(versionFile))
+        def versionCode = versionProps['VERSION_CODE'].toInteger()// 读取文件里面的版本号
+        def runTasks = gradle.startParameter.taskNames
+        if (':app:assembleRelease' in runTasks || ':app:packageRelease' in runTasks
+                || ':app:assembleProfessionalRelease' in runTasks
+                || ':app:assembleNormalRelease' in runTasks) {
+            // 版本号自增之后再写入文件（此处是关键，版本号自增+1）
+            versionProps['VERSION_CODE'] = (++versionCode).toString()
+            versionProps.store(versionFile.newWriter(), null)
+        }
+        return versionCode // 返回自增之后的版本号
+    }
+//    else {
+//        throw new GradleException("Could not find version.properties!")
+//    }
+}
+
+def appName = "海阔视界"
+def versionCodeNew = getVersionCode()
+def versionNameNew = getVersionName()
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.0"
+    defaultConfig {
+        applicationId "com.example.hikerview"
+        minSdkVersion 21
+        targetSdkVersion 28
+        versionCode versionCodeNew
+        versionName versionNameNew
+        multiDexEnabled true
+        ndk {
+            abiFilters "armeabi"
+        }
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        renderscriptTargetApi 25
+        renderscriptSupportModeEnabled true
+        vectorDrawables.useSupportLibrary = true
+    }
+
+    flavorDimensions "state"
+    productFlavors {
+        professional {
+            dimension "state"
+            buildConfigField("boolean", "professionalMode", "true")
+            resValue("string", "app_name", "影视VIP")
+        }
+        normal {
+            dimension "state"
+            buildConfigField("boolean", "professionalMode", "false")
+            resValue("string", "app_name", appName)
+        }
+        dev {
+            dimension "state"
+            applicationIdSuffix ".dev"
+            versionNameSuffix "-dev"
+            buildConfigField("boolean", "professionalMode", "false")
+            resValue("string", "authority", "com.example.hikerview.provider.dev")
+            resValue("string", "app_name", appName + "测试版")
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            resValue("string", "authority", "com.example.hikerview.provider")
+        }
+
+        debug {
+            resValue("string", "authority", "com.example.hikerview.provider.dev")
+            resValue("string", "app_name", appName + "开发版")
+        }
+    }
+
+    repositories {
+        flatDir {
+            dirs 'libs'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            def fileName = appName + "_V" + versionNameNew + "_" + publishDate + "_C" + versionCodeNew +
+                    "_db" + dbVersion + ".apk"
+            outputFileName = fileName
+        }
+    }
+
+    packagingOptions {
+        exclude 'META-INF/androidx.localbroadcastmanager_localbroadcastmanager.version'
+        exclude 'META-INF/androidx.customview_customview.version'
+        exclude 'META-INF/androidx.legacy_legacy-support-core-ui.version'
+        exclude 'META-INF/androidx.legacy_legacy-support-core-utils.version'
+        exclude 'META-INF/androidx.slidingpanelayout_slidingpanelayout.version'
+        exclude 'META-INF/androidx.*.version'
+        exclude 'META-INF/proguard/androidx-annotations.pro'
+    }
+
+    dexOptions {
+        maxProcessCount 8
+    }
+
+    testOptions {
+        unitTests.all {
+         unitTests.returnDefaultValues = true
+        }
+    }
+}
+
+dependencies {
+    //brotli
+    api 'com.squareup.okhttp3:okhttp-brotli:4.2.0'
+    api("org.brotli:dec:0.1.2")
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'androidx.appcompat:appcompat:1.3.0-alpha01'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test:runner:1.2.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    implementation 'com.alibaba:fastjson:1.1.72.android'
+    implementation 'com.lzy.net:okgo:3.0.4'
+    implementation 'com.squareup.okhttp3:okhttp:3.14.9'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation('com.github.bumptech.glide:glide:4.10.0')
+    implementation 'com.github.bumptech.glide:annotations:4.10.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
+    implementation "com.github.bumptech.glide:okhttp3-integration:4.10.0"
+    implementation 'org.jsoup:jsoup:1.9.2'
+    implementation 'org.greenrobot:eventbus:3.0.0'
+    //recyclerview
+    implementation(project(':refresh-layout'))      //核心必须依赖
+    implementation(project(':refresh-header'))      //核心必须依赖
+    implementation(project(':refresh-footer'))      //核心必须依赖
+//    implementation('com.futuremind.recyclerfastscroll:fastscroll:0.2.5') { exclude group: 'com.android.support' }
+    //弹窗组件
+    implementation 'com.lxj:xpopup:2.2.23'
+    implementation 'com.google.android:flexbox:1.0.0'
+    //js引擎
+    implementation files('libs/rhino-1.7.13.jar')
+    implementation 'com.google.android.material:material:1.3.0-alpha01'
+    //白色沉浸式状态栏
+    implementation(project(':status-util'))
+    //播放器
+    implementation project(':VideoPlayModule')
+    implementation project(':ffmpeg')
+//    implementation 'com.ycjiang:VideoPlayModule:2.1.91'
+//    implementation 'com.google.android.exoplayer:extension-leanback:2.8.2'
+    //SQL
+    implementation 'org.litepal.android:java:3.0.0'
+    //侧滑返回
+    implementation('com.r0adkll:slidableactivity:2.1.0') {
+        exclude group: 'com.android.support', module: 'support-compat'
+    }
+    //markdown
+    implementation 'com.yydcdut:markdown-processor:0.1.3'
+    //顶部snackbar
+    implementation(project(':mysnackbar'))
+
+    //白色沉浸式状态栏
+    implementation 'com.githang:status-bar-compat:0.7'
+    implementation 'androidx.palette:palette:1.0.0'
+    //引导页
+//    implementation('com.github.Johnjson:GuideActivity:v1.0.1') { exclude group: 'com.android.support' }
+    //下载器
+
+    //统计
+    implementation files('libs/umeng-analytics-7.4.4.jar')
+    implementation files('libs/umeng-common-1.4.1.jar')
+    //投屏
+    implementation(project(':clinglibrary')) { exclude group: 'com.android.support' }
+    //网页投屏
+    implementation 'com.yanzhenjie.andserver:api:2.0.4'
+    annotationProcessor 'com.yanzhenjie.andserver:processor:2.0.4'
+    //进度条
+    implementation 'com.daimajia.numberprogressbar:library:1.4@aar'
+    //stream用法
+    implementation 'com.annimon:stream:1.2.1'
+    //multidex
+    implementation 'androidx.multidex:multidex:2.0.1'
+    //毛玻璃
+    implementation project(':etsblur')
+    //下拉组件
+    implementation project(':dropDown')
+    //权限
+    implementation(project(':xpermission'))
+    //webview缓存
+    implementation 'ren.yale.android:cachewebviewlib:2.1.8'
+
+    implementation 'com.yanzhenjie.recyclerview:x:1.3.2'
+
+    //X5内核
+//    api 'com.tencent.tbs.tbssdk:sdk:43903'
+    implementation files('libs/tbs_sdk_thirdapp_v4.3.0.67_43967_sharewithdownloadwithfile_withoutGame_obfs_20200923_120452.jar')
+
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.15'
+    //adp
+    implementation project(':adblock-android-settings')
+    implementation 'org.adblockplus:adblock-android:3.22'
+    implementation 'androidx.preference:preference:1.0.0'
+    implementation "androidx.legacy:legacy-preference-v14:1.0.0"
+    implementation('androidx.core:core:1.3.0')
+    api 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.legacy:legacy-support-core-ui:1.0.0'
+    implementation 'com.nineoldandroids:library:2.4.0'
+    //crash
+    implementation 'com.github.SJJ-dot:Cockroach:2.0.1'
+
+    //app-updater
+    implementation project(':app-updater')
+    implementation 'com.wang.avi:library:2.1.3'
+    //富文本
+    implementation project(':richtext')
+    implementation 'com.zzhoujay:html:1.0.2'
+//    implementation 'com.github.RebornQ:Html:1.0.2.2-enhance-x'
+    //快速滚动
+    implementation project(':fastscroller')
+
+    //文本排版
+    implementation 'me.codeboy.android:align-text-view:2.3.2'
+
+    //全面屏、刘海屏适配
+    implementation 'com.github.smarxpan:NotchScreenTool:0.0.1'
+
+    //新功能提示
+    implementation project(':xtooltip')
+    implementation 'com.github.florent37:viewtooltip:1.2.2'
+
+    // 折叠布局
+    implementation "com.github.skydoves:expandablelayout:1.0.6"
+    //flex布局
+    implementation 'com.google.android:flexbox:2.0.1'
+    //svg图片
+    implementation 'com.caverock:androidsvg-aar:1.3'
+
+    implementation ('jp.wasabeef:glide-transformations:4.3.0') { exclude group: 'com.github.bumptech.glide' }
+    // If you want to use the GPU Filters
+    implementation 'jp.co.cyberagent.android:gpuimage:2.1.0'
+
+    // 小红点/徽章控件
+    implementation 'com.github.bingoogolapple.BGABadgeView-Android:api:1.2.0'
+    annotationProcessor 'com.github.bingoogolapple.BGABadgeView-Android:compiler:1.2.0'
+
+    // Loading 控件
+    implementation 'com.github.ybq:Android-SpinKit:1.4.0'
+
+    //代码编辑器
+    implementation project(':code-editor')
+    implementation project(':editor')
+
+    //反射
+    implementation 'org.jooq:joor-java-8:0.9.14'
+
+    //测试
+    testImplementation 'org.robolectric:robolectric:3.8'
+    //视频合并
+    implementation (project(':m3u8library')) { exclude group: 'androidx.appcompat' }
+    //java的AES
+    implementation(files('libs/bcprov-jdk16-139.jar'))
+    //进度条
+    implementation 'com.github.youlookwhat:WebProgress:1.2.0'
+}
+
+
+configurations {
+    all*.exclude module: 'versionedparcelable'
+}
+
