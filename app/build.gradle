@@ -1,11 +1,15 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'com.yanzhenjie.andserver'
 
 def getVersionName() {
-    def name = "5.12"
+    def name = "6.5"
     return name
 }
-def publishDate = "1011"
-def dbVersion = "45"
+def publishDate = "1212"
+def dbVersion = "46"
 
 def getVersionCode() {// 获取版本号
     def versionFile = file('version.properties')// 读取第一步新建的文件
@@ -32,8 +36,15 @@ def appName = "海阔视界"
 def versionCodeNew = getVersionCode()
 def versionNameNew = getVersionName()
 
+def signingFilePath = 'signing.gradle'
+def signingFile = rootProject.file(signingFilePath)
+def performSigning = signingFile.canRead()
+if (performSigning) {
+    apply from: signingFile.absolutePath
+}
+
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
     buildToolsVersion "29.0.0"
     defaultConfig {
         applicationId "com.example.hikerview"
@@ -73,14 +84,32 @@ android {
         }
     }
 
+    if (performSigning) {
+        signingConfigs {
+            release {
+                storeFile file(project.signing.storeFilePath)
+                storePassword project.signing.storePassword
+                keyAlias project.signing.keyAlias
+                keyPassword project.signing.keyPassword
+                v1SigningEnabled true
+                v2SigningEnabled true
+            }
+        }
+    }
     buildTypes {
         release {
+            if (performSigning) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             resValue("string", "authority", "com.example.hikerview.provider")
         }
 
         debug {
+            if (performSigning) {
+                signingConfig signingConfigs.release
+            }
             resValue("string", "authority", "com.example.hikerview.provider.dev")
             resValue("string", "app_name", appName + "开发版")
         }
@@ -120,8 +149,12 @@ android {
 
     testOptions {
         unitTests.all {
-         unitTests.returnDefaultValues = true
+            unitTests.returnDefaultValues = true
         }
+    }
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
     }
 }
 
@@ -141,7 +174,7 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation('com.github.bumptech.glide:glide:4.10.0')
     implementation 'com.github.bumptech.glide:annotations:4.10.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
+    kapt 'com.github.bumptech.glide:compiler:4.10.0'
     implementation "com.github.bumptech.glide:okhttp3-integration:4.10.0"
     implementation 'org.jsoup:jsoup:1.9.2'
     implementation 'org.greenrobot:eventbus:3.0.0'
@@ -187,8 +220,8 @@ dependencies {
     //投屏
     implementation(project(':clinglibrary')) { exclude group: 'com.android.support' }
     //网页投屏
-    implementation 'com.yanzhenjie.andserver:api:2.0.4'
-    annotationProcessor 'com.yanzhenjie.andserver:processor:2.0.4'
+    implementation 'com.yanzhenjie.andserver:api:2.1.9'
+    kapt 'com.yanzhenjie.andserver:processor:2.1.9'
     //进度条
     implementation 'com.daimajia.numberprogressbar:library:1.4@aar'
     //stream用法
@@ -217,7 +250,7 @@ dependencies {
     implementation 'org.adblockplus:adblock-android:3.22'
     implementation 'androidx.preference:preference:1.0.0'
     implementation "androidx.legacy:legacy-preference-v14:1.0.0"
-    implementation('androidx.core:core:1.3.0')
+    implementation('androidx.core:core:1.6.0')
     api 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.legacy:legacy-support-core-ui:1.0.0'
     implementation 'com.nineoldandroids:library:2.4.0'
@@ -256,8 +289,8 @@ dependencies {
     implementation 'jp.co.cyberagent.android:gpuimage:2.1.0'
 
     // 小红点/徽章控件
-    implementation 'com.github.bingoogolapple.BGABadgeView-Android:api:1.2.0'
-    annotationProcessor 'com.github.bingoogolapple.BGABadgeView-Android:compiler:1.2.0'
+    api 'com.github.bingoogolapple.BGABadgeView-Android:api:1.2.0'
+    kapt 'com.github.bingoogolapple.BGABadgeView-Android:compiler:1.2.0'
 
     // Loading 控件
     implementation 'com.github.ybq:Android-SpinKit:1.4.0'
@@ -277,10 +310,15 @@ dependencies {
     implementation(files('libs/bcprov-jdk16-139.jar'))
     //进度条
     implementation 'com.github.youlookwhat:WebProgress:1.2.0'
+    runtimeOnly group: 'androidx.collection', name: 'collection', version: '1.1.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    //实时模
+    implementation 'com.github.mmin18:realtimeblurview:1.2.1'
+    //fastjson报错
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 }
 
 
 configurations {
     all*.exclude module: 'versionedparcelable'
 }
-

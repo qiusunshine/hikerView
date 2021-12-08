@@ -140,7 +140,7 @@ public class JSEngine {
             //3分钟自动失效
             .expireAfterAccess(3, TimeUnit.MINUTES)
             .build();
-    public static final String AES_DEFAULT_KEY = "hk6666666109";
+    public static final String AES_DEFAULT_KEY = "1234509854";
 
     public boolean isTraceLog() {
         return traceLog;
