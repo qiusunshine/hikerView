@@ -34,7 +34,28 @@ public class LazyRuleParser {
         }
     }
 
-    public static void parse(Activity context, String[] lazyRule, String codeAndHeader, String myUrl, BaseParseCallback<String> callback) {
+    private static void parseByJs(String prefix, Activity context, Object rule, String[] lazyRule, String myUrl, BaseParseCallback<String> callback) {
+        HeavyTaskUtil.executeNewTask(() -> {
+            try {
+                String res = JSEngine.getInstance().evalJS(JSEngine.getMyRule(rule) + JSEngine.getInstance().generateMY("MY_URL", Utils.escapeJavaScriptString(myUrl))
+                        + StringUtils.replaceOnce(lazyRule[1], prefix, ""), lazyRule[0]);
+                if (context != null && !context.isFinishing()) {
+                    context.runOnUiThread(() -> {
+                        callback.success(res);
+                    });
+                }
+            } catch (Exception e) {
+                if (context != null && !context.isFinishing()) {
+                    context.runOnUiThread(() -> {
+                        DebugUtil.showErrorMsg(context, e);
+                        callback.error(e.getMessage());
+                    });
+                }
+            }
+        });
+    }
+
+    public static void parse(Activity context, Object rule, String[] lazyRule, String codeAndHeader, String myUrl, BaseParseCallback<String> callback) {
         if (lazyRule.length != 2) {
             ToastMgr.shortBottomCenter(context, "动态解析规则有误");
             return;
@@ -42,24 +63,9 @@ public class LazyRuleParser {
         callback.start();
         clearLazyTag(lazyRule);
         if (lazyRule[1].startsWith(".js:")) {
-            HeavyTaskUtil.executeNewTask(() -> {
-                try {
-                    String res = JSEngine.getInstance().evalJS(JSEngine.getInstance().generateMY("MY_URL", Utils.escapeJavaScriptString(myUrl))
-                            + StringUtils.replaceOnce(lazyRule[1], ".js:", ""), lazyRule[0]);
-                    if (context != null && !context.isFinishing()) {
-                        context.runOnUiThread(() -> {
-                            callback.success(res);
-                        });
-                    }
-                } catch (Exception e) {
-                    if (context != null && !context.isFinishing()) {
-                        context.runOnUiThread(() -> {
-                            DebugUtil.showErrorMsg(context, e);
-                            callback.error(e.getMessage());
-                        });
-                    }
-                }
-            });
+            parseByJs(".js:", context, rule, lazyRule, myUrl, callback);
+        } else if (lazyRule[1].startsWith("js:")) {
+            parseByJs("js:", context, rule, lazyRule, myUrl, callback);
         } else {
             String urlTmp = lazyRule[0].contains(";") ? lazyRule[0] : lazyRule[0] + codeAndHeader;
             HttpParser.parseSearchUrlForHtml(urlTmp, new HttpParser.OnSearchCallBack() {

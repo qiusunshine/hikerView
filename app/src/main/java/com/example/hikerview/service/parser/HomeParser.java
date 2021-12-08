@@ -45,6 +45,7 @@ public class HomeParser {
         MovieRule movieInfo = new MovieRule();
         movieInfo.setBaseUrl(baseUrl);
         movieInfo.setSearchUrl(movieChoose.getUrl());
+        movieInfo.setChapterUrl(url);
         try {
             Document doc = Jsoup.parse(s);
             List<ArticleList> lists = new ArrayList<>();
@@ -77,12 +78,12 @@ public class HomeParser {
                     //获取名字
                     if (SettingConfig.developerMode) {
                         try {
-                            getTitle(listBean, movieChoose, movieInfo, elementt, ss[1]);
+                            listBean.setTitle(CommonParser.getTextByRule(elementt, ss[1]));
                         } catch (Exception e) {
                             listBean.setTitle("");
                         }
                     } else {
-                        getTitle(listBean, movieChoose, movieInfo, elementt, ss[1]);
+                        listBean.setTitle(CommonParser.getTextByRule(elementt, ss[1]));
                     }
                     //获取图片链接
                     if (SettingConfig.developerMode) {
@@ -97,12 +98,12 @@ public class HomeParser {
                     //获取详情
                     if (SettingConfig.developerMode) {
                         try {
-                            getDesc(listBean, movieChoose, movieInfo, elementt, ss[3]);
+                            listBean.setDesc(CommonParser.getTextByRule(elementt, ss[3]));
                         } catch (Exception e) {
                             listBean.setDesc("");
                         }
                     } else {
-                        getDesc(listBean, movieChoose, movieInfo, elementt, ss[3]);
+                        listBean.setDesc(CommonParser.getTextByRule(elementt, ss[3]));
                     }
                     //获取链接
                     String urlRule = StringUtil.arrayToString(ss, 4, ss.length, "&&");
@@ -137,40 +138,11 @@ public class HomeParser {
 
     private static void getUrl(String url, ArticleList listBean, MovieRule movieInfo, Element elementt, String rule, String[] allRules, String moreRule) {
         if (allRules.length > 4) {
-            if ("*".equals(rule)) {
-                listBean.setUrl(url);
-            } else {
-                String[] ss6 = rule.split("&&");
-                Element element5;
-                if (ss6.length == 1) {
-                    element5 = elementt;
-                } else {
-                    element5 = CommonParser.getTrueElement(ss6[0], elementt);
-                }
-                for (int i = 1; i < ss6.length - 1; i++) {
-                    element5 = CommonParser.getTrueElement(ss6[i], element5);
-                }
-                listBean.setUrl(CommonParser.getUrl(element5, ss6[ss6.length - 1], movieInfo, movieInfo.getChapterUrl()));
-            }
+            listBean.setUrl(CommonParser.getUrlByRule(url, movieInfo, elementt, rule));
             if (StringUtil.isNotEmpty(moreRule)) {
-//                Log.d(TAG, "getUrl: " + moreRule);
                 listBean.setUrl(listBean.getUrl() + "@rule=" + moreRule);
             }
         }
-    }
-
-    private static void getDesc(ArticleList listBean, ArticleListRule movieChoose, MovieRule movieInfo, Element elementt, String rule) {
-        String[] ss5 = rule.split("&&");
-        Element element4;
-        if (ss5.length == 1) {
-            element4 = elementt;
-        } else {
-            element4 = CommonParser.getTrueElement(ss5[0], elementt);
-        }
-        for (int i = 1; i < ss5.length - 1; i++) {
-            element4 = CommonParser.getTrueElement(ss5[i], element4);
-        }
-        listBean.setDesc(CommonParser.getText(element4, ss5[ss5.length - 1]));
     }
 
     private static void getPicUrl(ArticleList listBean, ArticleListRule movieChoose, MovieRule movieInfo, Element elementt, String rule) {
@@ -180,31 +152,7 @@ public class HomeParser {
                 listBean.setType(ArticleColTypeEnum.TEXT_1.getCode());
             }
         } else {
-            String[] ss4 = rule.split("&&");
-            Element element3;
-            if (ss4.length == 1) {
-                element3 = elementt;
-            } else {
-                element3 = CommonParser.getTrueElement(ss4[0], elementt);
-            }
-            for (int i = 1; i < ss4.length - 1; i++) {
-                element3 = CommonParser.getTrueElement(ss4[i], element3);
-            }
-            listBean.setPic(CommonParser.getUrl(element3, ss4[ss4.length - 1], movieInfo, movieInfo.getChapterUrl()));
+            listBean.setPic(CommonParser.getUrlByRule("*", movieInfo, elementt, rule));
         }
-    }
-
-    private static void getTitle(ArticleList listBean, ArticleListRule movieChoose, MovieRule movieInfo, Element elementt, String rule) {
-        String[] ss3 = rule.split("&&");
-        Element element2;
-        if (ss3.length == 1) {
-            element2 = elementt;
-        } else {
-            element2 = CommonParser.getTrueElement(ss3[0], elementt);
-        }
-        for (int i = 1; i < ss3.length - 1; i++) {
-            element2 = CommonParser.getTrueElement(ss3[i], element2);
-        }
-        listBean.setTitle(CommonParser.getText(element2, ss3[ss3.length - 1]));
     }
 }

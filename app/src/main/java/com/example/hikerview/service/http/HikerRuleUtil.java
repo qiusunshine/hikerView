@@ -35,6 +35,11 @@ public class HikerRuleUtil {
         }
         url = url.replace("hiker://", "");
         if (url.startsWith("home")) {
+            String[] names = url.split("@");
+            if (names.length > 1) {
+                ArticleListRule rule = LitePal.where("title = ?", names[1]).findFirst(ArticleListRule.class);
+                return JSON.toJSONString(rule, JSONPreFilter.getSimpleFilter());
+            }
             List<ArticleListRule> rules = LitePal.findAll(ArticleListRule.class);
             return JSON.toJSONString(ArticleListRuleModel.sort(rules), JSONPreFilter.getSimpleFilter());
         } else if (url.startsWith("bookmark")) {
@@ -89,7 +94,13 @@ public class HikerRuleUtil {
             } else if (url.startsWith("page")) {
                 listener.onSuccess(url);
             } else if (url.startsWith("home")) {
+                String finalUrl = url;
                 HeavyTaskUtil.executeNewTask(() -> {
+                    String[] names = finalUrl.split("@");
+                    if (names.length > 1) {
+                        ArticleListRule rule = LitePal.where("title = ?", names[1]).findFirst(ArticleListRule.class);
+                        listener.onSuccess(JSON.toJSONString(rule, JSONPreFilter.getSimpleFilter()));
+                    }
                     List<ArticleListRule> rules = LitePal.findAll(ArticleListRule.class);
                     listener.onSuccess(JSON.toJSONString(ArticleListRuleModel.sort(rules), JSONPreFilter.getSimpleFilter()));
                 });

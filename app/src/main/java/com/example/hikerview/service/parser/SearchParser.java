@@ -33,6 +33,7 @@ public class SearchParser {
 
     public static void findList(String url, SearchEngine searchEngine, String s, SearchJsCallBack<List<SearchResult>> callback) {
         MovieRule movieInfo = searchEngine.toMovieRule();
+        movieInfo.setChapterUrl(url);
         if (StringUtil.isEmpty(searchEngine.getFindRule())) {
             callBackError(callback, "搜索解析规则不能为空");
             return;
@@ -66,12 +67,12 @@ public class SearchParser {
                     //获取名字
                     if (SettingConfig.developerMode) {
                         try {
-                            getTitle(listBean, url, movieInfo, elementt, ss);
+                            listBean.setTitle(CommonParser.getTextByRule(elementt, ss[1]));
                         } catch (Exception e) {
                             listBean.setTitle("");
                         }
                     } else {
-                        getTitle(listBean, url, movieInfo, elementt, ss);
+                        listBean.setTitle(CommonParser.getTextByRule(elementt, ss[1]));
                     }
                     //获取链接
                     if (SettingConfig.developerMode) {
@@ -135,79 +136,25 @@ public class SearchParser {
 
     }
 
-    private static void getTitle(SearchResult listBean, String url, MovieRule movieInfo, Element elementt, String[] allRules) {
-        String[] ss1 = allRules[1].split("&&");
-        Element element2;
-        if (ss1.length == 1) {
-            element2 = elementt;
-        } else {
-            element2 = CommonParser.getTrueElement(ss1[0], elementt);
-        }
-        for (int i = 1; i < ss1.length - 1; i++) {
-            element2 = CommonParser.getTrueElement(ss1[i], element2);
-        }
-        listBean.setTitle(CommonParser.getText(element2, ss1[ss1.length - 1]));
-    }
-
     private static void getUrl(SearchResult listBean, String url, MovieRule movieInfo, Element elementt, String[] allRules) {
-        String[] ss2 = allRules[2].split("&&");
-        Element element3;
-        if (ss2.length == 1) {
-            element3 = elementt;
-        } else {
-            element3 = CommonParser.getTrueElement(ss2[0], elementt);
-        }
-        for (int i = 1; i < ss2.length - 1; i++) {
-            element3 = CommonParser.getTrueElement(ss2[i], elementt);
-        }
-        listBean.setUrl(CommonParser.getUrl(element3, ss2[ss2.length - 1], movieInfo, url));
+        listBean.setUrl(CommonParser.getUrlByRule(url, movieInfo, elementt, allRules[2]));
     }
 
     private static void getPicUrl(SearchResult listBean, String url, MovieRule movieInfo, Element elementt, String[] allRules) {
         if (allRules.length > 5 && StringUtil.isNotEmpty(allRules[5]) && !"*".equals(allRules[5])) {
-            String[] ss5 = allRules[5].split("&&");
-            Element element5;
-            if (ss5.length == 1) {
-                element5 = elementt;
-            } else {
-                element5 = CommonParser.getTrueElement(ss5[0], elementt);
-            }
-            for (int i = 1; i < ss5.length - 1; i++) {
-                element5 = CommonParser.getTrueElement(ss5[i], element5);
-            }
-            listBean.setImg(CommonParser.getUrl(element5, ss5[ss5.length - 1], movieInfo, movieInfo.getChapterUrl()));
+            listBean.setImg(CommonParser.getUrlByRule("*", movieInfo, elementt, allRules[5]));
         }
     }
 
     private static void getDesc(SearchResult listBean, String url, MovieRule movieInfo, Element elementt, String[] allRules) {
         if (allRules.length > 3 && StringUtil.isNotEmpty(allRules[3]) && !"*".equals(allRules[3])) {
-            String[] ss3 = allRules[3].split("&&");
-            Element element4;
-            if (ss3.length == 1) {
-                element4 = elementt;
-            } else {
-                element4 = CommonParser.getTrueElement(ss3[0], elementt);
-            }
-            for (int i = 1; i < ss3.length - 1; i++) {
-                element4 = CommonParser.getTrueElement(ss3[i], elementt);
-            }
-            listBean.setDescMore(CommonParser.getText(element4, ss3[ss3.length - 1]));
+            listBean.setDescMore(CommonParser.getTextByRule(elementt, allRules[3]));
         }
     }
 
     private static void getContent(SearchResult listBean, String url, MovieRule movieInfo, Element elementt, String[] allRules) {
         if (allRules.length > 4 && StringUtil.isNotEmpty(allRules[4]) && !"*".equals(allRules[4])) {
-            String[] ss4 = allRules[4].split("&&");
-            Element element4;
-            if (ss4.length == 1) {
-                element4 = elementt;
-            } else {
-                element4 = CommonParser.getTrueElement(ss4[0], elementt);
-            }
-            for (int i = 1; i < ss4.length - 1; i++) {
-                element4 = CommonParser.getTrueElement(ss4[i], elementt);
-            }
-            listBean.setContent(CommonParser.getText(element4, ss4[ss4.length - 1]));
+            listBean.setContent(CommonParser.getTextByRule(elementt, allRules[4]));
         }
     }
 

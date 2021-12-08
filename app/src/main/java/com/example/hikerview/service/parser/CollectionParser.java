@@ -2,8 +2,10 @@ package com.example.hikerview.service.parser;
 
 import android.app.Activity;
 
+import com.alibaba.fastjson.JSON;
 import com.example.hikerview.ui.home.model.ArticleListRule;
 import com.example.hikerview.utils.HeavyTaskUtil;
+import com.example.hikerview.utils.StringUtil;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -21,6 +23,16 @@ public class CollectionParser {
         callback.start();
         url = HttpParser.getUrlAppendUA(url, articleListRule.getUa());
         url = CommonParser.parsePageClassUrl(url, 1, articleListRule);
+        if (StringUtil.isNotEmpty(articleListRule.getPreRule())) {
+            //非二级，且有预处理规则
+            try {
+                JSEngine.getInstance().parsePreRule(articleListRule, true);
+            } catch (Exception e) {
+                callback.error("获取更新失败，请前往日志查看报错！");
+                JSEngine.getInstance().log("【预处理】" + e.getMessage(), JSON.toJSON(articleListRule));
+                return;
+            }
+        }
         HttpParser.parseSearchUrlForHtml(url, new HttpParser.OnSearchCallBack() {
             @Override
             public void onSuccess(String url, String res) {
@@ -51,7 +63,8 @@ public class CollectionParser {
                         if (context != null && !context.isFinishing()) {
                             context.runOnUiThread(() -> {
                                 // DebugUtil.showErrorMsg(context, e);
-                                callback.error("获取更新失败，请检查规则是否有误或原站不允许访问！");
+                                callback.error("获取更新失败，请前往日志查看报错！");
+                                JSEngine.getInstance().log("【最新章节】" + e.getMessage(), JSON.toJSON(articleListRule));
                             });
                         }
                     }
@@ -63,7 +76,8 @@ public class CollectionParser {
                 if (context != null && !context.isFinishing()) {
                     context.runOnUiThread(() -> {
 //                        DebugUtil.showErrorMsg(context, new Exception(msg));
-                        callback.error("获取更新失败，请检查网络！");
+                        callback.error("获取更新失败，请前往日志查看报错！");
+                        JSEngine.getInstance().log("【最新章节】" + msg, JSON.toJSON(articleListRule));
                     });
                 }
             }

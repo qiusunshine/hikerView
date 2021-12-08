@@ -11,6 +11,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -121,6 +123,67 @@ public class CommonParser {
         }
     }
 
+    public static String getUrlByRule(String url, MovieRule movieInfo, Element elementt, String rule) {
+        if ("*".equals(rule)) {
+            return url;
+        } else {
+            String[] ss6 = rule.split("&&");
+            Element element5;
+            if (ss6.length == 1) {
+                element5 = elementt;
+            } else {
+                element5 = CommonParser.getTrueElement(ss6[0], elementt);
+            }
+            for (int i = 1; i < ss6.length - 1; i++) {
+                element5 = CommonParser.getTrueElement(ss6[i], element5);
+            }
+            return CommonParser.getUrl(element5, ss6[ss6.length - 1], movieInfo, movieInfo.getChapterUrl());
+        }
+    }
+
+    public static String getTextByRule(Element elementt, String rule) {
+        if (StringUtil.isEmpty(rule) || "*".equals(rule)) {
+            return "";
+        }
+        if (rule.contains(".js:")) {
+            return getAndTextByRule(elementt, rule, "＋");
+        } else {
+            if (rule.contains("＋")) {
+                return getAndTextByRule(elementt, rule, "＋");
+            }
+            return getAndTextByRule(elementt, rule, "\\+");
+        }
+    }
+
+    private static String getAndTextByRule(Element elementt, String rule, String fs) {
+        String[] rules = rule.split(fs);
+        List<String> contents = new ArrayList<>();
+        for (String s : rules) {
+            s = s.trim();
+            if ((s.startsWith("'") && s.endsWith("'"))
+                    || (s.startsWith("\"") && s.endsWith("\""))) {
+                contents.add(s.substring(1, s.length() - 1).replace("\\n", "\n"));
+            } else {
+                contents.add(CommonParser.getContentWithoutAnd(elementt, s));
+            }
+        }
+        return StringUtil.listToString(contents, "");
+    }
+
+    private static String getContentWithoutAnd(Element elementt, String rule) {
+        String[] ss3 = rule.split("&&");
+        Element element2;
+        if (ss3.length == 1) {
+            element2 = elementt;
+        } else {
+            element2 = CommonParser.getTrueElement(ss3[0], elementt);
+        }
+        for (int i = 1; i < ss3.length - 1; i++) {
+            element2 = CommonParser.getTrueElement(ss3[i], element2);
+        }
+        return CommonParser.getText(element2, ss3[ss3.length - 1]);
+    }
+
     public static String getText(Element element, String lastRule) {
         if ("*".equals(lastRule)) {
             return "null";
@@ -220,6 +283,9 @@ public class CommonParser {
             js = StringUtil.arrayToString(ss, 1, ss.length, ".js:");
 //            Log.d(TAG, "getUrlWithoutOr: " + js);
         }
+        if(element3 == null){
+            return "";
+        }
         String url;
 //        String[] rules = lastRule.split("@js:");
         if (lastRule.startsWith("Text")) {
@@ -270,24 +336,8 @@ public class CommonParser {
             return "http:" + url;
         } else if (url.startsWith("magnet") || url.startsWith("thunder") || url.startsWith("ftp") || url.startsWith("ed2k")) {
             return url;
-        } else if (url.startsWith("/")) {
-            if (StringUtil.isEmpty(movieRule.getBaseUrl())) {
-                return url;
-            } else if (movieRule.getBaseUrl().endsWith("/")) {
-                return movieRule.getBaseUrl().substring(0, movieRule.getBaseUrl().length() - 1) + url;
-            } else {
-                return movieRule.getBaseUrl() + url;
-            }
-        } else if (url.startsWith("./")) {
-            String searchUrl = movieRule.getSearchUrl().split(";")[0];
-            String[] c = searchUrl.split("/");
-            if (c.length <= 1) {
-                return url;
-            }
-            String sub = searchUrl.replace(c[c.length - 1], "");
-            return sub + url.replace("./", "");
-        } else if (url.startsWith("?")) {
-            return lastUrl + url;
+        } else if (url.startsWith("/") || url.startsWith("./") || url.startsWith("../") || url.startsWith("?")) {
+            return joinUrl(lastUrl, url);
         } else {
             String[] urls = url.split("\\$");
             if (urls.length > 1 && urls[1].startsWith("http")) {
@@ -299,14 +349,26 @@ public class CommonParser {
                     return urls2[1].split("\\)")[0];
                 }
             }
-            if (StringUtil.isEmpty(movieRule.getBaseUrl())) {
-                return url;
-            } else if (movieRule.getBaseUrl().endsWith("/")) {
-                return movieRule.getBaseUrl() + url;
-            } else {
-                return lastUrl + "/" + url;
-            }
+            return joinUrl(lastUrl, url);
         }
+    }
+
+    private static String joinUrl(String parent, String child) {
+        if (StringUtil.isEmpty(parent)) {
+            return child;
+        }
+        URL url;
+        String q = parent;
+        try {
+            url = new URL(new URL(parent), child);
+            q = url.toExternalForm();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+//        if (q.contains("#")) {
+//            q = q.replaceAll("^(.+?)#.*?$", "$1");
+//        }
+        return q;
     }
 
     public static String parseDomForUrl(String html, String rule, String movieUrl) {
@@ -322,6 +384,7 @@ public class CommonParser {
             element3 = CommonParser.getTrueElement(ss4[i], element3);
         }
         MovieRule movieRule = new MovieRule();
+        movieUrl = HttpParser.getFirstPageUrl(movieUrl);
         movieRule.setBaseUrl(StringUtil.getBaseUrl(movieUrl));
         return CommonParser.getUrl(element3, ss4[ss4.length - 1], movieRule, movieUrl);
     }

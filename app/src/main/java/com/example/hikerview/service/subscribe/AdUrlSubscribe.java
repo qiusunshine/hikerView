@@ -15,6 +15,7 @@ import com.example.hikerview.utils.HeavyTaskUtil;
 import com.example.hikerview.utils.PreferenceMgr;
 import com.example.hikerview.utils.StringUtil;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 
@@ -90,84 +91,53 @@ public class AdUrlSubscribe {
             }
         }
         PreferenceMgr.put(context, "subscribe", "adUrlLastUpdateTime", now);
-        CodeUtil.get(url, new CodeUtil.OnCodeGetListener() {
-            @Override
-            public void onSuccess(String s) {
-                try {
-                    if (TextUtils.isEmpty(s) || contextRef.get() == null) {
-                        return;
-                    }
-                    SubscribeMsg subscribeMsg = JSON.parseObject(s, SubscribeMsg.class);
-                    if (TextUtils.isEmpty(subscribeMsg.getUrlV2())) {
-                        if (listener != null) {
-                            listener.failed("订阅地址为空");
-                        }
-                        return;
-                    }
-                    SubscribeMsg last = getLastUpdate(contextRef.get());
-                    if (last != null && subscribeMsg.getVersion() <= last.getVersion() && subscribeMsg.getDomBlockRuleVersion() <= last.getDomBlockRuleVersion()) {
-                        if (listener != null) {
-                            listener.success("没有更新");
-                        }
-                        return;
-                    }
-                    if (last == null) {
-                        last = new SubscribeMsg();
-                    }
-                    putLastUpdate(contextRef.get(), subscribeMsg);
-                    //更新数据
-                    if (subscribeMsg.getVersion() > last.getVersion()) {
-                        SubscribeMsg finalLast = last;
-                        CodeUtil.get(subscribeMsg.getUrlV2(), new CodeUtil.OnCodeGetListener() {
-                            @Override
-                            public void onSuccess(String s) {
-                                try {
-                                    if (TextUtils.isEmpty(s) || contextRef.get() == null) {
-                                        return;
-                                    }
-                                    FilesInAppUtil.write(contextRef.get(), AD_FILTER_URL_FILE, s);
-                                    AdUrlBlocker.instance().updateSubscribe(contextRef.get());
-                                    if (subscribeMsg.getDomBlockRuleVersion() > finalLast.getDomBlockRuleVersion()) {
-                                        checkDomBlock(contextRef, subscribeMsg.getDomBlockRuleUrl(), listener);
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    if (listener != null) {
-                                        e.printStackTrace();
-                                        listener.failed(e.getMessage());
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onFailure(int errorCode, String msg) {
-                                if (listener != null) {
-                                    listener.failed(msg);
-                                }
-                            }
-                        });
-                    } else if (subscribeMsg.getDomBlockRuleVersion() > last.getDomBlockRuleVersion()) {
-                        checkDomBlock(contextRef, subscribeMsg.getDomBlockRuleUrl(), listener);
-                    } else {
-                        if (listener != null) {
-                            listener.success("没有更新");
-                        }
-                    }
-                } catch (Exception e) {
+        if (url.startsWith("{") && url.endsWith("}")) {
+            try {
+                SubscribeMsg subscribeMsg = JSON.parseObject(url, SubscribeMsg.class);
+                if (subscribeMsg == null || TextUtils.isEmpty(subscribeMsg.getUrlV2())) {
                     if (listener != null) {
-                        e.printStackTrace();
-                        listener.failed(e.getMessage());
+                        listener.failed("订阅地址为空");
                     }
+                    return;
                 }
-            }
+                putLastUpdate(contextRef.get(), subscribeMsg);
+                //更新数据
+                CodeUtil.get(subscribeMsg.getUrlV2(), new CodeUtil.OnCodeGetListener() {
+                    @Override
+                    public void onSuccess(String s) {
+                        try {
+                            if (TextUtils.isEmpty(s) || contextRef.get() == null) {
+                                return;
+                            }
+                            String now = FilesInAppUtil.read(contextRef.get(), AD_FILTER_URL_FILE);
+                            if (!s.equals(now)) {
+                                FilesInAppUtil.write(contextRef.get(), AD_FILTER_URL_FILE, s);
+                                AdUrlBlocker.instance().updateSubscribe(contextRef.get());
+                            }
+                            checkDomBlock(contextRef, subscribeMsg.getDomBlockRuleUrl(), listener);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            if (listener != null) {
+                                listener.failed(e.getMessage());
+                            }
+                        }
+                    }
 
-            @Override
-            public void onFailure(int errorCode, String msg) {
+                    @Override
+                    public void onFailure(int errorCode, String msg) {
+                        if (listener != null) {
+                            listener.failed(msg);
+                        }
+                    }
+                });
+            } catch (Exception e) {
                 if (listener != null) {
-                    listener.failed(msg);
+                    e.printStackTrace();
+                    listener.failed(e.getMessage());
                 }
             }
-        });
+        }
+
     }
 
     private static void checkDomBlock(WeakReference<Context> contextRef, String url, @Nullable SimpleActionListener listener) {
@@ -183,10 +153,20 @@ public class AdUrlSubscribe {
                 if (TextUtils.isEmpty(s) || contextRef.get() == null) {
                     return;
                 }
-                FilesInAppUtil.write(contextRef.get(), DOM_BLOCK_RULE_FILE, s);
-                AdUrlBlocker.instance().updateDomBlockSubscribe(contextRef.get());
-                if (listener != null) {
-                    listener.success("");
+                try {
+                    String now = FilesInAppUtil.read(contextRef.get(), DOM_BLOCK_RULE_FILE);
+                    if (!s.equals(now)) {
+                        FilesInAppUtil.write(contextRef.get(), DOM_BLOCK_RULE_FILE, s);
+                        AdUrlBlocker.instance().updateDomBlockSubscribe(contextRef.get());
+                    }
+                    if (listener != null) {
+                        listener.success("");
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    if (listener != null) {
+                        listener.failed(e.getMessage());
+                    }
                 }
             }
 

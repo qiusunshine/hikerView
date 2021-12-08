@@ -6,14 +6,21 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.alibaba.fastjson.JSON;
 import com.example.hikerview.constants.UAEnum;
 import com.example.hikerview.service.http.CodeUtil;
+import com.example.hikerview.ui.browser.util.CollectionUtil;
+import com.example.hikerview.ui.video.model.PlayData;
 import com.example.hikerview.utils.StringUtil;
 import com.lzy.okgo.model.HttpParams;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -160,9 +167,49 @@ public class HttpParser {
             if (header.length() == 1) {
                 return StringUtil.arrayToString(d, 0, d.length - 1, ";") + ";{User-Agent@" + getRealUa(ua) + "}";
             } else {
-                header = header + "&&User-Agent@" + getRealUa(ua) + ")";
+                header = header + "&&User-Agent@" + getRealUa(ua) + "}";
                 return StringUtil.arrayToString(d, 0, d.length - 1, ";") + ";" + header;
             }
+        }
+    }
+
+
+    public static String getUrlReplaceUA(String url, String ua) {
+        if (StringUtil.isEmpty(ua)) {
+            return url;
+        }
+        if (UAEnum.AUTO.getCode().equals(ua)) {
+            ua = "";
+        }
+        String[] d = url.split(";");
+        if (d.length == 1) {
+            return url + ";get;UTF-8;{User-Agent@" + getRealUa(ua) + "}";
+        } else if (d.length == 2) {
+            return url + ";UTF-8;{User-Agent@" + getRealUa(ua) + "}";
+        } else if (d.length == 3) {
+            return url + ";{User-Agent@" + getRealUa(ua) + "}";
+        } else if (url.contains("User-Agent@")) {
+            //存在也要替换了
+            String header = d[d.length - 1];
+            if (!header.startsWith("{") || !header.endsWith("}")) {
+                return url;
+            }
+            header = header.substring(1, header.length() - 1);
+            if (header.length() == 0) {
+                return StringUtil.arrayToString(d, 0, d.length - 1, ";") + ";{User-Agent@" + getRealUa(ua) + "}";
+            } else {
+                String[] hs = header.split("&&");
+                for (int i = 0; i < hs.length; i++) {
+                    if (hs[i].startsWith("User-Agent@")) {
+                        hs[i] = "User-Agent@" + getRealUa(ua);
+                        break;
+                    }
+                }
+                header = "{" + StringUtil.arrayToString(hs, 0, "&&") + "}";
+                return StringUtil.arrayToString(d, 0, d.length - 1, ";") + ";" + header;
+            }
+        } else {
+            return getUrlAppendUA(url, ua);
         }
     }
 
@@ -271,11 +318,44 @@ public class HttpParser {
                 if ("getTimeStamp()".equals(keyValue[1])) {
                     headers.put(keyValue[0], System.currentTimeMillis() + "");
                 } else {
+                    if ("cookie".equalsIgnoreCase(keyValue[0]) && StringUtil.containsChinese(keyValue[1])) {
+                        String[] ck = keyValue[1].split(";");
+                        for (int i = 0; i < ck.length; i++) {
+                            String[] kvs = ck[i].split("=");
+                            if (StringUtil.containsChinese(kvs[0])) {
+                                //如果key包含中文那就URL编码一下
+                                kvs[0] = encodeUrl(kvs[0]);
+                            }
+                            if (kvs.length > 1 && StringUtil.containsChinese(kvs[1])) {
+                                //如果value包含中文那就URL编码一下
+                                kvs[1] = encodeUrl(kvs[1]);
+                            }
+                            ck[i] = StringUtil.arrayToString(kvs, 0, "=");
+                        }
+                        keyValue[1] = StringUtil.arrayToString(ck, 0, ";");
+                    }
                     headers.put(keyValue[0], keyValue[1]);
                 }
             }
         }
         return headers;
+    }
+
+    public static String getHeadersStr(Map<String, String> headers) {
+        if (headers == null || headers.isEmpty()) {
+            return "{}";
+        }
+        StringBuilder builder = new StringBuilder("{");
+        boolean first = true;
+        for (Map.Entry<String, String> en : headers.entrySet()) {
+            if (!first) {
+                builder.append("&&");
+            }
+            first = false;
+            builder.append(en.getKey()).append("@").append(en.getValue().replace(";", "；；"));
+        }
+        builder.append("}");
+        return builder.toString();
     }
 
     public static String getRealUrlFilterHeaders(String searchUrl) {
@@ -288,6 +368,63 @@ public class HttpParser {
             return searchUrl;
         }
         return d[0];
+    }
+
+    public static PlayData getPlayData(String url) {
+        if (StringUtil.isEmpty(url)) {
+            return new PlayData();
+        }
+        url = url.split(";")[0];
+        if (url.startsWith("{") && url.endsWith("}")) {
+            try {
+                PlayData data = JSON.parseObject(url, PlayData.class);
+                if (CollectionUtil.isNotEmpty(data.getUrls())) {
+                    if (CollectionUtil.isEmpty(data.getNames())) {
+                        List<String> names = new ArrayList<>();
+                        for (int i = 0; i < data.getUrls().size(); i++) {
+                            names.add("线路" + (i + 1));
+                        }
+                        data.setNames(names);
+                    } else if (data.getNames().size() > data.getUrls().size()) {
+                        //瞎传的还得给他们踢了
+                        data.setNames(new ArrayList<>(data.getNames().subList(0, data.getUrls().size())));
+                    }
+                }
+                return data;
+            } catch (Exception e) {
+                e.printStackTrace();
+                PlayData data = new PlayData();
+                data.setUrl(url);
+                return data;
+            }
+        } else {
+            PlayData data = new PlayData();
+            data.setUrl(url);
+            return data;
+        }
+    }
+
+    public static String getPlayUrlWithHeader(String url) {
+        String posUrl = getPosUrl(url);
+        return getUrlWithHeader(url, posUrl);
+    }
+
+    private static String getPosUrl(String url) {
+        PlayData data = HttpParser.getPlayData(url);
+        if (CollectionUtil.isNotEmpty(data.getUrls())) {
+            return data.getUrls().get(0);
+        } else {
+            return url;
+        }
+    }
+
+    private static String getUrlWithHeader(String url, String posUrl) {
+        String[] s = url.split(";");
+        if (s.length <= 1) {
+            return posUrl;
+        } else {
+            return posUrl + ";" + StringUtil.arrayToString(s, 1, ";");
+        }
     }
 
     public static void get(String url, @Nullable final String code, @Nullable Map<String, String> headers, @NonNull final OnSearchCallBack onSearchCallBack) {
@@ -380,6 +517,13 @@ public class HttpParser {
             return url;
         }
         try {
+            if (url.startsWith("x5Rule://")) {
+                return url.split("@")[0].replace("x5Rule://", "");
+            } else if (url.startsWith("hiker://empty#http")) {
+                url = StringUtils.replaceOnce(url, "hiker://empty#", "");
+            } else if (url.startsWith("hiker://empty##http")) {
+                url = StringUtils.replaceOnce(url, "hiker://empty##", "");
+            }
             int page = 1;
             String[] allUrl = url.split(";");
             String[] urls = allUrl[0].split("\\[firstPage=");

@@ -190,7 +190,7 @@ public class JsEngineBridge {
 
                 @Override
                 public void showErr(String msg) {
-                    callBack.error(msg);
+                    callBack.error("获取更新失败，请前往日志查看报错！");
                     JSEngine.getInstance().log(msg, JSON.toJSON(articleListRule));
                 }
             });
@@ -208,7 +208,7 @@ public class JsEngineBridge {
 
                 @Override
                 public void showErr(String msg) {
-                    callBack.error(msg);
+                    callBack.error("获取更新失败，请前往日志查看报错！");
                     JSEngine.getInstance().log(msg, JSON.toJSON(articleListRule));
                 }
             })).start();
