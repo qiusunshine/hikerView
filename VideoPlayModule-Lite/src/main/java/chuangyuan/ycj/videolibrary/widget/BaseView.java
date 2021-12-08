@@ -12,8 +12,14 @@ import android.os.Build;
 import android.transition.ChangeBounds;
 import android.transition.TransitionManager;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.webkit.CookieManager;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -27,16 +33,41 @@ import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.ui.ExoPlayerControlView;
 import com.google.android.exoplayer2.ui.ExoPlayerView;
+import com.google.android.exoplayer2.ui.TimeBar;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import chuangyuan.ycj.videolibrary.R;
+import chuangyuan.ycj.videolibrary.danmuku.BiliDanmukuParser;
+import chuangyuan.ycj.videolibrary.danmuku.DanamakuAdapter;
+import chuangyuan.ycj.videolibrary.danmuku.DanmuWebView;
+import chuangyuan.ycj.videolibrary.danmuku.JSONDanmukuParser;
 import chuangyuan.ycj.videolibrary.listener.ExoPlayerListener;
 import chuangyuan.ycj.videolibrary.utils.VideoPlayUtils;
 import chuangyuan.ycj.videolibrary.video.ExoUserPlayer;
+import master.flame.danmaku.controller.IDanmakuView;
+import master.flame.danmaku.danmaku.loader.ILoader;
+import master.flame.danmaku.danmaku.loader.IllegalDataException;
+import master.flame.danmaku.danmaku.loader.android.DanmakuLoaderFactory;
+import master.flame.danmaku.danmaku.model.BaseDanmaku;
+import master.flame.danmaku.danmaku.model.DanmakuTimer;
+import master.flame.danmaku.danmaku.model.IDanmakus;
+import master.flame.danmaku.danmaku.model.IDisplayer;
+import master.flame.danmaku.danmaku.model.android.DanmakuContext;
+import master.flame.danmaku.danmaku.model.android.Danmakus;
+import master.flame.danmaku.danmaku.model.android.SpannedCacheStuffer;
+import master.flame.danmaku.danmaku.parser.BaseDanmakuParser;
+import master.flame.danmaku.danmaku.parser.IDataSource;
+import master.flame.danmaku.ui.widget.DanmakuView;
 
 /**
  * author  yangc
@@ -92,11 +123,27 @@ abstract class BaseView extends FrameLayout {
     /***是否在上面,是否横屏,是否列表播放 默认false,是否切换按钮*/
     protected boolean isLand;
     protected boolean isListPlayer;
+
+    public boolean isShowVideoSwitch() {
+        return isShowVideoSwitch;
+    }
+
     protected boolean isShowVideoSwitch;
     protected boolean isVerticalFullScreen;
     protected boolean isPipMode;
 
     protected boolean isLandLayout;
+
+    private boolean networkNotifyUseDialog = false;
+
+    /**
+     * 流量提示时是否使用弹窗
+     *
+     * @param networkNotifyUseDialog
+     */
+    public void setNetworkNotifyUseDialog(boolean networkNotifyUseDialog) {
+        this.networkNotifyUseDialog = networkNotifyUseDialog;
+    }
 
     /**
      * 在屏幕中央展示提示信息
@@ -141,6 +188,40 @@ abstract class BaseView extends FrameLayout {
     /*** The Ic back image.***/
     @DrawableRes
     private int icBackImage = R.drawable.ic_exo_back;
+
+
+    private BaseDanmakuParser parser;//解析器对象
+    private IDanmakuView danmakuView;//弹幕view
+    private DanmakuContext danmakuContext;
+
+    public boolean isDanmaKuShow() {
+        return danmaKuShow;
+    }
+
+    private boolean danmaKuShow = false;
+    private WebView danmuWebView;
+
+    public boolean isUseDanmuWebView() {
+        return useDanmuWebView;
+    }
+
+    private boolean useDanmuWebView = false;
+    private boolean danmuDestroyed = false;
+    private int danmuLineCount = 5;
+
+    protected ViewGroup danmuViewContainer;
+
+
+    public ViewGroup getDanmuViewContainer() {
+        if (danmuViewContainer == null) {
+            return playerView;
+        }
+        return danmuViewContainer;
+    }
+
+    public void setDanmuViewContainer(ViewGroup danmuViewContainer) {
+        this.danmuViewContainer = danmuViewContainer;
+    }
 
     /**
      * Instantiates a new Base view.
@@ -306,6 +387,14 @@ abstract class BaseView extends FrameLayout {
             mExoPlayerListener = null;
         }
         nameSwitch = null;
+        if (danmakuView != null) {
+            danmakuView.release();
+        }
+        danmuDestroyed = true;
+        if (danmuWebView != null) {
+            danmuWebView.onPause();
+            danmuWebView.destroy();
+        }
     }
 
 
@@ -324,6 +413,16 @@ abstract class BaseView extends FrameLayout {
     }
 
     /***
+     * 隐藏网络提示框
+     */
+    protected void hideDialog() {
+        if (alertDialog == null || !alertDialog.isShowing()) {
+            return;
+        }
+        alertDialog.dismiss();
+    }
+
+    /***
      * 显示网络提示框
      */
     protected void showDialog() {
@@ -334,6 +433,7 @@ abstract class BaseView extends FrameLayout {
                     mExoPlayerListener.getPlay().setStartOrPause(true);
                 } else {
                     mExoPlayerListener.playVideoUri();
+                    mExoPlayerListener.getPlay().setStartOrPause(true);
                 }
             }
             return;
@@ -350,7 +450,6 @@ abstract class BaseView extends FrameLayout {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
-                showBtnContinueHint(View.VISIBLE);
                 if (mExoPlayerListener != null) {
                     if (mExoPlayerListener.getPlay() != null && mExoPlayerListener.getPlay().isLoad()) {
                         mExoPlayerListener.getPlay().setStartOrPause(false);
@@ -368,12 +467,25 @@ abstract class BaseView extends FrameLayout {
                         mExoPlayerListener.getPlay().setStartOrPause(true);
                     } else {
                         mExoPlayerListener.playVideoUri();
+                        mExoPlayerListener.getPlay().setStartOrPause(true);
                     }
                 }
 
             }
         });
-        alertDialog.show();
+        if (alertDialog.getWindow() != null) {
+            alertDialog.getWindow().setBackgroundDrawableResource(R.drawable.shape_dialog_cardbg);
+            alertDialog.show();
+            WindowManager.LayoutParams lp = alertDialog.getWindow().getAttributes();
+            WindowManager manager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+            DisplayMetrics outMetrics = new DisplayMetrics();
+            manager.getDefaultDisplay().getMetrics(outMetrics);
+            int width = Math.min(outMetrics.widthPixels, outMetrics.heightPixels);
+            if (width > 0) {
+                lp.width = 4 * width / 5;
+                alertDialog.getWindow().setAttributes(lp);
+            }
+        }
     }
 
     public void toPortraitLayout() {
@@ -546,14 +658,28 @@ abstract class BaseView extends FrameLayout {
      * @param visibility 状态
      */
     public void showBtnContinueHint(int visibility) {
+        showBtnContinueHint(visibility, getResources().getString(R.string.exo_play_wifi_hint_no));
+    }
+
+    /***
+     * 显示按钮提示页
+     *
+     * @param visibility 状态
+     */
+    public void showBtnContinueHint(int visibility, String msg) {
         if (visibility == View.VISIBLE) {
             showReplay(GONE);
             showErrorState(GONE);
             showPreViewLayout(GONE);
             showLoadState(GONE);
             showBackView(VISIBLE, true);
+            if (networkNotifyUseDialog && msg != null) {
+                showDialog();
+            }
+        } else {
+            hideDialog();
         }
-        mActionControlView.showBtnContinueHint(visibility);
+        mActionControlView.showBtnContinueHint(visibility, msg);
     }
 
     /***
@@ -751,6 +877,7 @@ abstract class BaseView extends FrameLayout {
     public void setSwitchName(@NonNull List<String> name, @Size(min = 0) int switchIndex) {
         this.nameSwitch = new ArrayList<>(name);
         this.switchIndex = switchIndex;
+        getSwitchText().setText(name.get(switchIndex));
     }
 
     /****
@@ -929,5 +1056,378 @@ abstract class BaseView extends FrameLayout {
 
     public void setNetworkNotify(boolean networkNotify) {
         this.networkNotify = networkNotify;
+    }
+
+
+    public void useWebDanmuku(boolean use, String url, int lineCount) {
+        useWebDanmuku(use, url, lineCount, null);
+    }
+
+    public void useDanmuku(boolean use, File file, int lineCount) {
+        useDanmuku(use, file, lineCount, null);
+    }
+
+    /**
+     * 使用弹幕库
+     *
+     * @param use
+     * @param file
+     */
+    public void useDanmuku(boolean use, File file, int lineCount, ViewGroup viewContainer) {
+        danmaKuShow = use;
+        useDanmuWebView = false;
+        if (use) {
+            networkNotifyUseDialog = true;
+            setDanmuViewContainer(viewContainer);
+            danmuLineCount = lineCount;
+            if (danmakuView != null) {
+                if (danmakuView.isShown()) {
+                    danmakuView.hide();
+                }
+                danmakuView.release();
+                danmakuView.removeAllDanmakus(true);
+                danmakuView = null;
+                getDanmuViewContainer().removeView((DanmakuView) danmakuView);
+                if (parser != null) {
+                    parser.release();
+                    parser = null;
+                }
+            }
+            initDanmuku(lineCount);
+            if (file != null) {
+                createParser(getIsStream(file), file);
+                onPrepareDanmaku();
+                resolveDanmakuShow();
+            }
+        } else {
+            if (danmakuView != null) {
+                if (danmakuView.isShown()) {
+                    danmakuView.hide();
+                }
+                danmakuView.release();
+                danmakuView.removeAllDanmakus(true);
+            }
+        }
+    }
+
+    public void useWebDanmuku(boolean use, String url, int lineCount, ViewGroup viewContainer) {
+        danmaKuShow = use;
+        useDanmuWebView = true;
+        if (use) {
+            networkNotifyUseDialog = true;
+            setDanmuViewContainer(viewContainer);
+            danmuLineCount = lineCount;
+            if (danmuWebView == null) {
+                initDanmuWebView();
+            }
+            if (danmuWebView.getParent() != null) {
+                ((ViewGroup) danmuWebView.getParent()).removeView(danmuWebView);
+            }
+            LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            getDanmuViewContainer().addView(danmuWebView, params);
+            danmuWebView.onResume();
+            danmuWebView.loadUrl(url);
+            postDelayed(() -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && getPlayerView().getPlayer() != null) {
+                    danmuWebView.evaluateJavascript("window.isPlaying = " + getPlayerView().getPlayer().isPlaying() +
+                            ";\nwindow.lineCount = " + lineCount, null);
+                }
+            }, 1000);
+            postDelayed(() -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && getPlayerView().getPlayer() != null) {
+                    danmuWebView.evaluateJavascript("window.isPlaying = " + getPlayerView().getPlayer().isPlaying() +
+                            ";\nwindow.lineCount = " + lineCount, null);
+                }
+            }, 3000);
+        } else {
+            if (danmuWebView != null) {
+                danmuWebView.onPause();
+                getDanmuViewContainer().removeView(danmuWebView);
+            }
+        }
+    }
+
+    private void initDanmuWebView() {
+        danmuWebView = new DanmuWebView(getContext());
+        WebSettings webSettings = danmuWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setBuiltInZoomControls(false);
+        webSettings.setSupportZoom(false);
+        webSettings.setDisplayZoomControls(false);
+        webSettings.setAllowFileAccess(true);
+        webSettings.setAllowUniversalAccessFromFileURLs(true);
+        webSettings.setDefaultTextEncodingName("UTF-8");
+        webSettings.setUseWideViewPort(true);
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        webSettings.setAppCacheEnabled(true);
+        webSettings.setAllowContentAccess(true);
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.setAcceptCookie(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        }
+        danmuWebView.setBackgroundColor(0); // 设置背景色
+        if (danmuWebView.getBackground() != null) {
+            danmuWebView.getBackground().setAlpha(0); // 设置填充透明度 范围：0-255
+        }
+        if (getPlayerView().getPlayer() != null) {
+            getPlayerView().getPlayer().addListener(new Player.Listener() {
+                @Override
+                public void onIsPlayingChanged(boolean isPlaying) {
+                    if (danmaKuShow && danmuWebView != null) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                            danmuWebView.evaluateJavascript("window.isPlaying = " + isPlaying +
+                                    ";\nwindow.lineCount = " + danmuLineCount, null);
+                        }
+                        if (isPlaying) {
+                            danmuWebView.onResume();
+                        } else {
+                            danmuWebView.onPause();
+                        }
+                    }
+                }
+            });
+        }
+        addSeekListener();
+    }
+
+    private void addSeekListener() {
+        getTimeBar().addListener(new TimeBar.OnScrubListener() {
+            @Override
+            public void onScrubStart(TimeBar timeBar, long position) {
+
+            }
+
+            @Override
+            public void onScrubMove(TimeBar timeBar, long position) {
+
+            }
+
+            @Override
+            public void onScrubStop(TimeBar timeBar, long position, boolean canceled) {
+                Log.d(TAG, "xxxxxx-onScrubStop: ");
+                resolveDanmakuSeek(position);
+            }
+        });
+    }
+
+
+    private void onPrepareDanmaku() {
+        if (danmakuView != null) {
+            danmakuView.prepare(parser, danmakuContext);
+        }
+    }
+
+    private InputStream getIsStream(File file) {
+        try {
+            return new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private void initDanmuku(int lineCount) {
+        if (danmakuView != null) {
+            return;
+        }
+        // 设置最大显示行数
+        HashMap<Integer, Integer> maxLinesPair = new HashMap<Integer, Integer>();
+        maxLinesPair.put(BaseDanmaku.TYPE_SCROLL_RL, lineCount); // 滚动弹幕最大显示5行
+        // 设置是否禁止重叠
+        HashMap<Integer, Boolean> overlappingEnablePair = new HashMap<Integer, Boolean>();
+        overlappingEnablePair.put(BaseDanmaku.TYPE_SCROLL_RL, true);
+        overlappingEnablePair.put(BaseDanmaku.TYPE_FIX_TOP, true);
+
+        LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        danmakuView = new DanmakuView(getContext());
+//        danmakuView.showFPS(true);
+        getDanmuViewContainer().addView((DanmakuView) danmakuView, params);
+        DanamakuAdapter danamakuAdapter = new DanamakuAdapter(danmakuView);
+        danmakuContext = DanmakuContext.create();
+        danmakuContext.setDanmakuStyle(IDisplayer.DANMAKU_STYLE_STROKEN, 3)
+                .setScrollSpeedFactor(1.2f)
+                .setCacheStuffer(new SpannedCacheStuffer(), danamakuAdapter) // 图文混排使用SpannedCacheStuffer
+                .setMaximumLines(maxLinesPair)
+                .preventOverlapping(overlappingEnablePair);
+        addSeekListener();
+        danmuDestroyed = false;
+        if (danmakuView != null) {
+            danmakuView.setCallback(new master.flame.danmaku.controller.DrawHandler.Callback() {
+                @Override
+                public void updateTimer(DanmakuTimer timer) {
+                }
+
+                @Override
+                public void drawingFinished() {
+
+                }
+
+                @Override
+                public void danmakuShown(BaseDanmaku danmaku) {
+                }
+
+                @Override
+                public void prepared() {
+                    if (danmakuView != null) {
+                        post(() -> {
+                            if (playerView.getPlayer() != null && playerView.getPlayer().getCurrentPosition() > 0) {
+                                Log.d(TAG, "xxxxxx-prepared: ");
+                                if (danmakuView != null) {
+                                    danmakuView.start(getPlayerView().getPlayer().getCurrentPosition());
+                                }
+                            } else {
+                                danmakuView.start();
+                            }
+                            if (!playerView.getPlayer().isPlaying()) {
+                                danmakuView.pause();
+                            }
+                            resolveDanmakuShow();
+                        });
+                    }
+                }
+            });
+            danmakuView.enableDanmakuDrawingCache(true);
+            if (getPlayerView().getPlayer() != null) {
+                getPlayerView().getPlayer().addListener(new Player.Listener() {
+                    @Override
+                    public void onIsPlayingChanged(boolean isPlaying) {
+                        if (danmaKuShow && danmakuView != null) {
+                            if (isPlaying) {
+                                danmakuView.resume();
+                            } else {
+                                danmakuView.pause();
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    /**
+     * 正常情况下不需要主动调用，自动跟随视频暂停和播放
+     */
+    public void resumeDanmu() {
+        if (danmaKuShow && danmakuView != null && getPlayerView().getPlayer() != null) {
+            danmakuView.resume();
+        }
+        if (danmaKuShow && danmuWebView != null && getPlayerView().getPlayer() != null) {
+            danmuWebView.onResume();
+        }
+        if (playerView.getPlayer() != null && playerView.getPlayer().getCurrentPosition() > 0) {
+            Log.d(TAG, "xxxxxx-prepared: ");
+            resolveDanmakuSeek(playerView.getPlayer().getCurrentPosition());
+        }
+    }
+
+    /**
+     * 正常情况下不需要主动调用，自动跟随视频暂停和播放
+     */
+    public void pauseDanmu() {
+        if (danmaKuShow && danmakuView != null && getPlayerView().getPlayer() != null) {
+            danmakuView.pause();
+        }
+        if (danmaKuShow && danmuWebView != null && getPlayerView().getPlayer() != null) {
+            danmuWebView.onPause();
+        }
+    }
+
+    /**
+     * 弹幕的显示与关闭
+     */
+    private void resolveDanmakuShow() {
+        post(() -> {
+            if (danmakuView == null) {
+                return;
+            }
+            if (danmaKuShow) {
+                if (!danmakuView.isShown()) {
+                    danmakuView.show();
+                    if (danmakuView.isPaused()) {
+                        danmakuView.resume();
+                    }
+                }
+            } else {
+                if (danmakuView.isShown()) {
+                    danmakuView.hide();
+                }
+            }
+        });
+    }
+
+    /**
+     * 弹幕偏移
+     */
+    private void resolveDanmakuSeek(long time) {
+        if (!useDanmuWebView && danmakuView != null && danmakuView.isPrepared()) {
+            //不延时会抖动，延时后bug：如果一秒内又暂停播放了，弹幕无法暂停住
+            postDelayed(() -> {
+                if (!danmuDestroyed && danmakuView != null && getPlayerView().getPlayer() != null) {
+                    danmakuView.seekTo(getPlayerView().getPlayer().getCurrentPosition());
+                }
+            }, 1000);
+        }
+        if (useDanmuWebView && danmuWebView != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                danmuWebView.evaluateJavascript("window.seek = " + time, null);
+            }
+        }
+    }
+
+    /**
+     * 创建解析器对象，解析输入流
+     *
+     * @param stream
+     * @return
+     */
+    private void createParser(InputStream stream, File file) {
+        if (stream == null) {
+            parser = isJson(file) ? new JSONDanmukuParser() {
+                @Override
+                public IDanmakus parse() {
+                    return new Danmakus();
+                }
+            } : new BiliDanmukuParser() {
+                @Override
+                public Danmakus parse() {
+                    return new Danmakus();
+                }
+            };
+        }
+        parser = isJson(file) ? new JSONDanmukuParser() : new BiliDanmukuParser();
+        loadDanmuStream(stream, file);
+    }
+
+    private boolean isJson(File file) {
+        return file.getAbsolutePath().endsWith(".json");
+    }
+
+    private void loadDanmuStream(InputStream stream, File file) {
+        if (parser == null || stream == null) {
+            return;
+        }
+        ILoader loader = DanmakuLoaderFactory.create(isJson(file) ? DanmakuLoaderFactory.TAG_ACFUN : DanmakuLoaderFactory.TAG_BILI);
+        try {
+            loader.load(stream);
+        } catch (IllegalDataException e) {
+            e.printStackTrace();
+        }
+        IDataSource<?> dataSource = loader.getDataSource();
+        parser.load(dataSource);
+    }
+
+    public void seekFromPlayer(long pos) {
+        Log.d(TAG, "xxxxxx-seekFromPlayer: ");
+        resolveDanmakuSeek(pos);
+    }
+
+    public void updateDanmuLines(int lineCount) {
+        if (danmakuView != null && danmakuContext != null) {
+            HashMap<Integer, Integer> maxLinesPair = new HashMap<>();
+            maxLinesPair.put(BaseDanmaku.TYPE_SCROLL_LR, lineCount);
+            danmakuContext.setMaximumLines(maxLinesPair);
+        }
     }
 }

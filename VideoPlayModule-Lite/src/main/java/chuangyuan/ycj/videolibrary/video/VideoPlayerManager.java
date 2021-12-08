@@ -14,8 +14,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.Size;
 
-import com.google.android.exoplayer2.drm.DrmSessionManager;
-import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
 import com.google.android.exoplayer2.ui.AnimUtils;
 
 import java.lang.annotation.Retention;
@@ -212,7 +210,6 @@ public class VideoPlayerManager {
         private DataSourceListener listener;
         private MediaSourceBuilder mediaSourceBuilder;
         private int playerType = 0;
-        private DrmSessionManager<FrameworkMediaCrypto> drmSessionManager;
         private OnGestureBrightnessListener onGestureBrightnessListener;
         private OnGestureVolumeListener onGestureVolumeListener;
         private OnGestureProgressListener onGestureProgressListener;
@@ -328,16 +325,6 @@ public class VideoPlayerManager {
 
         /***
          * 设置播放路径
-         * @param drmSessionManager 一个可选的 {@link DrmSessionManager}. 如果DRM得到保护，可能是null
-         *@return Builder
-         */
-        public Builder setDrmSessionManager(DrmSessionManager<FrameworkMediaCrypto> drmSessionManager) {
-            this.drmSessionManager = drmSessionManager;
-            return this;
-        }
-
-        /***
-         * 设置播放路径
          * @param uri 路径
          *@return Builder
          */
@@ -351,9 +338,40 @@ public class VideoPlayerManager {
          *@return Builder
          */
         public Builder setPlayUri(@NonNull String uri, Map<String, String> headers) {
+            return setPlayUri(uri, headers, null);
+        }
+
+        /***
+         * 设置播放路径
+         * @param uri 路径
+         *@return Builder
+         */
+        public Builder setPlayUri(@NonNull String uri, Map<String, String> headers, String subtitle) {
             initMediaSourceBuilder();
             mediaSourceBuilder.setHeaders(headers);
+            mediaSourceBuilder.setSubtitle(subtitle);
             mediaSourceBuilder.setMediaUri(Uri.parse(uri));
+            return this;
+        }
+
+        /***
+         * 设置播放路径
+         *@return Builder
+         */
+        public Builder setPlayUri(int index, @NonNull String[] videoUri, @NonNull String[] name, Map<String, String> headers) {
+            return setPlayUri(index, videoUri, name, headers, null);
+        }
+
+        /***
+         * 设置播放路径
+         *@return Builder
+         */
+        public Builder setPlayUri(int index, @NonNull String[] videoUri, @NonNull String[] name, Map<String, String> headers, String subtitle) {
+            initMediaSourceBuilder();
+            mediaSourceBuilder.setHeaders(headers);
+            mediaSourceBuilder.setSubtitle(subtitle);
+            mediaSourceBuilder.setMediaSwitchUri(Arrays.asList(videoUri), index);
+            view.setSwitchName(Arrays.asList(name), 0);
             return this;
         }
 
@@ -586,7 +604,6 @@ public class VideoPlayerManager {
                     exoUserPlayer = (T) new ExoUserPlayer(context, mediaSourceBuilder, view);
                     break;
             }
-            exoUserPlayer.setDrmSessionManager(drmSessionManager);
             for (VideoInfoListener videoInfoListener : videoInfoListeners) {
                 exoUserPlayer.addVideoInfoListener(videoInfoListener);
             }

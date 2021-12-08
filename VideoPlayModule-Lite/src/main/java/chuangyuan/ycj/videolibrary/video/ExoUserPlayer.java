@@ -22,25 +22,17 @@ import androidx.annotation.Nullable;
 import androidx.annotation.Size;
 
 import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.drm.DrmSessionManager;
-import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
-import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.google.android.exoplayer2.trackselection.TrackSelector;
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.util.Util;
 
 import java.lang.reflect.Constructor;
@@ -110,9 +102,10 @@ public class ExoUserPlayer {
     private MediaSourceBuilder mediaSourceBuilder;
     /*** 设置播放参数***/
     private PlaybackParameters playbackParameters;
-    /*** 如果DRM得到保护，可能是null ***/
-    private DrmSessionManager<FrameworkMediaCrypto> drmSessionManager;
     private View.OnClickListener onClickListener;
+    private String playUrl;
+    private SwitchListener switchListener;
+    private int networkMode = ConnectivityManager.TYPE_WIFI;
 
     /****
      * @param activity 活动对象
@@ -317,11 +310,22 @@ public class ExoUserPlayer {
      * 播放视频
      **/
     public void startVideo() {
+        //初始化设置了WIFI，这里判断是数据，说明之前有过数据网络，然后点了下一集，那么不提示非wifi
+        if (networkMode == ConnectivityManager.TYPE_MOBILE || getVideoPlayerView() != null && !getVideoPlayerView().isNetworkNotify()) {
+            onPlayNoAlertVideo();
+            return;
+        }
         boolean iss = VideoPlayUtils.isWifi(activity) || VideoPlayerManager.getInstance().isClick() || isPause;
         if (iss) {
+            if (!VideoPlayUtils.isWifi(activity)) {
+                networkMode = ConnectivityManager.TYPE_MOBILE;
+                getVideoPlayerView().showBtnContinueHint(View.VISIBLE);
+                return;
+            }
             onPlayNoAlertVideo();
         } else {
-            getPlayerViewListener().showAlertDialog();
+            networkMode = ConnectivityManager.TYPE_MOBILE;
+            getVideoPlayerView().showBtnContinueHint(View.VISIBLE);
         }
     }
 
@@ -330,11 +334,9 @@ public class ExoUserPlayer {
      * 创建实例播放实例，并不开始缓冲
      **/
     public SimpleExoPlayer createFullPlayer() {
-        TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory(new DefaultBandwidthMeter());
-        TrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
         setDefaultLoadModel();
         DefaultRenderersFactory rf = new DefaultRenderersFactory(activity, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON);
-        SimpleExoPlayer player = ExoPlayerFactory.newSimpleInstance(rf, trackSelector, new DefaultLoadControl(), drmSessionManager);
+        SimpleExoPlayer player = new SimpleExoPlayer.Builder(activity, rf).build();
         getPlayerViewListener().setPlayer(player);
         return player;
     }
@@ -376,14 +378,6 @@ public class ExoUserPlayer {
 
     /***
      * 设置播放路径
-     * @param drmSessionManager 一个可选的 {@link DrmSessionManager}. 如果DRM得到保护，可能是null
-     */
-    public void setDrmSessionManager(DrmSessionManager<FrameworkMediaCrypto> drmSessionManager) {
-        this.drmSessionManager = drmSessionManager;
-    }
-
-    /***
-     * 设置播放路径
      * @param uri 路径
      */
     public void setPlayUri(@NonNull String uri) {
@@ -395,8 +389,34 @@ public class ExoUserPlayer {
      * @param uri 路径
      */
     public void setPlayUri(@NonNull String uri, Map<String, String> headers) {
+        setPlayUri(uri, headers, null);
+    }
+
+    /***
+     * 设置播放路径，带请求头
+     * @param uri 路径
+     */
+    public void setPlayUri(@NonNull String uri, Map<String, String> headers, String subtitle) {
         mediaSourceBuilder.setHeaders(headers);
+        mediaSourceBuilder.setSubtitle(subtitle);
         mediaSourceBuilder.setMediaUri(Uri.parse(uri));
+        playUrl = uri;
+    }
+
+    /***
+     * 设置播放路径，带请求头
+     */
+    public void setPlayUri(int index, @NonNull String[] videoUri, @NonNull String[] name, Map<String, String> headers) {
+        setPlayUri(index, videoUri, name, headers, null);
+    }
+
+    /***
+     * 设置播放路径，带请求头
+     */
+    public void setPlayUri(int index, @NonNull String[] videoUri, @NonNull String[] name, Map<String, String> headers, String subtitle) {
+        mediaSourceBuilder.setHeaders(headers);
+        mediaSourceBuilder.setSubtitle(subtitle);
+        setPlaySwitchUri(index, videoUri, name);
     }
 
     /****
@@ -427,6 +447,7 @@ public class ExoUserPlayer {
      * @param name 清清晰度显示名称
      */
     public void setPlaySwitchUri(int switchIndex, @NonNull List<String> videoUri, @NonNull List<String> name) {
+        playUrl = videoUri.get(switchIndex);
         mediaSourceBuilder.setMediaSwitchUri(videoUri, switchIndex);
         getPlayerViewListener().setSwitchName(name, switchIndex);
     }
@@ -451,6 +472,7 @@ public class ExoUserPlayer {
      * @param name the name
      */
     public void setPlaySwitchUri(@Size(min = 0) int indexType, @Size(min = 0) int switchIndex, @NonNull String firstVideoUri, List<String> secondVideoUri, @NonNull List<String> name) {
+        playUrl = firstVideoUri;
         mediaSourceBuilder.setMediaUri(indexType, switchIndex, Uri.parse(firstVideoUri), secondVideoUri);
         getPlayerViewListener().setSwitchName(name, switchIndex);
     }
@@ -518,6 +540,7 @@ public class ExoUserPlayer {
     public void seekTo(long positionMs) {
         if (player != null) {
             player.seekTo(positionMs);
+            videoPlayerView.seekFromPlayer(positionMs);
         }
     }
 
@@ -558,7 +581,11 @@ public class ExoUserPlayer {
      */
     public void setStartOrPause(boolean value) {
         if (player != null) {
-            player.setPlayWhenReady(value);
+            if (!isLoad && value) {
+                playVideoUri();
+            } else {
+                player.setPlayWhenReady(value);
+            }
         }
     }
 
@@ -666,6 +693,7 @@ public class ExoUserPlayer {
      * @param uri uri
      * ***/
     private void setSwitchPlayer(@NonNull String uri) {
+        playUrl = uri;
         handPause = false;
         updateResumePosition();
         if (mediaSourceBuilder.getMediaSource() instanceof ConcatenatingMediaSource) {
@@ -902,6 +930,22 @@ public class ExoUserPlayer {
         mNetworkBroadcastReceiver = null;
     }
 
+    public String getPlayUrl() {
+        return playUrl;
+    }
+
+    public void setPlayUrl(String playUrl) {
+        this.playUrl = playUrl;
+    }
+
+    public SwitchListener getSwitchListener() {
+        return switchListener;
+    }
+
+    public void setSwitchListener(SwitchListener switchListener) {
+        this.switchListener = switchListener;
+    }
+
 
     /***
      * 网络监听类
@@ -912,6 +956,9 @@ public class ExoUserPlayer {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            if (getVideoPlayerView() != null && !getVideoPlayerView().isNetworkNotify()) {
+                return;
+            }
             if (null != action && action.equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
                 ConnectivityManager mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
                 assert mConnectivityManager != null;
@@ -919,20 +966,39 @@ public class ExoUserPlayer {
                 if (netInfo != null && netInfo.isAvailable()) {
                     if (netInfo.getType() == ConnectivityManager.TYPE_MOBILE) {
                         /////////3g网络
-                        if (System.currentTimeMillis() - is > 500) {
+                        if (System.currentTimeMillis() - is > 500 && networkMode == ConnectivityManager.TYPE_WIFI) {
                             is = System.currentTimeMillis();
-                            if (VideoPlayerManager.getInstance().isClick()) {
-                                return;
-                            }
                             if (!isPause) {
-                                getPlayerViewListener().showAlertDialog();
+                                getVideoPlayerView().showBtnContinueHint(View.VISIBLE);
+                                setStartOrPause(false);
+                                networkMode = netInfo.getType();
                             }
+                        }
+                    } else if (netInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                        /////////回到 WiFi 网络
+                        if (System.currentTimeMillis() - is > 500 && networkMode == ConnectivityManager.TYPE_MOBILE) {
+                            is = System.currentTimeMillis();
+                            networkMode = netInfo.getType();
+//                            if (!isPause) {
+//                                networkMode = netInfo.getType();
+//                                getVideoPlayerView().showBtnContinueHint(View.GONE);
+//                                if (isLoad()) {
+//                                    setStartOrPause(true);
+//                                } else {
+//                                    playVideoUri();
+//                                }
+//                            }
                         }
                     }
                 }
             }
 
         }
+    }
+
+    public void playVideoUri() {
+        playComponentListener.playVideoUri();
+        setStartOrPause(true);
     }
 
 
@@ -961,6 +1027,12 @@ public class ExoUserPlayer {
 
         @Override
         public void switchUri(int position) {
+            if (switchListener != null) {
+                List<String> urls = switchListener.switchUri(mediaSourceBuilder.getVideoUri(), position);
+                if (urls != null && !urls.isEmpty()) {
+                    mediaSourceBuilder.setVideoUri(urls);
+                }
+            }
             if (mediaSourceBuilder.getVideoUri() != null) {
                 setSwitchPlayer(mediaSourceBuilder.getVideoUri().get(position));
             }
@@ -1013,7 +1085,7 @@ public class ExoUserPlayer {
         private int currentWindowIndex;
 
         @Override
-        public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
+        public void onTimelineChanged(Timeline timeline, int reason) {
             if (isSwitch) {
                 isSwitch = false;
                 isRemove = true;
@@ -1118,16 +1190,19 @@ public class ExoUserPlayer {
         public void onRepeatModeChanged(int repeatMode) {
         }
 
-        public void onPlayerError(ExoPlaybackException e) {
+        @Override
+        public void onPlayerError(PlaybackException e) {
             Log.e(TAG, "onPlayerError:" + e.getMessage());
             updateResumePosition();
-            if (VideoPlayUtils.isBehindLiveWindow(e)) {
-                clearResumePosition();
-                startVideo();
-            } else {
-                getPlayerViewListener().showErrorStateView(View.VISIBLE);
-                for (VideoInfoListener videoInfoListener : videoInfoListeners) {
-                    videoInfoListener.onPlayerError(e);
+            if (e instanceof ExoPlaybackException) {
+                if (VideoPlayUtils.isBehindLiveWindow((ExoPlaybackException) e)) {
+                    clearResumePosition();
+                    startVideo();
+                } else {
+                    getPlayerViewListener().showErrorStateView(View.VISIBLE);
+                    for (VideoInfoListener videoInfoListener : videoInfoListeners) {
+                        videoInfoListener.onPlayerError((ExoPlaybackException) e);
+                    }
                 }
             }
         }
@@ -1151,6 +1226,10 @@ public class ExoUserPlayer {
 
         }
     };
+
+    public interface SwitchListener {
+        List<String> switchUri(List<String> videoUri, int position);
+    }
 
 }
 

@@ -25,7 +25,7 @@ import chuangyuan.ycj.videolibrary.R;
  * E-Mail:yangchaojiang@outlook.com
  * Deprecated:  多线路浮层
  */
- class BelowView {
+class BelowView {
     private View convertView;
     private PopupWindow pw;
     private ListView listView;
@@ -38,14 +38,19 @@ import chuangyuan.ycj.videolibrary.R;
      * @param c        the c
      * @param listName the list name
      */
-    public BelowView(@NonNull Context c, @Nullable List<String> listName) {
+    public BelowView(@NonNull Context c, @Nullable List<String> listName, int selectIndex) {
         this.convertView = View.inflate(c, R.layout.simple_exo_belowview, null);
         listView = convertView.findViewById(R.id.list_item);
         if (listName == null) {
             listName = Arrays.asList(c.getResources().getStringArray(R.array.exo_video_switch_text));
         }
-        adapter = new SwitchAdapter(c, listName);
-       listView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        adapter = new SwitchAdapter(c, listName, selectIndex);
+        listView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        listView.setAdapter(adapter);
+    }
+
+    public void setList(List<String> listName, int selectIndex){
+        adapter = new SwitchAdapter(listView.getContext(), listName, selectIndex);
         listView.setAdapter(adapter);
     }
 
@@ -58,16 +63,16 @@ import chuangyuan.ycj.videolibrary.R;
      */
     public void showBelowView(@NonNull View view, boolean canceledOnTouchOutside, int selectIndex) {
         if (pw == null) {
-            int height= (int) (view.getResources().getDimension(R.dimen.dp30)* adapter.getCount());
+            int height = (int) (view.getResources().getDimension(R.dimen.dp30) * adapter.getCount());
             adapter.setSelectIndex(selectIndex);
-            this.pw = new PopupWindow(convertView, ViewGroup.LayoutParams.WRAP_CONTENT,height, false);
+            this.pw = new PopupWindow(convertView, ViewGroup.LayoutParams.WRAP_CONTENT, height, false);
             this.pw.setOutsideTouchable(canceledOnTouchOutside);
             this.pw.setBackgroundDrawable(new ColorDrawable(0));
             if (onItemClickListener != null) {
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        if (onItemClickListener != null&&position!=adapter.getSelectIndex()) {
+                        if (onItemClickListener != null && position != adapter.getSelectIndex()) {
                             onItemClickListener.onItemClick(position, adapter.getItem(position));
                             adapter.setSelectIndex(position);
                         }

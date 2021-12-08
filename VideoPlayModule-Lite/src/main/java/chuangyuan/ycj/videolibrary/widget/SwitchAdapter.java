@@ -36,6 +36,19 @@ public class SwitchAdapter extends BaseAdapter {
 
     }
 
+    SwitchAdapter(@NonNull Context context, @NonNull List<String> list, int selectIndex) {
+        this.data = list;
+        this.mContext = context;
+        this.selectIndex = selectIndex;
+        mInflater = LayoutInflater.from(context);
+    }
+
+    public void setData(List<String> data){
+        this.data.clear();
+        this.data.addAll(data);
+        notifyDataSetChanged();
+    }
+
     @Override
     public int getCount() {
         return data.size();
@@ -48,7 +61,7 @@ public class SwitchAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return position;
+        return position + data.get(position).hashCode();
     }
 
     @SuppressLint("ViewHolder")

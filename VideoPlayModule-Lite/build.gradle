@@ -32,7 +32,9 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     testImplementation 'junit:junit:4.12'
     api project(':VideoUi')
-    api 'androidx.annotation:annotation:1.1.0'
-    api 'androidx.appcompat:appcompat:1.1.0-alpha04'
+    implementation 'androidx.annotation:annotation:1.2.0'
+    implementation 'androidx.appcompat:appcompat:1.1.0-alpha04'
+    implementation 'com.github.ctiao:DanmakuFlameMaster:0.9.25'
+    implementation 'com.github.ctiao:ndkbitmap-armv5:0.9.21'
 }
 

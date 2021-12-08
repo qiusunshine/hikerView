@@ -19,15 +19,13 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
-
 import androidx.annotation.IntDef;
-
+import androidx.annotation.Nullable;
+import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-/**
- * A {@link FrameLayout} that resizes itself to match a specified aspect ratio.
- */
+/** A {@link FrameLayout} that resizes itself to match a specified aspect ratio. */
 public final class AspectRatioFrameLayout extends FrameLayout {
 
   /** Listener to be notified about changes of the aspect ratios of this view. */
@@ -43,11 +41,15 @@ public final class AspectRatioFrameLayout extends FrameLayout {
      *     changing the resize mode to have an effect.
      */
     void onAspectRatioUpdated(
-            float targetAspectRatio, float naturalAspectRatio, boolean aspectRatioMismatch);
+        float targetAspectRatio, float naturalAspectRatio, boolean aspectRatioMismatch);
   }
 
-  // LINT.IfChange
-  /** Resize modes for {@link AspectRatioFrameLayout}. */
+  /**
+   * Resize modes for {@link AspectRatioFrameLayout}. One of {@link #RESIZE_MODE_FIT}, {@link
+   * #RESIZE_MODE_FIXED_WIDTH}, {@link #RESIZE_MODE_FIXED_HEIGHT}, {@link #RESIZE_MODE_FILL} or
+   * {@link #RESIZE_MODE_ZOOM}.
+   */
+  @Documented
   @Retention(RetentionPolicy.SOURCE)
   @IntDef({
     RESIZE_MODE_FIT,
@@ -58,9 +60,7 @@ public final class AspectRatioFrameLayout extends FrameLayout {
   })
   public @interface ResizeMode {}
 
-  /**
-   * Either the width or height is decreased to obtain the desired aspect ratio.
-   */
+  /** Either the width or height is decreased to obtain the desired aspect ratio. */
   public static final int RESIZE_MODE_FIT = 0;
   /**
    * The width is fixed and the height is increased or decreased to obtain the desired aspect ratio.
@@ -70,15 +70,10 @@ public final class AspectRatioFrameLayout extends FrameLayout {
    * The height is fixed and the width is increased or decreased to obtain the desired aspect ratio.
    */
   public static final int RESIZE_MODE_FIXED_HEIGHT = 2;
-  /**
-   * The specified aspect ratio is ignored.
-   */
+  /** The specified aspect ratio is ignored. */
   public static final int RESIZE_MODE_FILL = 3;
-  /**
-   * Either the width or height is increased to obtain the desired aspect ratio.
-   */
+  /** Either the width or height is increased to obtain the desired aspect ratio. */
   public static final int RESIZE_MODE_ZOOM = 4;
-  // LINT.ThenChange(../../../../../../res/values/attrs.xml)
 
   /**
    * The {@link FrameLayout} will not resize itself if the fractional difference between its natural
@@ -93,21 +88,23 @@ public final class AspectRatioFrameLayout extends FrameLayout {
 
   private final AspectRatioUpdateDispatcher aspectRatioUpdateDispatcher;
 
-  private AspectRatioListener aspectRatioListener;
+  @Nullable private AspectRatioListener aspectRatioListener;
 
   private float videoAspectRatio;
-  private @ResizeMode int resizeMode;
+  @ResizeMode private int resizeMode;
 
   public AspectRatioFrameLayout(Context context) {
-    this(context, null);
+    this(context, /* attrs= */ null);
   }
 
-  public AspectRatioFrameLayout(Context context, AttributeSet attrs) {
+  public AspectRatioFrameLayout(Context context, @Nullable AttributeSet attrs) {
     super(context, attrs);
     resizeMode = RESIZE_MODE_FIT;
     if (attrs != null) {
-      TypedArray a = context.getTheme().obtainStyledAttributes(attrs,
-          R.styleable.AspectRatioFrameLayout, 0, 0);
+      TypedArray a =
+          context
+              .getTheme()
+              .obtainStyledAttributes(attrs, R.styleable.AspectRatioFrameLayout, 0, 0);
       try {
         resizeMode = a.getInt(R.styleable.AspectRatioFrameLayout_resize_mode, RESIZE_MODE_FIT);
       } finally {
@@ -132,23 +129,22 @@ public final class AspectRatioFrameLayout extends FrameLayout {
   /**
    * Sets the {@link AspectRatioListener}.
    *
-   * @param listener The listener to be notified about aspect ratios changes.
+   * @param listener The listener to be notified about aspect ratios changes, or null to clear a
+   *     listener that was previously set.
    */
-  public void setAspectRatioListener(AspectRatioListener listener) {
+  public void setAspectRatioListener(@Nullable AspectRatioListener listener) {
     this.aspectRatioListener = listener;
   }
 
-  /**
-   * Returns the resize mode.
-   */
+  /** Returns the {@link ResizeMode}. */
   public @ResizeMode int getResizeMode() {
     return resizeMode;
   }
 
   /**
-   * Sets the resize mode.
+   * Sets the {@link ResizeMode}
    *
-   * @param resizeMode The resize mode.
+   * @param resizeMode The {@link ResizeMode}.
    */
   public void setResizeMode(@ResizeMode int resizeMode) {
     if (this.resizeMode != resizeMode) {
@@ -202,7 +198,8 @@ public final class AspectRatioFrameLayout extends FrameLayout {
         break;
     }
     aspectRatioUpdateDispatcher.scheduleUpdate(videoAspectRatio, viewAspectRatio, true);
-    super.onMeasure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+    super.onMeasure(
+        MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
         MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
   }
 

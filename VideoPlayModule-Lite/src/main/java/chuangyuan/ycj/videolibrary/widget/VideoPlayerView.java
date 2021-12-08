@@ -87,6 +87,15 @@ public final class VideoPlayerView extends BaseView {
         intiClickView();
     }
 
+    @Override
+    public void setShowVideoSwitch(boolean showVideoSwitch) {
+        super.setShowVideoSwitch(showVideoSwitch);
+        if (isLand && !isNowVerticalFullScreen) {
+            //横屏全屏才刷新
+            getSwitchText().setVisibility(showVideoSwitch ? VISIBLE : GONE);
+        }
+    }
+
     /***
      * 初始化点击事件
      * **/
@@ -183,7 +192,7 @@ public final class VideoPlayerView extends BaseView {
      *
      * @param newConfig 旋转对象
      */
-    void doOnConfigurationChanged(int newConfig) {
+    public void doOnConfigurationChanged(int newConfig) {
         //横屏
         fullScreen(newConfig == Configuration.ORIENTATION_LANDSCAPE, true);
         if (getOnLayoutChangeListener() != null) {
@@ -193,6 +202,10 @@ public final class VideoPlayerView extends BaseView {
     }
 
     private void fullScreen(boolean fullScreen, boolean checkLand) {
+        fullScreen(fullScreen, checkLand, false);
+    }
+
+    private void fullScreen(boolean fullScreen, boolean checkLand, boolean verticalLand) {
         if (fullScreen) {
             if (checkLand) {
                 if (isLand) {
@@ -207,10 +220,10 @@ public final class VideoPlayerView extends BaseView {
                                 View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
             }
             //判断是否开启多线路支持
-            if (isShowVideoSwitch) {
+            if (isShowVideoSwitch && !verticalLand) {
                 TextView switchText = getSwitchText();
                 switchText.setVisibility(VISIBLE);
-                if (switchText.getText().toString().isEmpty() && !getNameSwitch().isEmpty()) {
+                if (!getNameSwitch().isEmpty()) {
                     switchText.setText(getNameSwitch().get(switchIndex));
                 }
             }
@@ -429,17 +442,17 @@ public final class VideoPlayerView extends BaseView {
                 //切换
             } else if (v.getId() == R.id.exo_video_switch) {
                 if (belowView == null) {
-                    belowView = new BelowView(getContext(), getNameSwitch());
-                    belowView.setOnItemClickListener(new BelowView.OnItemClickListener() {
-                        @Override
-                        public void onItemClick(int position, String name) {
-                            if (mExoPlayerListener != null) {
-                                mExoPlayerListener.switchUri(position);
-                            }
-                            getSwitchText().setText(name);
-                            belowView.dismissBelowView();
+                    belowView = new BelowView(getContext(), getNameSwitch(), getSwitchIndex());
+                    belowView.setOnItemClickListener((position, name) -> {
+                        if (mExoPlayerListener != null) {
+                            mExoPlayerListener.switchUri(position);
                         }
+                        switchIndex = position;
+                        getSwitchText().setText(name);
+                        belowView.dismissBelowView();
                     });
+                } else {
+                    belowView.setList(getNameSwitch(), getSwitchIndex());
                 }
                 belowView.showBelowView(v, true, getSwitchIndex());
                 //提示播放
@@ -450,7 +463,8 @@ public final class VideoPlayerView extends BaseView {
                     if (mExoPlayerListener.getPlay() != null && mExoPlayerListener.getPlay().isLoad()) {
                         mExoPlayerListener.getPlay().setStartOrPause(true);
                     } else {
-                        mExoPlayerListener.playVideoUriForce();
+                        mExoPlayerListener.playVideoUri();
+                        mExoPlayerListener.getPlay().setStartOrPause(true);
                     }
                 }
             }
@@ -461,6 +475,11 @@ public final class VideoPlayerView extends BaseView {
      * 控制类监听类
      **/
     private ExoPlayerViewListener exoPlayerViewListener = new ExoPlayerViewListener() {
+
+        @Override
+        public void hideAlertDialog() {
+            hideDialog();
+        }
 
         @Override
         public void showAlertDialog() {
@@ -530,12 +549,12 @@ public final class VideoPlayerView extends BaseView {
 
         @Override
         public void next() {
-            controllerView.next();
+            //todo controllerView.next();
         }
 
         @Override
         public void previous() {
-            controllerView.previous();
+            //todo controllerView.previous();
         }
 
         @Override
@@ -678,7 +697,7 @@ public final class VideoPlayerView extends BaseView {
             if (getOnLayoutChangeListener() != null) {
                 getOnLayoutChangeListener().change(Layout.VERTICAL_LAND);
             }
-            fullScreen(true, false);
+            fullScreen(true, false, true);
             setLand(true);
             scaleVerticalLayout();
             isNowVerticalFullScreen = true;

@@ -49,7 +49,7 @@ public class ExoPlayerControlView extends PlayerControlView {
 
     public ExoPlayerControlView(Context context, AttributeSet attrs, int defStyleAttr, AttributeSet playbackAttrs) {
         super(context, attrs, defStyleAttr, playbackAttrs);
-        listenerCopyOnWriteArraySet=new CopyOnWriteArraySet<>();
+        listenerCopyOnWriteArraySet = new CopyOnWriteArraySet<>();
         if (playbackAttrs != null) {
             TypedArray a =
                     context
@@ -88,8 +88,10 @@ public class ExoPlayerControlView extends PlayerControlView {
     public void hide() {
         if (isVisible()) {
             setVisibility(GONE);
-            if (visibilityListener != null) {
-                visibilityListener.onVisibilityChange(getVisibility());
+            if (!visibilityListeners.isEmpty()) {
+                for (VisibilityListener visibilityListener : visibilityListeners) {
+                    visibilityListener.onVisibilityChange(getVisibility());
+                }
             }
             removeCallbacks(hideAction);
             hideAtMs = C.TIME_UNSET;
@@ -212,10 +214,12 @@ public class ExoPlayerControlView extends PlayerControlView {
     }
 
     @Override
-    protected void updateProgress(long position, long bufferedPosition, long duration) {
-        super.updateProgress(position, bufferedPosition, duration);
-        for (AnimUtils.UpdateProgressListener updateProgressListener : listenerCopyOnWriteArraySet) {
-            updateProgressListener.updateProgress(position, bufferedPosition, duration);
+    protected void updateProgress() {
+        super.updateProgress();
+        if (getPlayer() != null) {
+            for (AnimUtils.UpdateProgressListener updateProgressListener : listenerCopyOnWriteArraySet) {
+                updateProgressListener.updateProgress(getPlayer().getCurrentPosition(), getPlayer().getBufferedPosition(), getPlayer().getDuration());
+            }
         }
     }
 
@@ -248,6 +252,7 @@ public class ExoPlayerControlView extends PlayerControlView {
     public void addUpdateProgressListener(@NonNull AnimUtils.UpdateProgressListener updateProgressListener) {
         listenerCopyOnWriteArraySet.add(updateProgressListener);
     }
+
     /***
      * 移除设置进度回调
      * @param updateProgressListener updateProgressListener

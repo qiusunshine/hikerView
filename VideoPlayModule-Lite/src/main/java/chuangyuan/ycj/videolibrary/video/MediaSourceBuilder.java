@@ -11,10 +11,10 @@ import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ClippingMediaSource;
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.LoopingMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.MediaSourceEventListener;
+import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.upstream.DataSource;
 
 import java.util.List;
@@ -44,10 +44,12 @@ public class MediaSourceBuilder {
      */
     protected MediaSourceEventListener sourceEventListener = null;
     private int indexType = -1;
+
     private List<String> videoUri;
     private int loopingCount = 0;
 
     protected Map<String ,String> headers;
+    protected String subtitle;
 
     /***
      * 初始化
@@ -264,6 +266,11 @@ public class MediaSourceBuilder {
         return videoUri;
     }
 
+    public void setVideoUri(List<String> videoUri) {
+        this.videoUri = videoUri;
+    }
+
+
     /**
      * 用于通知自适应的回调接口获取视频线路名称
      *
@@ -283,9 +290,8 @@ public class MediaSourceBuilder {
         int streamType = VideoPlayUtils.inferContentType(uri);
         switch (streamType) {
             case C.TYPE_OTHER:
-                return new ExtractorMediaSource.Factory(getDataSource())
+                return new ProgressiveMediaSource.Factory(getDataSource())
                         .setExtractorsFactory(new DefaultExtractorsFactory())
-                        .setMinLoadableRetryCount(5)
                         .setCustomCacheKey(uri.toString())
                         .createMediaSource(uri);
             default:
@@ -299,5 +305,13 @@ public class MediaSourceBuilder {
 
     public void setHeaders(Map<String, String> headers) {
         this.headers = headers;
+    }
+
+    public String getSubtitle() {
+        return subtitle;
+    }
+
+    public void setSubtitle(String subtitle) {
+        this.subtitle = subtitle;
     }
 }

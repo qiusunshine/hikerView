@@ -21,7 +21,6 @@ import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.source.BehindLiveWindowException;
 import com.google.android.exoplayer2.util.Assertions;
-import com.google.android.exoplayer2.util.Util;
 
 
 /**
@@ -237,6 +236,10 @@ public class VideoPlayUtils {
      */
     @C.ContentType
     public static int inferContentType(Uri uri) {
+        String url = uri.toString();
+        if(url.contains(".m3u8") && !url.contains("#ignoreM3U8#")){
+            return C.TYPE_HLS;
+        }
         String path = uri.getPath();
         return path == null ? C.TYPE_OTHER : inferContentType(path);
     }
@@ -250,7 +253,7 @@ public class VideoPlayUtils {
      */
     @C.ContentType
     public static int inferContentType(String fileName) {
-        fileName = Util.toLowerInvariant(fileName);
+        fileName = fileName.toLowerCase();
         if (fileName.matches(".*m3u8.*")) {
             return C.TYPE_HLS;
         } else if (fileName.matches(".*mpd.*")) {

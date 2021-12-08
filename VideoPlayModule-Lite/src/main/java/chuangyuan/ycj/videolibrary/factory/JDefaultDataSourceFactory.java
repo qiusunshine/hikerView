@@ -3,10 +3,8 @@ package chuangyuan.ycj.videolibrary.factory;
 import android.content.Context;
 
 import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.Util;
 
 
@@ -27,7 +25,6 @@ public final class JDefaultDataSourceFactory implements DataSource.Factory {
      * Instantiates a new J default data source factory.
      *
      * @param context A context.                for {@link DefaultDataSource}.
-     * @see DefaultDataSource#DefaultDataSource(Context, TransferListener, DataSource) DefaultDataSource#DefaultDataSource(Context, TransferListener, DataSource)
      */
     public JDefaultDataSourceFactory(Context context) {
         String userAgent = Util.getUserAgent(context, context.getPackageName());
@@ -37,6 +34,6 @@ public final class JDefaultDataSourceFactory implements DataSource.Factory {
 
     @Override
     public DataSource createDataSource() {
-        return new DefaultDataSource(context, new DefaultBandwidthMeter(), baseDataSourceFactory.createDataSource());
+        return baseDataSourceFactory.createDataSource();
     }
 }

@@ -45,8 +45,4 @@ public class ExoDefaultTimeBar extends DefaultTimeBar {
         this.openSeek = openSeek;
     }
 
-    @Override
-    public boolean isOpenSeek() {
-        return openSeek;
-    }
 }

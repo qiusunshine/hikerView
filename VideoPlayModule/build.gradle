@@ -52,7 +52,13 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-compat'
         exclude group: 'com.android.support', module: 'support-core-utils'
     })
+    //2.16.1会导致rtmp播放闪退
     implementation('com.google.android.exoplayer:extension-rtmp:2.15.1', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+        exclude group: 'com.android.support', module: 'support-compat'
+        exclude group: 'com.android.support', module: 'support-core-utils'
+    })
+    implementation ('com.google.android.exoplayer:extension-cronet:2.15.1', {
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude group: 'com.android.support', module: 'support-compat'
         exclude group: 'com.android.support', module: 'support-core-utils'

@@ -202,6 +202,7 @@ import chuangyuan.ycj.videolibrary.widget.VideoPlayerView;
             resetInit();
             player.release();
             player = null;
+            isLoad = false;
         }
 
     }

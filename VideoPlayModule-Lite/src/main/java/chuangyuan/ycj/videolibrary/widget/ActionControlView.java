@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,15 +25,15 @@ class ActionControlView extends FrameLayout {
     /***视频加载页,错误页,进度控件,锁屏按布局,自定义预览布局*/
     private View exoPlayErrorLayout, playReplayLayout, playBtnHintLayout;
 
-     private ActionControlView(@NonNull Context context) {
-        this(context, null,null);
+    private ActionControlView(@NonNull Context context) {
+        this(context, null, null);
     }
 
-    public ActionControlView(@NonNull Context context, @Nullable AttributeSet attrs,PlayerView playerView) {
-        this(context, attrs, 0,playerView);
+    public ActionControlView(@NonNull Context context, @Nullable AttributeSet attrs, PlayerView playerView) {
+        this(context, attrs, 0, playerView);
     }
 
-    public ActionControlView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr,@NonNull PlayerView playerView) {
+    public ActionControlView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr, @NonNull PlayerView playerView) {
         super(context, attrs, defStyleAttr);
         int replayId = R.layout.simple_exo_play_replay;
         int errorId = R.layout.simple_exo_play_error;
@@ -82,6 +83,24 @@ class ActionControlView extends FrameLayout {
     }
 
     /***
+     * 显示按钮提示页
+     *
+     * @param visibility 状态
+     */
+    public void showBtnContinueHint(int visibility, String msg) {
+        if (playBtnHintLayout != null) {
+            playBtnHintLayout.setVisibility(visibility);
+            TextView textView = playBtnHintLayout.findViewById(R.id.exo_player_btn_hint_tv_id);
+            textView.setText(msg);
+            if (msg == null || msg.isEmpty()) {
+                textView.setVisibility(GONE);
+            } else {
+                textView.setVisibility(VISIBLE);
+            }
+        }
+    }
+
+    /***
      * 显示隐藏重播页
      *
      * @param visibility 状态
@@ -91,11 +110,13 @@ class ActionControlView extends FrameLayout {
             playReplayLayout.setVisibility(visibility);
         }
     }
-    public  void  hideAllView(){
+
+    public void hideAllView() {
         playBtnHintLayout.setVisibility(GONE);
         exoPlayErrorLayout.setVisibility(GONE);
         playReplayLayout.setVisibility(GONE);
     }
+
     public View getExoPlayErrorLayout() {
         return exoPlayErrorLayout;
     }

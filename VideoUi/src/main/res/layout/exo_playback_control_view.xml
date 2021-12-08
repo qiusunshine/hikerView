@@ -99,6 +99,11 @@
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
+            <View android:id="@id/exo_progress_placeholder"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="26dp"/>
+
             <chuangyuan.ycj.videolibrary.widget.ExoDefaultTimeBar
                 android:id="@id/exo_progress"
                 style="@style/ExoMediaTimeBar" />

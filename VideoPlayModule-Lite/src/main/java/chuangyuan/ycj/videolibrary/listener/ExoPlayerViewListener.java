@@ -17,6 +17,11 @@ import java.util.List;
 public interface ExoPlayerViewListener {
 
     /***
+     * 隐藏网络提示框
+     */
+    void hideAlertDialog();
+
+    /***
      * 显示wifi提示框
      */
     void showAlertDialog();

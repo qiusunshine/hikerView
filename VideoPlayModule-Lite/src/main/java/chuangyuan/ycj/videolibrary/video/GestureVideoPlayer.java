@@ -2,8 +2,10 @@ package chuangyuan.ycj.videolibrary.video;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.media.AudioManager;
+import android.provider.Settings;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -144,6 +146,16 @@ public class GestureVideoPlayer extends ExoUserPlayer {
         DisplayMetrics displayMetrics = activity.getResources().getDisplayMetrics();
         screeHeightPixels = displayMetrics.heightPixels;
         screeWidthPixels = displayMetrics.widthPixels;
+        brightness = getScreenBrightness(activity) / 255.0f;
+    }
+    /**
+     * 1.获取系统默认屏幕亮度值 屏幕亮度值范围（0-255）
+     * **/
+    private int getScreenBrightness(Context context) {
+        ContentResolver contentResolver = context.getContentResolver();
+        int defVal = 125;
+        return Settings.System.getInt(contentResolver,
+                Settings.System.SCREEN_BRIGHTNESS, defVal);
     }
 
     @Override
@@ -168,6 +180,7 @@ public class GestureVideoPlayer extends ExoUserPlayer {
                 newPosition = -1;
             } else {
                 player.seekTo(newPosition);
+                videoPlayerView.seekFromPlayer(newPosition);
                 newPosition = -1;
             }
         }
@@ -429,23 +442,25 @@ public class GestureVideoPlayer extends ExoUserPlayer {
                 }
                 firstTouch = false;
             }
-            if (toSeek) {
-                deltaX = -deltaX;
-                long position = player.getCurrentPosition();
-                long duration = player.getDuration();
-                long newPosition = (int) (position + deltaX * duration / screeHeightPixels / 3);
-                if (newPosition > duration) {
-                    newPosition = duration;
-                } else if (newPosition <= 0) {
-                    newPosition = 0;
-                }
-                showProgressDialog(Util.getStringForTime(formatBuilder, formatter, position), newPosition, duration, Util.getStringForTime(formatBuilder, formatter, newPosition), Util.getStringForTime(formatBuilder, formatter, duration));
-            } else {
-                float percent = deltaY / getPlayerViewListener().getHeight();
-                if (volumeControl) {
-                    showVolumeDialog(percent);
+            if(player != null){
+                if (toSeek) {
+                    deltaX = -deltaX;
+                    long position = player.getCurrentPosition();
+                    long duration = player.getDuration();
+                    long newPosition = (int) (position + deltaX * duration / screeHeightPixels / 3);
+                    if (newPosition > duration) {
+                        newPosition = duration;
+                    } else if (newPosition <= 0) {
+                        newPosition = 0;
+                    }
+                    showProgressDialog(Util.getStringForTime(formatBuilder, formatter, position), newPosition, duration, Util.getStringForTime(formatBuilder, formatter, newPosition), Util.getStringForTime(formatBuilder, formatter, duration));
                 } else {
-                    showBrightnessDialog(percent);
+                    float percent = deltaY / getPlayerViewListener().getHeight();
+                    if (volumeControl) {
+                        showVolumeDialog(percent);
+                    } else {
+                        showBrightnessDialog(percent);
+                    }
                 }
             }
             return super.onScroll(e1, e2, distanceX, distanceY);

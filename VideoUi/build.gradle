@@ -22,15 +22,21 @@ android {
     lintOptions {
         abortOnError false
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    api('com.google.android.exoplayer:exoplayer-core:2.8.2', {
+    api('com.google.android.exoplayer:exoplayer-core:2.15.1', {
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude group: 'com.android.support', module: 'support-compat'
         exclude group: 'com.android.support', module: 'support-core-utils'
     })
-    implementation 'androidx.media:media:1.2.0@aar'
+    implementation 'androidx.media:media:1.4.2@aar'
+    implementation 'androidx.annotation:annotation:1.2.0'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
 }
