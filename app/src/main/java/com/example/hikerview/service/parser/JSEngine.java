@@ -11,7 +11,6 @@ import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.example.hikerview.constants.ArticleColTypeEnum;
 import com.example.hikerview.constants.JSONPreFilter;
-import com.example.hikerview.constants.TimeConstants;
 import com.example.hikerview.constants.UAEnum;
 import com.example.hikerview.event.OnBackEvent;
 import com.example.hikerview.event.home.CopyEvent;
@@ -27,9 +26,11 @@ import com.example.hikerview.event.home.ToastEvent;
 import com.example.hikerview.event.rule.ConfirmEvent;
 import com.example.hikerview.model.BigTextDO;
 import com.example.hikerview.model.MovieRule;
+import com.example.hikerview.service.auth.AuthBridgeEvent;
+import com.example.hikerview.service.auth.AuthStorageItem;
+import com.example.hikerview.service.auth.RhinoClassShutter;
 import com.example.hikerview.service.exception.ParseException;
-import com.example.hikerview.service.http.ByteHexConvert;
-import com.example.hikerview.service.http.CharsetStringConvert;
+import com.example.hikerview.service.http.CodeUtil;
 import com.example.hikerview.service.http.HikerRuleUtil;
 import com.example.hikerview.ui.Application;
 import com.example.hikerview.ui.browser.model.SearchEngine;
@@ -57,13 +58,7 @@ import com.example.hikerview.utils.encrypt.AesUtil;
 import com.example.hikerview.utils.encrypt.rsa.RSAEncrypt;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.lzy.okgo.OkGo;
-import com.lzy.okgo.adapter.Call;
-import com.lzy.okgo.https.HttpsUtils;
-import com.lzy.okgo.interceptor.HttpLoggingInterceptor;
 import com.lzy.okgo.model.HttpHeaders;
-import com.lzy.okgo.request.PostRequest;
-import com.lzy.okgo.request.PutRequest;
 
 import org.adblockplus.libadblockplus.android.Utils;
 import org.apache.commons.lang3.StringUtils;
@@ -75,8 +70,10 @@ import org.jsoup.select.Elements;
 import org.litepal.LitePal;
 import org.mozilla.javascript.ConsString;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ContextFactory;
 import org.mozilla.javascript.IdFunctionObject;
 import org.mozilla.javascript.IdScriptableObject;
+import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.NativeObject;
@@ -93,14 +90,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Method;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -108,12 +103,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
-import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.ResponseBody;
-import okhttp3.brotli.BrotliInterceptor;
+import dalvik.system.DexClassLoader;
 import timber.log.Timber;
 
 /**
@@ -122,13 +113,23 @@ import timber.log.Timber;
  * 时间：At 12:04
  */
 public class JSEngine {
+    static {
+        ContextFactory.initGlobal(new ContextFactory() {
+            @Override
+            protected Context makeContext() {
+                Context context = super.makeContext();
+                context.setClassShutter(new RhinoClassShutter());
+                return context;
+            }
+        });
+    }
+
     private static final String TAG = "JSEngine";
     private Class clazz;
     private String allFunctions = "";
     private String evalFunctions = "";
     private volatile static JSEngine engine;
     private Map<String, String> varMap = new HashMap<>();
-    private OkHttpClient noRedirectHttpClient;
     private Map<String, OnFindCallBack<?>> callbackMap = new ConcurrentHashMap<>();
     private Map<String, String> resCodeMap = new ConcurrentHashMap<>();
     private String jsPlugin;
@@ -140,7 +141,7 @@ public class JSEngine {
             //3分钟自动失效
             .expireAfterAccess(3, TimeUnit.MINUTES)
             .build();
-    public static final String AES_DEFAULT_KEY = "1234509854";
+    public static final String AES_DEFAULT_KEY = "1234567890kkkk";
 
     public boolean isTraceLog() {
         return traceLog;
@@ -294,10 +295,10 @@ public class JSEngine {
         }
         js = allFunctions + "\n" + getReplaceJS(js);
         org.mozilla.javascript.Context rhino = org.mozilla.javascript.Context.enter();
-        rhino.setOptimizationLevel(-1);
-        rhino.setLanguageVersion(200);
+        initRhino(rhino);
         try {
             Scriptable scope = rhino.initStandardObjects();
+            ImporterTopLevel.init(rhino, scope, false);
             ScriptableObject.putProperty(scope, "javaContext", org.mozilla.javascript.Context.javaToJS(this, scope));//配置属性 javaContext:当前类JSEngine的上下文
             ScriptableObject.putProperty(scope, "javaLoader", org.mozilla.javascript.Context.javaToJS(clazz.getClassLoader(), scope));//配置属性 javaLoader:当前类的JSEngine的类加载器
             Object re = rhino.evaluateString(scope, js, clazz.getSimpleName(), 1, null);
@@ -315,6 +316,11 @@ public class JSEngine {
         }
     }
 
+    private void initRhino(org.mozilla.javascript.Context rhino) {
+        rhino.setOptimizationLevel(-1);
+        rhino.setLanguageVersion(200);
+    }
+
 
     /**
      * 执行JS
@@ -328,10 +334,10 @@ public class JSEngine {
     private void runScript(String js, String callbackKey, boolean isCustomCatchError) {
         String runJSStr = allFunctions + "\n" + getReplaceJS(js);//运行js = allFunctions + js
         org.mozilla.javascript.Context rhino = org.mozilla.javascript.Context.enter();
-        rhino.setLanguageVersion(200);
-        rhino.setOptimizationLevel(-1);
+        initRhino(rhino);
         try {
             Scriptable scope = rhino.initStandardObjects();
+            ImporterTopLevel.init(rhino, scope, false);
             ScriptableObject.putProperty(scope, "javaContext", org.mozilla.javascript.Context.javaToJS(this, scope));//配置属性 javaContext:当前类JSEngine的上下文
             ScriptableObject.putProperty(scope, "javaLoader", org.mozilla.javascript.Context.javaToJS(clazz.getClassLoader(), scope));//配置属性 javaLoader:当前类的JSEngine的类加载器
             rhino.evaluateString(scope, runJSStr, clazz.getSimpleName(), 1, null);
@@ -1479,8 +1485,52 @@ public class JSEngine {
         }
     }
 
+    public Object generateRangeHeadersOptions(Object options, int range) {
+        if (options != null && !isUndefined(options)) {
+            Map op = (Map) argsNativeObjectAdjust(options);
+            Map<String, String> headerMap = (Map<String, String>) op.get("headers");
+            if (headerMap == null) {
+                headerMap = (Map<String, String>) op.get("header");
+            }
+            if (headerMap == null) {
+                headerMap = new HashMap<>();
+                headerMap.put("Range", "bytes=0-" + range);
+                op.put("headers", headerMap);
+            } else {
+                headerMap.put("Range", "bytes=0-" + range);
+            }
+            return op;
+        } else {
+            Map op = new HashMap<>();
+            Map<String, String> headerMap = new HashMap<>();
+            headerMap.put("Range", "bytes=0-" + range);
+            op.put("headers", headerMap);
+            return op;
+        }
+    }
+
+    private Object generateOnlyHeadersOptions(Object options) {
+        if (options != null && !isUndefined(options)) {
+            Map op = (Map) argsNativeObjectAdjust(options);
+            op.put("onlyHeaders", true);
+            return op;
+        } else {
+            Map op = new HashMap<>();
+            op.put("onlyHeaders", true);
+            return op;
+        }
+    }
+
     public String fetchWithHeaders(String url, Object options, Object ruleKey) {
         return fetch(url, generateHeadersOptions(options), ruleKey);
+    }
+
+    public String fetchOnlyHeaders(String url, Object options, Object ruleKey) {
+        return fetch(url, generateOnlyHeadersOptions(options), ruleKey);
+    }
+
+    public String fetchWithHeadersInterceptor(String url, Object options, Object ruleKey, HttpHelper.HeadersInterceptor interceptor) {
+        return fetch0(url, generateHeadersOptions(options), ruleKey, interceptor);
     }
 
     @JSAnnotation(returnType = ReturnType.STRING)
@@ -1518,7 +1568,7 @@ public class JSEngine {
 
     @JSAnnotation(returnType = ReturnType.STRING)
     public String buildUrl(String url, Object options) {
-        String body = buildParamStr((JSONObject) argsNativeObjectAdjust(options));
+        String body = HttpHelper.buildParamStr((JSONObject) argsNativeObjectAdjust(options));
         if (url == null || url.isEmpty() || isUndefined(url)) {
             return body;
         } else if (url.contains("?")) {
@@ -1527,52 +1577,18 @@ public class JSEngine {
         return url + "?" + body;
     }
 
-    private String buildParamStr(JSONObject jsonObject) {
-        Set<String> keys = jsonObject.keySet();
-        String[] kv = new String[keys.size()];
-        int i = 0;
-        for (String key : keys) {
-            Object v = jsonObject.get(key);
-            String value;
-            if (v instanceof String) {
-                value = (String) v;
-            } else {
-                value = JSON.toJSONString(v);
-            }
-            kv[i] = key + "=" + value;
-            i++;
-        }
-        return StringUtil.arrayToString(kv, 0, "&");
-    }
-
     private String post0(String url, Object options, Object ruleKey, boolean request) {
-        if (options != null && !isUndefined(options)) {
-            Map op = (Map) argsNativeObjectAdjust(options);
-            if (op.containsKey("body")) {
-                Object body;
-                Object b = op.get("body");
-                if (b instanceof String) {
-                    body = b;
-                } else if (b instanceof JSONObject) {
-                    body = buildParamStr((JSONObject) b);
-                } else {
-                    body = JSON.toJSONString(b);
-                }
-                op.put("body", body);
-            }
-            op.put("method", "POST");
-            if (request) {
-                return fetch(url, generateRequestOptions(op), ruleKey);
-            }
-            return fetch(url, op, ruleKey);
-        } else {
-            Map op = new HashMap<>();
-            op.put("method", "POST");
-            if (request) {
-                return fetch(url, generateRequestOptions(op), ruleKey);
-            }
-            return fetch(url, op, ruleKey);
+        if (isUndefined(options)) {
+            options = null;
         }
+        Map<String, Object> op = null;
+        if (options != null) {
+            op = HttpHelper.generatePostOps((Map<String, Object>) options);
+        }
+        if (request) {
+            return fetch(url, generateRequestOptions(op), ruleKey);
+        }
+        return fetch(url, op, ruleKey);
     }
 
     /**
@@ -1583,262 +1599,32 @@ public class JSEngine {
      */
     @JSAnnotation(returnType = ReturnType.STRING)
     public String fetch(@Parameter("url") String url, @Parameter("options") Object options, @Parameter("ruleKey") Object ruleKey) {
-        Timber.d("fetch, %s", url);
-        long start = System.currentTimeMillis();
+        return fetch0(url, options, ruleKey, null);
+    }
+
+    /**
+     * @param url
+     * @param options
+     * @param ruleKey
+     * @param headersInterceptor 如果被拦截则body为空
+     * @return
+     */
+    private String fetch0(@Parameter("url") String url, @Parameter("options") Object options,
+                          @Parameter("ruleKey") Object ruleKey, HttpHelper.HeadersInterceptor headersInterceptor) {
         try {
             if (StringUtil.isEmpty(url)) {
                 return "";
             }
-            Object rule = argsNativeObjectAdjust(ruleKey);
-            String contentType = null;
-            boolean withHeaders = false;
-            boolean withStatusCode = false;
-            boolean redirect = true;
-            boolean toHex = false;
-            int timeout = -1;
-            Map<String, String> headerMap = null;
-            Map<String, String> params = new HashMap<>();
-            String fetchResult = "";
-
-            //默认为空，okhttp自动识别
-            String charset = null;
-            String method = "GET";
-            com.lzy.okgo.request.base.Request<String, ?> request;
-            try {
-                if (options != null && !isUndefined(options)) {
-                    Map op = (Map) argsNativeObjectAdjust(options);
-                    headerMap = (Map<String, String>) op.get("headers");
-                    if (headerMap == null) {
-                        headerMap = (Map<String, String>) op.get("header");
-                    }
-                    if (op.containsKey("withHeaders")) {
-                        try {
-                            withHeaders = (Boolean) op.get("withHeaders");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if (op.containsKey("withStatusCode")) {
-                        try {
-                            withStatusCode = (Boolean) op.get("withStatusCode");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if (op.containsKey("redirect")) {
-                        try {
-                            redirect = (Boolean) op.get("redirect");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if (op.containsKey("timeout")) {
-                        try {
-                            timeout = Integer.parseInt(JSON.toJSONString(op.get("timeout")));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if (op.containsKey("toHex")) {
-                        try {
-                            toHex = (Boolean) op.get("toHex");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    Object hiker = fetchByHiker(url, rule, toHex);
-                    if (hiker instanceof String) {
-                        return (String) hiker;
-                    }
-                    request = OkGo.get(url);
-                    String body = null;
-                    if (headerMap != null) {
-                        contentType = headerMap.get("content-type");
-                        if (StringUtil.isEmpty(contentType)) {
-                            contentType = headerMap.get("Content-Type");
-                        }
-                        if (StringUtil.isEmpty(contentType)) {
-                            contentType = headerMap.get("Content-type");
-                        }
-                        body = headerMap.get("body");
-                    }
-                    method = (String) op.get("method");
-                    if (op.containsKey("body")) {
-                        Object b = op.get("body");
-                        if (b instanceof String) {
-                            body = (String) b;
-                        } else {
-                            if (!"PUT".equalsIgnoreCase(method) && !"GET".equalsIgnoreCase(method)) {
-                                method = "POST";
-                            }
-                            body = JSON.toJSONString(b);
-                        }
-                    }
-                    if (contentType != null && contentType.split("charset=").length > 1) {
-                        charset = contentType.split("charset=")[1];
-                    } else if (contentType != null && contentType.split("charst=").length > 1) {
-                        //自己挖的坑，总是要填的
-                        charset = contentType.split("charst=")[1];
-                    }
-                    if ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method)) {
-                        request = "PUT".equalsIgnoreCase(method) ? OkGo.put(url) : OkGo.post(url);
-                        if (StringUtil.isEmpty(body)) {
-                            //empty
-                        } else if (contentType != null && contentType.contains("application/json")) {
-                            if ("PUT".equalsIgnoreCase(method)) {
-                                ((PutRequest<?>) request).upJson(body);
-                            } else {
-                                ((PostRequest<?>) request).upJson(body);
-                            }
-                        } else if ((body.startsWith("{") && body.endsWith("}")) || (body.startsWith("[") && body.endsWith("]"))) {
-                            if ("PUT".equalsIgnoreCase(method)) {
-                                ((PutRequest<?>) request).upJson(body);
-                            } else {
-                                ((PostRequest<?>) request).upJson(body);
-                            }
-                        } else {
-                            for (String form : body.split("&")) {
-                                int split = form.indexOf("=");
-                                params.put(StringUtil.decodeConflictStr(form.substring(0, split)), StringUtil.decodeConflictStr(form.substring(split + 1)));
-                            }
-                            request.params(params);
-                        }
-                    }
-                } else {
-                    Object hiker = fetchByHiker(url, rule, false);
-                    if (hiker instanceof String) {
-                        return (String) hiker;
-                    } else {
-                        request = OkGo.get(url);
-                    }
-                }
-                if (!redirect && noRedirectHttpClient == null && timeout <= 0) {
-                    buildOkHttpClient();
-                }
-
-                HttpHeaders httpHeaders = new HttpHeaders();
-                if (headerMap != null && !headerMap.isEmpty()) {
-                    for (Map.Entry<String, String> entry : headerMap.entrySet()) {
-                        httpHeaders.put(entry.getKey(), entry.getValue());
-                    }
-                }
-                if (StringUtil.isNotEmpty(charset) && !"UTF-8".equalsIgnoreCase(charset)
-                        && (("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method)))) {
-                    FormBody.Builder bodyBuilder = new FormBody.Builder(Charset.forName(charset));
-                    for (String key : request.getParams().urlParamsMap.keySet()) {
-                        List<String> urlValues = request.getParams().urlParamsMap.get(key);
-                        if (CollectionUtil.isNotEmpty(urlValues)) {
-                            for (String value : urlValues) {
-                                bodyBuilder.add(key, value);
-                            }
-                        }
-                    }
-                    if ("PUT".equalsIgnoreCase(method)) {
-                        ((PutRequest<?>) request).upRequestBody(bodyBuilder.build());
-                    } else {
-                        ((PostRequest<?>) request).upRequestBody(bodyBuilder.build());
-                    }
-                    request.removeAllParams();
-                }
-                boolean finalWithHeaders = withHeaders;
-                boolean finalWithStatusCode = withStatusCode;
-                request.headers(httpHeaders);
-                //需要禁止重定向，必须单独使用client
-                if (!redirect && noRedirectHttpClient != null) {
-                    request.client(noRedirectHttpClient);
-                }
-                if (timeout > 0) {
-                    request.client(buildOkHttpClient(timeout, redirect));
-                } else {
-                    if (!redirect && noRedirectHttpClient != null) {
-                        request.client(noRedirectHttpClient);
-                    }
-                }
-                request.retryCount(0);
-                Call<String> call = request.converter(toHex ? new ByteHexConvert() : new CharsetStringConvert(charset)).adapt();
-                com.lzy.okgo.model.Response<String> response = call.execute();
-                long end = System.currentTimeMillis();
-                Timber.d("js, fetch: consume=%s, %s", (end - start), url);
-                Map<String, List<String>> headers = response.headers() == null ? null : response.headers().toMultimap();
-                String error = null;
-                if (response.getException() != null) {
-                    Timber.e(response.getException());
-                    fetchResult = response.body();
-                    error = response.getException().getMessage();
-                    if (fetchResult == null && response.getRawResponse() != null) {
-                        try (ResponseBody responseBody = response.getRawResponse().body()) {
-                            if (responseBody != null) {
-                                fetchResult = responseBody.string();
-                            }
-                        } catch (Throwable e) {
-                            Timber.e(e);
-                        }
-                    }
-                } else {
-                    fetchResult = response.body();
-                }
-                if (finalWithHeaders || finalWithStatusCode) {
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("body", fetchResult);
-                    jsonObject.put("headers", headers);
-                    jsonObject.put("url", response.getRawResponse() != null ? response.getRawResponse().request().url().toString() : url);
-                    jsonObject.put("statusCode", response.code());
-                    jsonObject.put("error", error);
-                    fetchResult = jsonObject.toJSONString();
-                }
-                return fetchResult == null ? "" : fetchResult;
-            } catch (Throwable e) {
-                Timber.e(e);
-                return "";
-            }
+            Map<String, Object> op = options == null || isUndefined(options) ? null : (Map<String, Object>) argsNativeObjectAdjust(options);
+            return HttpHelper.fetch(url, op, headersInterceptor, (path, toHex) -> {
+                Object rule = argsNativeObjectAdjust(ruleKey);
+                return fetchByHiker(path, rule, toHex);
+            });
         } catch (Throwable e) {
             Timber.e(e);
             return "";
         }
     }
-
-    private void buildOkHttpClient() {
-        noRedirectHttpClient = getNoRedirectHttpClient();
-    }
-
-    public static OkHttpClient getNoRedirectHttpClient() {
-        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor("OkGo");
-        loggingInterceptor.setPrintLevel(HttpLoggingInterceptor.Level.BODY);
-        loggingInterceptor.setColorLevel(Level.INFO);
-        HttpsUtils.SSLParams sslParams = HttpsUtils.getSslSocketFactory();
-        return new OkHttpClient().newBuilder()
-                .addInterceptor(BrotliInterceptor.INSTANCE)
-                .sslSocketFactory(sslParams.sSLSocketFactory, sslParams.trustManager)
-                .hostnameVerifier(HttpsUtils.UnSafeHostnameVerifier)
-                .followRedirects(false)
-                .followSslRedirects(false)
-                .addInterceptor(loggingInterceptor)
-                .readTimeout(TimeConstants.HTTP_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS)
-                .writeTimeout(TimeConstants.HTTP_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS)
-                .connectTimeout(TimeConstants.HTTP_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS)
-                .build();
-    }
-
-    private OkHttpClient buildOkHttpClient(int timeout, boolean redirect) {
-        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor("OkGo");
-        loggingInterceptor.setPrintLevel(HttpLoggingInterceptor.Level.BODY);
-        loggingInterceptor.setColorLevel(Level.INFO);
-        HttpsUtils.SSLParams sslParams = HttpsUtils.getSslSocketFactory();
-        OkHttpClient.Builder builder = new OkHttpClient().newBuilder()
-                .sslSocketFactory(sslParams.sSLSocketFactory, sslParams.trustManager)
-                .hostnameVerifier(HttpsUtils.UnSafeHostnameVerifier);
-        if (!redirect) {
-            builder.followRedirects(false)
-                    .followSslRedirects(false);
-        }
-        return builder.addInterceptor(loggingInterceptor)
-                .addInterceptor(BrotliInterceptor.INSTANCE)
-                .readTimeout(timeout, TimeUnit.MILLISECONDS)
-                .writeTimeout(timeout, TimeUnit.MILLISECONDS)
-                .connectTimeout(timeout, TimeUnit.MILLISECONDS)
-                .build();
-    }
-
 
     /**
      * 供js使用fetch
@@ -2182,18 +1968,23 @@ public class JSEngine {
     private String getItemNow(String key, String defaultValue, String r) {
         if (StringUtil.isNotEmpty(key) && StringUtil.isNotEmpty(r)) {
             ArticleListRule articleListRule = LitePal.where("title = ?", r).limit(1).findFirst(ArticleListRule.class);
-            if (articleListRule != null) {
-                String storage = articleListRule.getStorage();
-                if (StringUtil.isEmpty(storage)) {
-                    return defaultValue;
-                }
-                JSONObject jsonObject = JSON.parseObject(storage);
-                if (jsonObject != null && jsonObject.containsKey(key)) {
-                    return jsonObject.getString(key);
-                }
-            } else {
-                return "";
+            return getItemNow(key, defaultValue, articleListRule);
+        }
+        return defaultValue;
+    }
+
+    private String getItemNow(String key, String defaultValue, ArticleListRule articleListRule) {
+        if (articleListRule != null) {
+            String storage = articleListRule.getStorage();
+            if (StringUtil.isEmpty(storage)) {
+                return defaultValue;
             }
+            JSONObject jsonObject = JSON.parseObject(storage);
+            if (jsonObject != null && jsonObject.containsKey(key)) {
+                return jsonObject.getString(key);
+            }
+        } else {
+            return "";
         }
         return defaultValue;
     }
@@ -2231,19 +2022,23 @@ public class JSEngine {
     private void setItemNow(String key, String value, String r) {
         if (StringUtil.isNotEmpty(key) && StringUtil.isNotEmpty(r)) {
             ArticleListRule articleListRule = LitePal.where("title = ?", r).limit(1).findFirst(ArticleListRule.class);
-            if (articleListRule != null) {
-                String storage = articleListRule.getStorage();
-                JSONObject jsonObject;
-                if (StringUtil.isEmpty(storage)) {
-                    jsonObject = new JSONObject();
-                } else {
-                    jsonObject = JSON.parseObject(storage);
-                }
-                jsonObject.put(key, value);
-                articleListRule.setStorage(jsonObject.toJSONString());
-                articleListRule.save();
-                EventBus.getDefault().post(new RuleModifiedEvent(articleListRule));
+            setItemNow(key, value, articleListRule);
+        }
+    }
+
+    private void setItemNow(String key, String value, ArticleListRule articleListRule) {
+        if (articleListRule != null) {
+            String storage = articleListRule.getStorage();
+            JSONObject jsonObject;
+            if (StringUtil.isEmpty(storage)) {
+                jsonObject = new JSONObject();
+            } else {
+                jsonObject = JSON.parseObject(storage);
             }
+            jsonObject.put(key, value);
+            articleListRule.setStorage(jsonObject.toJSONString());
+            articleListRule.save();
+            EventBus.getDefault().post(new RuleModifiedEvent(articleListRule));
         }
     }
 
@@ -2285,6 +2080,160 @@ public class JSEngine {
             }
         }
         return Boolean.FALSE.toString();
+    }
+
+    @JSAnnotation(returnType = ReturnType.VOID)
+    public void requireDownload(@Parameter("u") String url, @Parameter("p") String path) throws Exception {
+        File file = new File(getFilePath(path));
+        if (file.exists()) {
+            return;
+        }
+        downloadFile(url, path);
+    }
+
+    @JSAnnotation(returnType = ReturnType.VOID)
+    public void downloadFile(@Parameter("u") String url, @Parameter("p") String path) throws Exception {
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        HttpHelper.FetchResponse response = new HttpHelper.FetchResponse();
+        path = getFilePath(path);
+        CodeUtil.download(url, path, null, new CodeUtil.OnCodeGetListener() {
+            @Override
+            public void onSuccess(String s) {
+                countDownLatch.countDown();
+            }
+
+            @Override
+            public void onFailure(int errorCode, String msg) {
+                response.error = msg;
+                countDownLatch.countDown();
+            }
+        });
+        countDownLatch.await(30, TimeUnit.SECONDS);
+        if (StringUtil.isNotEmpty(response.error)) {
+            throw new Exception("下载文件失败：" + response.error);
+        }
+    }
+
+    /**
+     * 获取授权
+     *
+     * @param rule
+     * @param method
+     * @return
+     * @throws Exception
+     */
+    private AuthStorageItem getAuth(String rule, String method) throws Exception {
+        ArticleListRule articleListRule = LitePal.where("title = ?", rule).limit(1).findFirst(ArticleListRule.class);
+        if (articleListRule == null) {
+            throw new Exception("获取规则失败");
+        }
+        String defaultKey = String.valueOf(System.currentTimeMillis());
+        String key = getItemNow("i--", defaultKey, articleListRule);
+        if (defaultKey.equals(key)) {
+            setItemNow("i--", defaultKey, rule);
+        }
+        String auth = getItemNow("_auth", "", articleListRule);
+        if (StringUtil.isEmpty(auth)) {
+            return new AuthStorageItem(method, AuthBridgeEvent.AuthResult.NONE);
+        }
+        auth = aesDecode(key, auth);
+        List<AuthStorageItem> items = JSON.parseArray(auth, AuthStorageItem.class);
+        if (CollectionUtil.isNotEmpty(items)) {
+            for (AuthStorageItem item : items) {
+                if (method.equals(item.getMethod())) {
+                    return item;
+                }
+            }
+        }
+        return new AuthStorageItem(method, AuthBridgeEvent.AuthResult.NONE);
+    }
+
+    public void updateAuth(String rule, String method, AuthBridgeEvent.AuthResult result) {
+        ArticleListRule articleListRule = LitePal.where("title = ?", rule).limit(1).findFirst(ArticleListRule.class);
+        if (articleListRule == null) {
+            return;
+        }
+        String defaultKey = String.valueOf(System.currentTimeMillis());
+        String key = getItemNow("i--", defaultKey, articleListRule);
+        if (defaultKey.equals(key)) {
+            setItemNow("i--", defaultKey, rule);
+        }
+        String auth = getItemNow("_auth", "", articleListRule);
+        if (StringUtil.isNotEmpty(auth)) {
+            auth = aesDecode(key, auth);
+            List<AuthStorageItem> items = JSON.parseArray(auth, AuthStorageItem.class);
+            if (CollectionUtil.isNotEmpty(items)) {
+                for (AuthStorageItem item : items) {
+                    if (method.equals(item.getMethod())) {
+                        item.setResult(result);
+                        auth = aesEncode(key, JSON.toJSONString(items));
+                        setItemNow("_auth", auth, articleListRule);
+                        return;
+                    }
+                }
+                AuthStorageItem item = new AuthStorageItem(method, result);
+                items.add(item);
+                auth = aesEncode(key, JSON.toJSONString(items));
+                setItemNow("_auth", auth, articleListRule);
+                return;
+            }
+        }
+        AuthStorageItem item = new AuthStorageItem(method, result);
+        auth = aesEncode(key, JSON.toJSONString(new ArrayList<>(Collections.singletonList(item))));
+        setItemNow("_auth", auth, articleListRule);
+    }
+
+    @JSAnnotation(returnType = ReturnType.OBJECT)
+    public Object loadJavaClass(@Parameter("p") String path, @Parameter("c") String className, @Parameter("so") String so,
+                                @Parameter("ruleTitleKey") Object r) throws Exception {
+        if (StringUtil.isEmpty(path) || path.startsWith("http")) {
+            return null;
+        }
+        String rule = getRuleTitle(getString(r));
+        if (StringUtil.isEmpty(rule)) {
+            throw new Exception("获取规则失败");
+        }
+        AuthStorageItem auth = getAuth(rule, "loadJavaClass");
+        if (auth.getResult() == AuthBridgeEvent.AuthResult.DISAGREE) {
+//            throw new Exception("用户拒绝使用此方法");
+            return null;
+        } else if (auth.getResult() == AuthBridgeEvent.AuthResult.NONE) {
+            CountDownLatch lock = new CountDownLatch(1);
+            AuthBridgeEvent event = new AuthBridgeEvent(rule, "动态加载Java代码（" + path + "）", "loadJavaClass", lock);
+            EventBus.getDefault().post(event);
+            lock.await(1, TimeUnit.MINUTES);
+            auth = getAuth(rule, "loadJavaClass");
+            if (auth.getResult() != AuthBridgeEvent.AuthResult.AGREE) {
+                return null;
+            }
+        }
+
+        File desFile = new File(getFilePath(path));
+        if (!desFile.exists()) {
+            return null;
+        }
+        File dir = new File(getFilePath("hiker://files/cache/java"));
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        if (StringUtil.isEmpty(so) || isUndefined(so)) {
+            so = null;
+        }
+        //下面开始加载dex class
+        //1.待加载的dex文件路径，如果是外存路径，一定要加上读外存文件的权限,
+        //2.解压后的dex存放位置，此位置一定要是可读写且仅该应用可读写
+        //3.指向包含本地库(so)的文件夹路径，可以设为null
+        //4.父级类加载器，一般可以通过Context.getClassLoader获取到，也可以通过ClassLoader.getSystemClassLoader()取到。
+        DexClassLoader classLoader = new DexClassLoader(desFile.getAbsolutePath(), dir.getAbsolutePath(), so, clazz.getClassLoader());
+        try {
+            Class<?> cls = classLoader.loadClass(className);
+            if (cls != null) {
+                return cls.newInstance();
+            }
+        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @JSAnnotation(returnType = ReturnType.VOID)
