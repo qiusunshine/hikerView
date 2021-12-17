@@ -58,7 +58,7 @@ public class HttpHelper {
     }
 
     public static String fetch(String url, Map<String, Object> op) {
-        return fetch(url, op, null, (path, toHex) -> path);
+        return fetch(url, op, null, (path, toHex) -> false);
     }
 
     public static String fetch(String url, Map<String, Object> op, HeadersInterceptor headersInterceptor, RuleFetchDelegate ruleFetchDelegate) {

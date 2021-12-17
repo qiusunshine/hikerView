@@ -1578,6 +1578,7 @@ public class JSEngine {
     }
 
     private String post0(String url, Object options, Object ruleKey, boolean request) {
+        options = argsNativeObjectAdjust(options);
         if (isUndefined(options)) {
             options = null;
         }
