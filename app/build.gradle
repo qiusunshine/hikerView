@@ -5,11 +5,12 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'com.yanzhenjie.andserver'
 
 def getVersionName() {
-    def name = "6.5"
+    def name = "6.8"
     return name
 }
-def publishDate = "1212"
-def dbVersion = "46"
+
+def publishDate = "0102"
+def dbVersion = "47"
 
 def getVersionCode() {// 获取版本号
     def versionFile = file('version.properties')// 读取第一步新建的文件
@@ -54,12 +55,22 @@ android {
         versionName versionNameNew
         multiDexEnabled true
         ndk {
-            abiFilters "armeabi"
+            abiFilters "armeabi", "arm64-v8a"
         }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         renderscriptTargetApi 25
         renderscriptSupportModeEnabled true
         vectorDrawables.useSupportLibrary = true
+    }
+
+    splits {
+        // Configures multiple APKs based on ABI.
+        abi {
+            enable true
+            reset()
+            include "armeabi", "arm64-v8a"
+            universalApk true
+        }
     }
 
     flavorDimensions "state"
@@ -127,8 +138,18 @@ android {
     }
     applicationVariants.all { variant ->
         variant.outputs.all {
+//            println("applicationVariants====>")
+            def abi = baseName.replace("normal-", "").replace("professional-", "").replace("dev-", "").replace("-release", "").replace("-debug", "")
+            def pak = ""
+            if (abi == "universal") {
+                pak = "-全包"
+            } else if (abi == "armeabi") {
+                pak = "-32位"
+            } else if (abi == "arm64-v8a") {
+                pak = "-64位"
+            }
             def fileName = appName + "_V" + versionNameNew + "_" + publishDate + "_C" + versionCodeNew +
-                    "_db" + dbVersion + ".apk"
+                    "_db" + dbVersion + pak + ".apk"
             outputFileName = fileName
         }
     }
@@ -168,7 +189,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation 'com.alibaba:fastjson:1.1.72.android'
+    implementation 'com.alibaba:fastjson:1.1.73.android'
     implementation 'com.lzy.net:okgo:3.0.4'
     implementation 'com.squareup.okhttp3:okhttp:3.14.9'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
@@ -241,7 +262,7 @@ dependencies {
 
     //X5内核
 //    api 'com.tencent.tbs.tbssdk:sdk:43903'
-    implementation files('libs/tbs_sdk_thirdapp_v4.3.0.67_43967_sharewithdownloadwithfile_withoutGame_obfs_20200923_120452.jar')
+    api files('libs/tbs_sdk_thirdapp_v4.3.0.236_44136_sharewithdownloadwithfile_withoutGame_obfs_20211203_185750.jar')
 
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
     implementation group: 'commons-codec', name: 'commons-codec', version: '1.15'
@@ -256,7 +277,7 @@ dependencies {
     implementation 'com.nineoldandroids:library:2.4.0'
     //crash
     implementation 'com.github.SJJ-dot:Cockroach:2.0.1'
-
+    implementation 'me.weishu:free_reflection:3.0.1'
     //app-updater
     implementation project(':app-updater')
     implementation 'com.wang.avi:library:2.1.3'
@@ -284,7 +305,7 @@ dependencies {
     //svg图片
     implementation 'com.caverock:androidsvg-aar:1.3'
 
-    implementation ('jp.wasabeef:glide-transformations:4.3.0') { exclude group: 'com.github.bumptech.glide' }
+    implementation('jp.wasabeef:glide-transformations:4.3.0') { exclude group: 'com.github.bumptech.glide' }
     // If you want to use the GPU Filters
     implementation 'jp.co.cyberagent.android:gpuimage:2.1.0'
 
@@ -305,7 +326,7 @@ dependencies {
     //测试
     testImplementation 'org.robolectric:robolectric:3.8'
     //视频合并
-    implementation (project(':m3u8library')) { exclude group: 'androidx.appcompat' }
+    implementation(project(':m3u8library')) { exclude group: 'androidx.appcompat' }
     //java的AES
     implementation(files('libs/bcprov-jdk16-139.jar'))
     //进度条
@@ -316,6 +337,8 @@ dependencies {
     implementation 'com.github.mmin18:realtimeblurview:1.2.1'
     //fastjson报错
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    //协程
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9")
 }
 
 
