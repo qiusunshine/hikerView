@@ -29,6 +29,7 @@ class HeadsetButtonReceiver : BroadcastReceiver() {
                 //不处理双击的情况
                 return
             }
+            lastClickTime = System.currentTimeMillis()
             val isPlayOrPause = keyEvent?.keyCode === KeyEvent.KEYCODE_HEADSETHOOK
                     || keyEvent?.keyCode === KeyEvent.KEYCODE_MEDIA_PLAY
                     || keyEvent?.keyCode === KeyEvent.KEYCODE_MEDIA_PAUSE
