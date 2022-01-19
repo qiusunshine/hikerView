@@ -225,8 +225,6 @@ dependencies {
     }
     //markdown
     implementation 'com.yydcdut:markdown-processor:0.1.3'
-    //顶部snackbar
-    implementation(project(':mysnackbar'))
 
     //白色沉浸式状态栏
     implementation 'com.githang:status-bar-compat:0.7'
