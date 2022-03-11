@@ -83,15 +83,16 @@ public class JSEditorAdapter implements EditorAdapter {
     @Override
     public void loadSuggestions(List<String> data) {
         ArrayList<SuggestionItem> suggestionItemList = new ArrayList<>();
-        for (String name : new JSLanguage().getAllCompletions()) {
-            suggestionItemList.add(new SuggestionItem(SuggestionType.TYPE_KEYWORD, name));
-        }
         for (String suggestionItem : data) {
-            suggestionItemList.add(new SuggestionItem(SuggestionType.TYPE_KEYWORD, suggestionItem));
+            suggestionItemList.add(new SuggestionItem(SuggestionType.TYPE_OUTSIDE, suggestionItem));
+        }
+        for (String name : new JSLanguage().getAllCompletions()) {
+            suggestionItemList.add(new SuggestionItem(SuggestionType.TYPE_METHOD, name));
         }
         SuggestionAdapter mAdapter =
                 new SuggestionAdapter(codePane.getCodeText().getContext(), R.layout.item_list_suggest, suggestionItemList);
         codePane.getCodeText().setAdapter(mAdapter);
+        codePane.getCodeText().setDynamicSuggestionsConsumer(mAdapter::setDynamicNames);
         SymbolsTokenizer mTokenizer = new SymbolsTokenizer();
         codePane.getCodeText().setTokenizer(mTokenizer);
         codePane.getCodeText().setThreshold(2);

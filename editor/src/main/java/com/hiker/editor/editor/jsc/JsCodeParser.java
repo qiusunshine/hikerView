@@ -85,6 +85,17 @@ public class JsCodeParser implements Runnable {
                         codeText.postInvalidate();
                         break;
                     }
+                    if (token == Token.NAME) {
+                        String str = codeText.getText().toString();
+                        int endIndex = ts.getTokenEnd();
+                        if(endIndex < str.length()){
+                            String end = str.substring(endIndex, endIndex + 1);
+                            if(" ".equals(end) || "=".equals(end) || "(".equals(end)){
+                                String name = str.substring(ts.getTokenBeg(), endIndex);
+                                codeText.addName(name);
+                            }
+                        }
+                    }
                     int color = Token.getColor(token);
                     for (int i = ts.getTokenBeg(); i <= ts.getTokenEnd(); i++) {
                         codeColors[i] = color;

@@ -26,6 +26,9 @@ import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.Log;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static android.content.ClipDescription.MIMETYPE_TEXT_HTML;
 
 /**
@@ -125,5 +128,30 @@ public class CodeText extends com.hiker.editor.editor.jsc.ColorsText {
             }
         }
         return super.onTextContextMenuItem(id);
+    }
+
+    private final Object nameLock = new Object();
+    private final Set<String> names = new HashSet<>();
+    private Consumer<Set<String>> dynamicSuggestionsConsumer;
+
+    public void addName(String name) {
+        synchronized (nameLock) {
+            this.names.add(name);
+            if(dynamicSuggestionsConsumer != null){
+                dynamicSuggestionsConsumer.update(this.names);
+            }
+        }
+    }
+
+    public Consumer<Set<String>> getDynamicSuggestionsConsumer() {
+        return dynamicSuggestionsConsumer;
+    }
+
+    public void setDynamicSuggestionsConsumer(Consumer<Set<String>> dynamicSuggestionsConsumer) {
+        this.dynamicSuggestionsConsumer = dynamicSuggestionsConsumer;
+    }
+
+    public interface Consumer<T> {
+        void update(T data);
     }
 }

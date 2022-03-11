@@ -135,6 +135,10 @@ public class MultiEditorAdapter implements EditorAdapter {
         codeEditor.getExtendedKeyboard().addSimpleSymbol(symbolList);
     }
 
+    public void hideExtendedKeyboard() {
+        codeEditor.setShowExtendedKeyboard(false);
+    }
+
     @Override
     public void setSyntaxHighlight(boolean syntaxHighlight) {
         codeEditor.setSyntaxHighlight(syntaxHighlight);

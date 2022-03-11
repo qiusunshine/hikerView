@@ -204,6 +204,13 @@ public class EditorFactory {
         }
     }
 
+    public void hideExtendedKeyboard() {
+        if (adapter instanceof MultiEditorAdapter) {
+            MultiEditorAdapter multiEditorAdapter = (MultiEditorAdapter) adapter;
+            multiEditorAdapter.hideExtendedKeyboard();
+        }
+    }
+
     public void undo() {
         adapter.undo();
     }

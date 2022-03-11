@@ -1,0 +1,81 @@
+<!--
+  ~ Copyright (C) 2018 Light Team Software
+  ~
+  ~ This file is part of ModPE IDE.
+  ~
+  ~ ModPE IDE is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ ModPE IDE is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Application Theme -->
+    <style name="Theme.Editor.AppLight" parent="Theme.AppCompat.Light.NoActionBar"/>
+    <!-- <style name="Theme.Editor.AppDark" parent="Theme.AppCompat.NoActionBar"/> -->
+
+    <!-- Widgets and stuff... -->
+    <style name="Theme_Editor_NavigationView">
+        <item name="android:textColorSecondary">@color/gray</item>
+    </style>
+
+    <!-- Base Dark Theme -->
+    <style name="Theme.Editor.BaseDark" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:divider">@null</item>
+        <item name="android:dividerHeight">0dp</item>
+        <item name="colorControlNormal">@color/gray</item>
+        <item name="fontFamily">@font/main_sans</item>
+<!--
+        <item name="md_medium_font">josefin_sans_semibold.ttf</item>
+        <item name="md_regular_font">josefin_sans_regular.ttf</item>
+-->
+        
+
+        <item name="windowActionBar">false</item>
+        <item name="windowActionModeOverlay">true</item>
+
+        <item name="android:windowContentTransitions" tools:targetApi="21">true</item>
+        <item name="android:windowAllowEnterTransitionOverlap" tools:targetApi="21">true</item>
+        <item name="android:windowAllowReturnTransitionOverlap" tools:targetApi="21">true</item>
+        <item name="android:windowSharedElementEnterTransition" tools:targetApi="21">@android:transition/move</item>
+        <item name="android:windowSharedElementExitTransition" tools:targetApi="21">@android:transition/move</item>
+        <item name="android:windowTranslucentStatus" tools:targetApi="21">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds" tools:targetApi="21">true</item>
+    </style>
+
+    <!-- Darcula Theme -->
+    <style name="Theme.Darcula" parent="Theme.Editor.BaseDark">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorTabs">@color/colorTabs</item>
+        <item name="colorTabIndicator">@color/colorTabIndicator</item>
+        <item name="colorDocBackground">@color/colorDocBackground</item>
+        <item name="colorDocText">@color/colorDocText</item>
+        <item name="colorNumbersText">@color/colorNumbersText</item>
+        <item name="colorSelection">@color/colorSelection</item>
+        <item name="colorCursor">@color/colorCursor</item>
+        <item name="colorSearchSpan">@color/colorSearchSpan</item>
+        <item name="colorNumbersBackground">@color/colorNumbersBackground</item>
+        <item name="colorSelectedLine">@color/colorSelectedLine</item>
+        <item name="colorBracketSpan">@color/colorBracketSpan</item>
+        <item name="colorDropDown">@color/colorDropDown</item>
+        <item name="syntaxNumbers">@color/syntaxNumbers</item>
+        <item name="syntaxSymbols">@color/syntaxSymbols</item>
+        <item name="syntaxBrackets">@color/syntaxBrackets</item>
+        <item name="syntaxKeywords">@color/syntaxKeywords</item>
+        <item name="syntaxMethods">@color/syntaxMethods</item>
+        <item name="syntaxStrings">@color/syntaxStrings</item>
+        <item name="syntaxComments">@color/syntaxComments</item>
+    </style>
+
+</resources>
