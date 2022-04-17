@@ -28,7 +28,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -51,7 +50,6 @@ import timber.log.Timber;
 
 public class HttpHelper {
     public static final ThreadLocal<Map<String, Object>> threadMap = new ThreadLocal<>();
-    private static final ConcurrentHashMap<String, OkHttpClient> clientMap = new ConcurrentHashMap<>();
 
     private static final long HTTP_TIMEOUT_MILLISECONDS = 10000;
     public static OkHttpClient noRedirectHttpClient;
@@ -75,7 +73,6 @@ public class HttpHelper {
     public static String fetch(String url, Map<String, Object> op, HeadersInterceptor headersInterceptor, RuleFetchDelegate ruleFetchDelegate) {
         Timber.d("fetch, %s", url);
         long start = System.currentTimeMillis();
-        String requestId = null;
         try {
             if (isEmpty(url)) {
                 return "";
@@ -251,14 +248,7 @@ public class HttpHelper {
                     request.client(noRedirectHttpClient);
                 }
                 if (timeout > 0) {
-                    requestId = timeout + "@@@" + redirect;
-                    if (clientMap.containsKey(requestId)) {
-                        request.client(clientMap.get(requestId));
-                    } else {
-                        OkHttpClient client = buildOkHttpClient(timeout, redirect);
-                        request.client(client);
-                        clientMap.put(requestId, client);
-                    }
+                    request.client(buildOkHttpClient(timeout, redirect));
                 } else {
                     if (!redirect && noRedirectHttpClient != null) {
                         request.client(noRedirectHttpClient);
@@ -367,10 +357,6 @@ public class HttpHelper {
         } catch (Throwable e) {
             Timber.e(e);
             return "";
-        } finally {
-//            if (requestId != null && !requestId.isEmpty()) {
-//                clientMap.remove(requestId);
-//            }
         }
     }
 
@@ -397,15 +383,6 @@ public class HttpHelper {
                 OkGo.cancelTag(noRedirectHttpClient, tag);
             }
             OkGo.getInstance().cancelTag(tag);
-            synchronized (clientMap) {
-                if (!clientMap.isEmpty()) {
-                    for (OkHttpClient client : clientMap.values()) {
-                        if (client != null) {
-                            OkGo.cancelTag(client, tag);
-                        }
-                    }
-                }
-            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -480,7 +457,7 @@ public class HttpHelper {
         loggingInterceptor.setPrintLevel(HttpLoggingInterceptor.Level.BODY);
         loggingInterceptor.setColorLevel(Level.INFO);
         HttpsUtils.SSLParams sslParams = HttpsUtils.getSslSocketFactory();
-        OkHttpClient.Builder builder = new OkHttpClient().newBuilder()
+        OkHttpClient.Builder builder = OkGo.getInstance().getOkHttpClient().newBuilder()
                 .sslSocketFactory(sslParams.sSLSocketFactory, sslParams.trustManager)
                 .hostnameVerifier(HttpsUtils.UnSafeHostnameVerifier);
         if (!redirect) {
@@ -500,7 +477,7 @@ public class HttpHelper {
         loggingInterceptor.setPrintLevel(HttpLoggingInterceptor.Level.BODY);
         loggingInterceptor.setColorLevel(Level.INFO);
         HttpsUtils.SSLParams sslParams = HttpsUtils.getSslSocketFactory();
-        return new OkHttpClient().newBuilder()
+        return OkGo.getInstance().getOkHttpClient().newBuilder()
                 .addInterceptor(BrotliInterceptor.INSTANCE)
                 .addInterceptor(ContentTypePreInterceptor.INSTANCE)
                 .addNetworkInterceptor(ContentTypeAfterInterceptor.INSTANCE)
