@@ -12,6 +12,9 @@ import com.example.hikerview.utils.ToastMgr;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import timber.log.Timber;
 
 /**
@@ -96,7 +99,13 @@ public class WebkitParser extends IWebViewParser {
             webViewHolder.getWebView().getSettings().setUserAgentString(x5Extra.getUa());
         }
         webViewHolder.setX5Extra(x5Extra);
-        webViewHolder.getWebView().loadUrl(loadUrl);
+        if (StringUtil.isNotEmpty(x5Extra.getReferer())) {
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Referer", x5Extra.getReferer());
+            webViewHolder.getWebView().loadUrl(loadUrl, headers);
+        } else {
+            webViewHolder.getWebView().loadUrl(loadUrl);
+        }
         return true;
     }
 

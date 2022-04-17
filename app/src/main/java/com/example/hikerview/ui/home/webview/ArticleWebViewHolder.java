@@ -4,11 +4,11 @@ import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,21 +23,25 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.annimon.stream.function.Consumer;
 import com.example.hikerview.R;
-import com.example.hikerview.service.parser.HttpParser;
-import com.example.hikerview.ui.bookmark.BookmarkActivity;
+import com.example.hikerview.ui.Application;
 import com.example.hikerview.ui.browser.model.AdBlockModel;
 import com.example.hikerview.ui.browser.model.AdUrlBlocker;
-import com.example.hikerview.ui.browser.model.UAModel;
+import com.example.hikerview.ui.browser.model.JSManager;
+import com.example.hikerview.ui.browser.util.CollectionUtil;
+import com.example.hikerview.ui.browser.view.IVideoWebView;
+import com.example.hikerview.ui.browser.view.VideoContainer;
 import com.example.hikerview.ui.browser.webview.JsBridgeHolder;
 import com.example.hikerview.ui.browser.webview.JsPluginHelper;
 import com.example.hikerview.ui.browser.webview.WebViewWrapper;
-import com.example.hikerview.ui.download.DownloadRecordsActivity;
-import com.example.hikerview.ui.home.model.RouteBlocker;
-import com.example.hikerview.ui.home.model.article.extra.X5Extra;
-import com.example.hikerview.ui.setting.HistoryListActivity;
+import com.example.hikerview.ui.download.DownloadDialogUtil;
+import com.example.hikerview.ui.video.PlayerChooser;
 import com.example.hikerview.ui.view.EnhanceViewPager;
+import com.example.hikerview.ui.view.colorDialog.ColorDialog;
+import com.example.hikerview.utils.FilesInAppUtil;
 import com.example.hikerview.utils.StringUtil;
-import com.example.hikerview.utils.WebUtil;
+import com.example.hikerview.utils.ThreadTool;
+import com.google.android.material.snackbar.Snackbar;
+import com.king.app.updater.http.HttpManager;
 import com.lxj.xpopup.XPopup;
 import com.tencent.smtt.export.external.extension.interfaces.IX5WebViewClientExtension;
 import com.tencent.smtt.export.external.extension.proxy.ProxyWebViewClientExtension;
@@ -54,12 +58,17 @@ import com.tencent.smtt.sdk.WebView;
 import com.tencent.smtt.sdk.WebViewCallbackClient;
 import com.tencent.smtt.sdk.WebViewClient;
 
-import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import timber.log.Timber;
@@ -72,28 +81,8 @@ import static android.view.View.VISIBLE;
  * 时间：At 20:55
  */
 
-public class ArticleWebViewHolder {
+public class ArticleWebViewHolder extends IArticleWebHolder {
     private List<String> urls = Collections.synchronizedList(new ArrayList<>());
-
-    private Consumer<String> lazyRuleConsumer;
-
-    public String getExtra() {
-        return extra;
-    }
-
-    public X5Extra getX5Extra() {
-        return x5Extra;
-    }
-
-    public void setX5Extra(X5Extra x5Extra) {
-        this.x5Extra = x5Extra;
-    }
-
-    private X5Extra x5Extra;
-
-    public void setExtra(String extra) {
-        this.extra = extra;
-    }
 
     public int getHeight() {
         return height;
@@ -111,20 +100,35 @@ public class ArticleWebViewHolder {
         this.anim = anim;
     }
 
-    public Consumer<String> getLazyRuleConsumer() {
-        return lazyRuleConsumer;
-    }
-
-    public void setLazyRuleConsumer(Consumer<String> lazyRuleConsumer) {
-        this.lazyRuleConsumer = lazyRuleConsumer;
-    }
-
     public List<String> getUrls() {
         return urls;
     }
 
     public void setUrls(List<String> urls) {
         this.urls = urls;
+    }
+
+    public ProgressListener getProgressListener() {
+        return progressListener;
+    }
+
+    public void setProgressListener(ProgressListener progressListener) {
+        this.progressListener = progressListener;
+    }
+
+    @Override
+    protected void setUserAgentString(String ua) {
+        if (webView != null) {
+            webView.getSettings().setUserAgentString(ua);
+        }
+    }
+
+    @Override
+    protected String getUserAgentString() {
+        if (webView != null) {
+            return webView.getSettings().getUserAgentString();
+        }
+        return "";
     }
 
     public enum Mode {
@@ -153,14 +157,6 @@ public class ArticleWebViewHolder {
      */
     private Mode mode;
 
-    private String extra;
-
-    private JsBridgeHolder jsBridgeHolder;
-
-    private String systemUA = "";
-
-    private String lastDom = "";
-
     private int height;
     private AtomicBoolean hasLoadJsOnProgress = new AtomicBoolean(false);
     private AtomicBoolean hasLoadJsOnPageEnd = new AtomicBoolean(false);
@@ -169,11 +165,11 @@ public class ArticleWebViewHolder {
             = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
     private ValueAnimator anim;
     private View customView;
-    private FrameLayout fullscreenContainer;
+    private VideoContainer fullscreenContainer;
     private IX5WebChromeClient.CustomViewCallback customViewCallback;
 
 
-    private WeakReference<? extends Activity> reference;
+    private ProgressListener progressListener;
 
     public WebView getWebView() {
         return webView;
@@ -202,13 +198,26 @@ public class ArticleWebViewHolder {
         this.mode = mode;
     }
 
-    private String getExtraUa(){
-        return x5Extra == null ? null : x5Extra.getUa();
-    }
-
     private CallbackClient mCallbackClient = new CallbackClient();
 
+    public void loadUrlCheckReferer(String url){
+        if (x5Extra != null && StringUtil.isNotEmpty(x5Extra.getReferer())) {
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Referer", x5Extra.getReferer());
+            getWebView().loadUrl(url, headers);
+        } else {
+            getWebView().loadUrl(url);
+        }
+    }
+
     public void initWebView(Activity activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            String processName = Application.getProcessName();
+            if (!activity.getPackageName().equals(processName)) {
+                //判断是否是默认进程名称
+                WebView.setDataDirectorySuffix(processName);
+            }
+        }
         initWebSettings(webView.getSettings());
         systemUA = webView.getSettings().getUserAgentString();
         Bundle bundle = new Bundle();
@@ -246,8 +255,22 @@ public class ArticleWebViewHolder {
                 }
                 reference.get().getWindow().getDecorView();
                 FrameLayout decor = (FrameLayout) reference.get().getWindow().getDecorView();
-                fullscreenContainer = new FullscreenHolder(reference.get());
-                fullscreenContainer.addView(view, COVER_SCREEN_PARAMS);
+                fullscreenContainer = new VideoContainer(reference.get(), new IVideoWebView() {
+                    @Override
+                    public void useFastPlay(boolean use) {
+                        webView.evaluateJavascript(FilesInAppUtil.getAssetsString(reference.get(), "fastPlay.js").replace("{playbackRate}", (use ? "2" : "1")), null);
+                    }
+
+                    @Override
+                    public void evaluateJS(@NotNull String js, @Nullable Consumer<String> resultCallback) {
+                        webView.evaluateJavascript(js, s -> {
+                            if (resultCallback != null) {
+                                resultCallback.accept(s == null ? "" : s);
+                            }
+                        });
+                    }
+                });
+                fullscreenContainer.addVideoView(view, COVER_SCREEN_PARAMS);
                 decor.addView(fullscreenContainer, COVER_SCREEN_PARAMS);
                 customView = view;
                 customViewCallback = callback;
@@ -266,6 +289,7 @@ public class ArticleWebViewHolder {
                 reference.get().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                 setStatusBarVisibility(true);
                 FrameLayout decor = (FrameLayout) reference.get().getWindow().getDecorView();
+                fullscreenContainer.destroy();
                 decor.removeView(fullscreenContainer);
                 fullscreenContainer = null;
                 customView = null;
@@ -276,10 +300,16 @@ public class ArticleWebViewHolder {
 
             @Override
             public void onProgressChanged(WebView webView, int i) {
+                if (progressListener != null) {
+                    progressListener.onProgressChanged(webView.getUrl(), i);
+                }
                 super.onProgressChanged(webView, i);
                 if (!hasLoadJsOnProgress.get() && i >= 40 && i < 100) {
                     hasLoadJsOnProgress.set(true);
                     loadAllJs(webView, webView.getUrl(), false);
+                    if (x5Extra != null && StringUtil.isNotEmpty(x5Extra.getJs()) && x5Extra.isJsLoadingInject()) {
+                        webView.evaluateJavascript(x5Extra.getJs(), null);
+                    }
                 }
             }
 
@@ -330,44 +360,30 @@ public class ArticleWebViewHolder {
 
             @Override
             public void onPageStarted(WebView webView, String s, Bitmap bitmap) {
+                if (progressListener != null) {
+                    progressListener.onPageStarted(s);
+                }
                 urls.clear();
                 hasLoadJsOnProgress.set(false);
                 hasLoadJsOnPageEnd.set(false);
-                String dom = StringUtil.getDom(s);
-                if (dom != null && !dom.equals(lastDom) && StringUtil.isEmpty(getExtraUa())) {
-//                Log.d(TAG, "onPageStarted: setUserAgentString===>" + s);
-                    String ua = UAModel.getAdjustUa(s);
-                    if (!TextUtils.isEmpty(ua)) {
-                        if (!ua.equals(webView.getSettings().getUserAgentString())) {
-                            Timber.d("onPageStarted: getAdjustUa");
-                            webView.getSettings().setUserAgentString(ua);
-                        }
-                    } else {
-                        if (!TextUtils.isEmpty(UAModel.getUseUa())) {
-                            if (!UAModel.getUseUa().equals(webView.getSettings().getUserAgentString())) {
-                                Timber.d("onPageStarted: getUseUa");
-                                webView.getSettings().setUserAgentString(UAModel.getUseUa());
-                            }
-                        } else {
-                            if (StringUtil.isNotEmpty(systemUA) && !systemUA.equals(webView.getSettings().getUserAgentString())) {
-                                Timber.d("onPageStarted: systemUA");
-                                webView.getSettings().setUserAgentString(systemUA);
-                            }
-                        }
-                    }
-                }
-                lastDom = StringUtil.getDom(s);
+                checkUa(s);
                 super.onPageStarted(webView, s, bitmap);
             }
 
             @Override
             public void onPageFinished(WebView webView, String s) {
+                if (progressListener != null) {
+                    progressListener.onPageFinished(s);
+                }
                 if (!hasLoadJsOnPageEnd.get()) {
                     hasLoadJsOnPageEnd.set(true);
                     loadAllJs(webView, s, true);
                 }
                 if (x5Extra != null && StringUtil.isNotEmpty(x5Extra.getJs())) {
                     webView.evaluateJavascript(x5Extra.getJs(), null);
+                }
+                if(finishPageConsumer != null){
+                    finishPageConsumer.accept(s);
                 }
                 super.onPageFinished(webView, s);
             }
@@ -376,6 +392,11 @@ public class ArticleWebViewHolder {
             public boolean shouldOverrideUrlLoading(WebView webView, WebResourceRequest request) {
                 String url = request.getUrl().toString();
                 if (url.startsWith("http")) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        if(request.isRedirect() && x5Extra != null && !x5Extra.isRedirect()){
+                            return true;
+                        }
+                    }
                     if (Build.VERSION.SDK_INT < 26) {
                         webView.loadUrl(url);
                         return true;
@@ -396,7 +417,39 @@ public class ArticleWebViewHolder {
                 if (id >= 0) {
                     return new WebResourceResponse(null, null, null);
                 }
+                if (getX5Extra() != null && CollectionUtil.isNotEmpty(getX5Extra().getBlockRules())) {
+                    if (AdUrlBlocker.shouldBlock(getX5Extra().getBlockRules(), lastDom, url)) {
+                        //x5自带的拦截
+                        return new WebResourceResponse(null, null, null);
+                    }
+                }
                 return super.shouldInterceptRequest(webView, request);
+            }
+        });
+        webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
+            Timber.d("downloadStart: %s, %s", mimetype, contentDisposition);
+            String fileName = HttpManager.getDispositionFileName(contentDisposition);
+            if (StringUtil.isEmpty(fileName)) {
+                fileName = url;
+            }
+            String finalFileName = fileName;
+            Timber.d("downloadStart: finalFileName: %s", finalFileName);
+            if (url.contains(".apk") || DownloadDialogUtil.isApk(fileName, mimetype)) {
+                Snackbar.make(webView, "是否允许网页中的下载请求？", Snackbar.LENGTH_LONG)
+                        .setAction("允许", v -> DownloadDialogUtil.showEditDialog(reference.get(), finalFileName, url, null, mimetype)).show();
+            } else {
+                new ColorDialog(webView.getContext()).setTheTitle("温馨提示")
+                        .setContentText("是否允许网页中的下载请求？（点击空白处拒绝操作，点击播放可以将链接作为音视频地址直接播放）")
+                        .setPositiveListener("下载", dialog -> {
+                            dialog.dismiss();
+                            if (reference.get() == null || reference.get().isFinishing()) {
+                                return;
+                            }
+                            DownloadDialogUtil.showEditDialog(reference.get(), finalFileName, url);
+                        }).setNegativeListener("播放", dialog -> {
+                    dialog.dismiss();
+                    startPlayVideo(url);
+                }).show();
             }
         });
         if (reference != null) {
@@ -421,7 +474,22 @@ public class ArticleWebViewHolder {
 
             @Override
             public String getMyUrl() {
-                return webView.getUrl();
+                if (Thread.currentThread() == Looper.getMainLooper().getThread()) {
+                    return webView.getUrl();
+                }
+                CountDownLatch countDownLatch = new CountDownLatch(1);
+                UrlHolder urlHolder = new UrlHolder();
+                urlHolder.url = "";
+                ThreadTool.INSTANCE.runOnUI(() -> {
+                    urlHolder.url = webView.getUrl();
+                    countDownLatch.countDown();
+                });
+                try {
+                    countDownLatch.await(5, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                return urlHolder.url;
             }
 
             @Override
@@ -477,6 +545,33 @@ public class ArticleWebViewHolder {
         if (webView.getX5WebViewExtension() != null) {
             webView.getX5WebViewExtension().setWebViewClientExtension(mWebViewClientExtension);
         }
+        if (webView.getSettingsExtension() != null) {
+            webView.getSettingsExtension().setPageCacheCapacity(5);
+        }
+    }
+
+    private void startPlayVideo(String videoUrl) {
+        String muteJs = JSManager.instance(reference.get()).getJsByFileName("mute");
+//        Log.d(TAG, "startPlayVideo:1 ");
+        if (!TextUtils.isEmpty(muteJs)) {
+//            Log.d(TAG, "startPlayVideo:2 ");
+            webView.evaluateJavascript(muteJs, null);
+        }
+        if (reference.get().isFinishing()) {
+            return;
+        }
+        PlayerChooser.startPlayer(reference.get(), getWebTitle(), videoUrl, null);
+    }
+
+    private String getWebTitle() {
+        if (webView.getTitle() == null) {
+            return "";
+        }
+        String t = webView.getTitle().replace(" ", "");
+        if (t.length() > 85) {
+            t = t.substring(0, 85);
+        }
+        return t;
     }
 
     private IX5WebViewClientExtension mWebViewClientExtension = new ProxyWebViewClientExtension() {
@@ -523,12 +618,18 @@ public class ArticleWebViewHolder {
     };
 
     private void setStatusBarVisibility(boolean visible) {
-        int flag = visible ? 0 : WindowManager.LayoutParams.FLAG_FULLSCREEN;
-        reference.get().getWindow().setFlags(flag, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        if (!visible) {
+            setSystemUiVisibility = reference.get().getWindow().getDecorView().getSystemUiVisibility();
+            reference.get().getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        } else {
+            reference.get().getWindow().getDecorView().setSystemUiVisibility(setSystemUiVisibility);
+        }
     }
 
     private void loadAllJs(WebView webView, String url, boolean pageEnd) {
-        JsPluginHelper.loadMyJs(reference.get(), js -> webView.evaluateJavascript(js, null), url, () -> "", pageEnd);
+        JsPluginHelper.loadMyJs(reference.get(), js -> webView.evaluateJavascript(js, null), url, () -> "", pageEnd, false);
         //广告拦截
         String adBlockJs = AdBlockModel.getBlockJs(url);
         if (!TextUtils.isEmpty(adBlockJs)) {
@@ -548,6 +649,9 @@ public class ArticleWebViewHolder {
         webSettings.setDomStorageEnabled(true);
         webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
         webSettings.setAppCacheEnabled(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            webSettings.setMixedContentMode(android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        }
     }
 
     public static int getHeightByExtra(String url, String desc) {
@@ -585,38 +689,6 @@ public class ArticleWebViewHolder {
         Timber.d("getHeightByExtra, extra:%s, height:%d", desc, height);
         return height;
     }
-
-    private void dealLoadUrl(String url) {
-        if (url.contains("@lazyRule=")) {
-            if (lazyRuleConsumer != null) {
-                lazyRuleConsumer.accept(url);
-            }
-        } else if (url.startsWith("hiker://")) {
-            String route = url.replace("hiker://", "");
-            if (route.startsWith("home")) {
-                url = HttpParser.decodeUrl(url, "UTF-8");
-                RouteBlocker.isRoute(reference.get(), url);
-                return;
-            } else if (route.startsWith("search")) {
-                url = HttpParser.decodeUrl(url, "UTF-8");
-                RouteBlocker.isRoute(reference.get(), url);
-                return;
-            } else if (RouteBlocker.isRoute(reference.get(), url)) {
-                return;
-            }
-        } else if (url.equals("folder://")) {
-            reference.get().startActivityForResult(new Intent(reference.get(), BookmarkActivity.class), 101);
-        } else if (url.equals("history://")) {
-            reference.get().startActivityForResult(new Intent(reference.get(), HistoryListActivity.class), 101);
-        } else if (url.equals("download://")) {
-            Intent intent = new Intent(reference.get(), DownloadRecordsActivity.class);
-            intent.putExtra("downloaded", true);
-            reference.get().startActivity(intent);
-        } else if (url.startsWith("web://")) {
-            WebUtil.goWeb(reference.get(), StringUtils.replaceOnce(url, "web://", ""));
-        }
-    }
-
 
     /**
      * 全屏容器界面
@@ -740,5 +812,17 @@ public class ArticleWebViewHolder {
         public boolean onInterceptTouchEvent(MotionEvent ev, View view) {
             return webView.super_onInterceptTouchEvent(ev);
         }
+    }
+
+    public interface ProgressListener {
+        void onPageStarted(String s);
+
+        void onProgressChanged(String s, int i);
+
+        void onPageFinished(String s);
+    }
+
+    private static class UrlHolder {
+        String url;
     }
 }
