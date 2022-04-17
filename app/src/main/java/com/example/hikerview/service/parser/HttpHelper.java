@@ -4,6 +4,9 @@ import androidx.annotation.Nullable;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.example.hikerview.service.http.ContentTypeAfterInterceptor;
+import com.example.hikerview.service.http.ContentTypePreInterceptor;
+import com.example.hikerview.utils.StringUtil;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.adapter.Call;
 import com.lzy.okgo.convert.Converter;
@@ -12,22 +15,28 @@ import com.lzy.okgo.interceptor.HttpLoggingInterceptor;
 import com.lzy.okgo.model.HttpHeaders;
 import com.lzy.okgo.request.PostRequest;
 import com.lzy.okgo.request.PutRequest;
+import com.lzy.okgo.request.base.BodyRequest;
 
 import org.jetbrains.annotations.NotNull;
+import org.joor.Reflect;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 import okhttp3.Callback;
 import okhttp3.FormBody;
+import okhttp3.Headers;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -41,6 +50,8 @@ import timber.log.Timber;
  */
 
 public class HttpHelper {
+    public static final ThreadLocal<Map<String, Object>> threadMap = new ThreadLocal<>();
+    private static final ConcurrentHashMap<String, OkHttpClient> clientMap = new ConcurrentHashMap<>();
 
     private static final long HTTP_TIMEOUT_MILLISECONDS = 10000;
     public static OkHttpClient noRedirectHttpClient;
@@ -64,6 +75,7 @@ public class HttpHelper {
     public static String fetch(String url, Map<String, Object> op, HeadersInterceptor headersInterceptor, RuleFetchDelegate ruleFetchDelegate) {
         Timber.d("fetch, %s", url);
         long start = System.currentTimeMillis();
+        String requestId = null;
         try {
             if (isEmpty(url)) {
                 return "";
@@ -76,7 +88,7 @@ public class HttpHelper {
             boolean onlyHeaders = false;
             int timeout = -1;
             Map<String, String> headerMap = null;
-            Map<String, String> params = new HashMap<>();
+            Map<String, String> params = new LinkedHashMap<>();
 
             //默认为空，okhttp自动识别
             String charset = null;
@@ -137,7 +149,6 @@ public class HttpHelper {
                     if (hiker instanceof String) {
                         return (String) hiker;
                     }
-                    request = OkGo.get(url);
                     String body = null;
                     if (headerMap != null) {
                         contentType = headerMap.get("content-type");
@@ -150,12 +161,18 @@ public class HttpHelper {
                         body = headerMap.get("body");
                     }
                     method = (String) op.get("method");
+                    if ("HEAD".equalsIgnoreCase(method)) {
+                        request = OkGo.head(url);
+                        withHeaders = true;
+                    } else {
+                        request = OkGo.get(url);
+                    }
                     if (op.containsKey("body")) {
                         Object b = op.get("body");
                         if (b instanceof String) {
                             body = (String) b;
                         } else {
-                            if (!"PUT".equalsIgnoreCase(method) && !"GET".equalsIgnoreCase(method)) {
+                            if (!"PUT".equalsIgnoreCase(method) && !"GET".equalsIgnoreCase(method) && !"HEAD".equalsIgnoreCase(method)) {
                                 method = "POST";
                             }
                             body = JSON.toJSONString(b);
@@ -172,23 +189,22 @@ public class HttpHelper {
                         if (isEmpty(body)) {
                             //empty
                         } else if (contentType != null && contentType.contains("application/json")) {
-                            if ("PUT".equalsIgnoreCase(method)) {
-                                ((PutRequest<?>) request).upJson(body);
-                            } else {
-                                ((PostRequest<?>) request).upJson(body);
-                            }
+                            ((BodyRequest) request).upString(body, MediaType.parse(contentType));
                         } else if ((body.startsWith("{") && body.endsWith("}")) || (body.startsWith("[") && body.endsWith("]"))) {
-                            if ("PUT".equalsIgnoreCase(method)) {
-                                ((PutRequest<?>) request).upJson(body);
-                            } else {
-                                ((PostRequest<?>) request).upJson(body);
-                            }
+                            ((BodyRequest) request).upJson(body);
                         } else {
                             for (String form : body.split("&")) {
                                 int split = form.indexOf("=");
                                 params.put(decodeConflictStr(form.substring(0, split)), decodeConflictStr(form.substring(split + 1)));
                             }
                             request.params(params);
+                            if (StringUtil.isNotEmpty(contentType)) {
+                                try {
+                                    Reflect.on(request).set("mediaType", MediaType.parse(contentType));
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
                         }
                     }
                 } else {
@@ -235,13 +251,24 @@ public class HttpHelper {
                     request.client(noRedirectHttpClient);
                 }
                 if (timeout > 0) {
-                    request.client(buildOkHttpClient(timeout, redirect));
+                    requestId = timeout + "@@@" + redirect;
+                    if (clientMap.containsKey(requestId)) {
+                        request.client(clientMap.get(requestId));
+                    } else {
+                        OkHttpClient client = buildOkHttpClient(timeout, redirect);
+                        request.client(client);
+                        clientMap.put(requestId, client);
+                    }
                 } else {
                     if (!redirect && noRedirectHttpClient != null) {
                         request.client(noRedirectHttpClient);
                     }
                 }
                 request.retryCount(0);
+                Object tag = getTagFromThread();
+                if (tag != null) {
+                    request.tag(tag);
+                }
                 FetchResponse fetchResponse = new FetchResponse();
                 fetchResponse.realUrl = url;
 
@@ -280,6 +307,11 @@ public class HttpHelper {
                                     fetchResponse.statusCode = response.code();
                                 } finally {
                                     countDownLatch.countDown();
+                                    try {
+                                        call.cancel();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                         });
@@ -292,7 +324,7 @@ public class HttpHelper {
                             exception.printStackTrace();
                         }
                     }
-                    countDownLatch.await();
+                    countDownLatch.await(10, TimeUnit.SECONDS);
                 } else {
                     Call<String> call = request.converter(toHex ? new ByteHexConvert() : new CharsetStringConvert(charset)).adapt();
                     com.lzy.okgo.model.Response<String> response = call.execute();
@@ -335,6 +367,47 @@ public class HttpHelper {
         } catch (Throwable e) {
             Timber.e(e);
             return "";
+        } finally {
+//            if (requestId != null && !requestId.isEmpty()) {
+//                clientMap.remove(requestId);
+//            }
+        }
+    }
+
+    public static void addTagForThread(Object tag) {
+        Map<String, Object> map = threadMap.get();
+        if (map == null) {
+            map = new HashMap<>();
+            threadMap.set(map);
+        }
+        map.put("_tag", tag);
+    }
+
+    public static Object getTagFromThread() {
+        Map<String, Object> map = threadMap.get();
+        if (map == null) {
+            return null;
+        }
+        return map.get("_tag");
+    }
+
+    public static void cancelByTag(Object tag) {
+        try {
+            if (noRedirectHttpClient != null) {
+                OkGo.cancelTag(noRedirectHttpClient, tag);
+            }
+            OkGo.getInstance().cancelTag(tag);
+            synchronized (clientMap) {
+                if (!clientMap.isEmpty()) {
+                    for (OkHttpClient client : clientMap.values()) {
+                        if (client != null) {
+                            OkGo.cancelTag(client, tag);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -429,6 +502,8 @@ public class HttpHelper {
         HttpsUtils.SSLParams sslParams = HttpsUtils.getSslSocketFactory();
         return new OkHttpClient().newBuilder()
                 .addInterceptor(BrotliInterceptor.INSTANCE)
+                .addInterceptor(ContentTypePreInterceptor.INSTANCE)
+                .addNetworkInterceptor(ContentTypeAfterInterceptor.INSTANCE)
                 .sslSocketFactory(sslParams.sSLSocketFactory, sslParams.trustManager)
                 .hostnameVerifier(HttpsUtils.UnSafeHostnameVerifier)
                 .followRedirects(false)
@@ -507,6 +582,12 @@ public class HttpHelper {
         @Override
         public String convertResponse(Response response) throws Throwable {
             try (ResponseBody body = response.body()) {
+                Headers headers = response.headers();
+                long length = getContentLength(headers);
+                if (length > 1024 * 1024 * 20) {
+                    //超过了20MB，不应该是字符串，属于乱用
+                    throw new IOException("content-length is too big: " + length);
+                }
                 if (isEmpty(charset)) {
                     if (body != null) {
                         try {
@@ -532,6 +613,18 @@ public class HttpHelper {
                 return new String(b, charset);
             }
         }
+    }
+
+    private static long getContentLength(Headers headers) {
+        String len = headers.get("Content-Length");
+        if (len != null && !len.isEmpty()) {
+            try {
+                return Long.parseLong(len);
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+        return 0;
     }
 
     private static class ByteHexConvert implements Converter<String> {
