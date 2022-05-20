@@ -23,7 +23,9 @@ import com.example.hikerview.event.home.SetPageLastChapterRuleEvent;
 import com.example.hikerview.event.home.SetPagePicEvent;
 import com.example.hikerview.event.home.SetPageTitleEvent;
 import com.example.hikerview.event.home.ToastEvent;
+import com.example.hikerview.event.rule.ClsItemsFindEvent;
 import com.example.hikerview.event.rule.ConfirmEvent;
+import com.example.hikerview.event.rule.ItemFindEvent;
 import com.example.hikerview.event.rule.ItemModifyEvent;
 import com.example.hikerview.model.BigTextDO;
 import com.example.hikerview.model.MovieRule;
@@ -80,6 +82,7 @@ import org.mozilla.javascript.ContextFactory;
 import org.mozilla.javascript.IdFunctionObject;
 import org.mozilla.javascript.IdScriptableObject;
 import org.mozilla.javascript.ImporterTopLevel;
+import org.mozilla.javascript.JavaScriptException;
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.NativeObject;
@@ -1161,16 +1164,34 @@ public class JSEngine {
 
 
     @JSAnnotation
-    public void updateItem(@Parameter("o") Object o) throws Exception {
+    public void updateItem(@Parameter("id") Object o1, @Parameter("o") Object o) throws Exception {
         Object res = argsNativeObjectAdjust(o);
+        Object res1 = argsNativeObjectAdjust(o1);
+        String id = null;
+        if (res1 instanceof JSONObject) {
+            res = res1;
+        } else if (res1 instanceof String) {
+            id = (String) res1;
+        }
         if (!(res instanceof JSONObject)) {
             throw new Exception("updateItem：格式有误，只支持json");
         }
         ArticleList articleList = convertToArticleList((JSONObject) res);
-        if (StringUtil.isEmpty(articleList.getBaseExtra().getId())) {
-            throw new Exception("extra中不包含id字段，无法执行更新操作");
+        ItemModifyEvent event = new ItemModifyEvent(articleList, ItemModifyEvent.Action.UPDATE);
+        if (StringUtil.isNotEmpty(id)) {
+            event.setAnchorId(id);
+            if (StringUtil.isNotEmpty(articleList.getExtra())) {
+                //传了extra，然后extra又没传ID，那么把ID设置一下
+                if (StringUtil.isEmpty(articleList.getBaseExtra().getId())) {
+                    JSONObject jsonObject = JSON.parseObject(articleList.getExtra());
+                    jsonObject.put("id", id);
+                    articleList.setExtra(jsonObject.toJSONString());
+                }
+            }
+        } else {
+            event.setAnchorId(articleList.getBaseExtra().getId());
         }
-        EventBus.getDefault().post(new ItemModifyEvent(articleList, ItemModifyEvent.Action.UPDATE));
+        EventBus.getDefault().post(event);
     }
 
     @JSAnnotation
@@ -1191,23 +1212,48 @@ public class JSEngine {
         String id1 = (String) res1;
 
         Object res = argsNativeObjectAdjust(o);
-        if (!(res instanceof JSONObject)) {
+        if (res instanceof JSONArray) {
+            JSONArray array = (JSONArray) res;
+            List<ArticleList> articleLists = new ArrayList<>();
+            ItemModifyEvent updateEvent = new ItemModifyEvent(articleLists, ItemModifyEvent.Action.ADD);
+            for (int i = 0; i < array.size(); i++) {
+                if (array.getJSONObject(i) == null) {
+                    continue;
+                }
+                articleLists.add(convertToArticleList(array.getJSONObject(i)));
+            }
+            updateEvent.setAnchorId(id1);
+            updateEvent.setAfter(after);
+            EventBus.getDefault().post(updateEvent);
+            return;
+        } else if (!(res instanceof JSONObject)) {
             throw new Exception("addItem：格式有误，只支持json");
         }
         ArticleList articleList = convertToArticleList((JSONObject) res);
-        if (StringUtil.isEmpty(articleList.getBaseExtra().getId())) {
-            throw new Exception("extra中不包含id字段，无法执行新增操作");
-        }
         ItemModifyEvent updateEvent = new ItemModifyEvent(articleList, ItemModifyEvent.Action.ADD);
-        updateEvent.setAfterId(id1);
+        updateEvent.setAnchorId(id1);
         updateEvent.setAfter(after);
         EventBus.getDefault().post(updateEvent);
     }
 
     @JSAnnotation
-    public void deleteItem(@Parameter("o") Object o) throws Exception {
+    public void deleteItem(@Parameter("o") Object o, @Parameter("ruleKey") Object ruleKey) throws Exception {
         Object res = argsNativeObjectAdjust(o);
-        if (!(res instanceof String)) {
+        if (res instanceof JSONArray) {
+            JSONArray array = (JSONArray) res;
+            List<ArticleList> articleLists = new ArrayList<>();
+            ItemModifyEvent updateEvent = new ItemModifyEvent(articleLists, ItemModifyEvent.Action.DELETE);
+            for (int i = 0; i < array.size(); i++) {
+                String id = (String) array.get(i);
+                ArticleList articleList = new ArticleList();
+                BaseExtra baseExtra = new BaseExtra();
+                baseExtra.setId(id);
+                articleList.setExtra(JSON.toJSONString(baseExtra));
+                articleLists.add(articleList);
+            }
+            EventBus.getDefault().post(updateEvent);
+            return;
+        } else if (!(res instanceof String)) {
             throw new Exception("deleteItem：格式有误，请传入ID字符串");
         }
         String id = (String) res;
@@ -1216,6 +1262,46 @@ public class JSEngine {
         baseExtra.setId(id);
         articleList.setExtra(JSON.toJSONString(baseExtra));
         EventBus.getDefault().post(new ItemModifyEvent(articleList, ItemModifyEvent.Action.DELETE));
+    }
+
+    @JSAnnotation
+    public void deleteItemByCls(@Parameter("o") Object o) throws Exception {
+        Object res = argsNativeObjectAdjust(o);
+        if (!(res instanceof String)) {
+            throw new Exception("deleteItemByCls：格式有误，请传入cls字符串");
+        }
+        String cls = (String) res;
+        ItemModifyEvent event = new ItemModifyEvent((ArticleList) null, ItemModifyEvent.Action.DELETE);
+        event.setCls(cls);
+        EventBus.getDefault().post(event);
+    }
+
+    @JSAnnotation(returnType = ReturnType.JSON)
+    public Object _findItem(@Parameter("o") Object o) throws Exception {
+        Object res = argsNativeObjectAdjust(o);
+        if (!(res instanceof String)) {
+            throw new Exception("findItem：格式有误，请传入ID字符串");
+        }
+        String id = (String) res;
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        ItemFindEvent event = new ItemFindEvent(id, countDownLatch);
+        EventBus.getDefault().post(event);
+        countDownLatch.await(3, TimeUnit.SECONDS);
+        return JSON.toJSONString(event.getArticleList());
+    }
+
+    @JSAnnotation(returnType = ReturnType.JSON)
+    public Object _findItemsByCls(@Parameter("o") Object o) throws Exception {
+        Object res = argsNativeObjectAdjust(o);
+        if (!(res instanceof String)) {
+            throw new Exception("findItemsByCls：格式有误，请传入cls字符串");
+        }
+        String cls = (String) res;
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        ClsItemsFindEvent event = new ClsItemsFindEvent(cls, countDownLatch);
+        EventBus.getDefault().post(event);
+        countDownLatch.await(3, TimeUnit.SECONDS);
+        return JSON.toJSONString(event.getArticleLists());
     }
 
     private ArticleList convertToArticleList(JSONObject jsonObject) {
@@ -1229,6 +1315,9 @@ public class JSEngine {
             searchResult.setPic(jsonObject.getString("pic_url"));
         }
         searchResult.setDesc(jsonObject.getString("desc"));
+        if (jsonObject.containsKey("content")) {
+            searchResult.setContent(jsonObject.getString("content"));
+        }
         try {
             searchResult.setUrl(jsonObject.getString("url"));
         } catch (Exception e) {
@@ -1277,6 +1366,9 @@ public class JSEngine {
             for (int i = 0; i < array.size(); i++) {
                 try {
                     JSONObject jsonObject = array.getJSONObject(i);
+                    if (jsonObject == null) {
+                        continue;
+                    }
                     results.add(convertToArticleList(jsonObject));
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1390,16 +1482,25 @@ public class JSEngine {
 //            if ("org.mozilla.javascript.NativeError".equals(res.getClass().getName())) {
 //                re = res.toString();
 //            } else
-            if (res instanceof RhinoException) {
+            if (res instanceof JavaScriptException) {
+                JavaScriptException rhinoException = (JavaScriptException) res;
+                re = "\n来源：" + rhinoException.sourceName() + "\n" +
+                        "代码：" + rhinoException.lineSource() + "\n" +
+                        "行数：" + rhinoException.lineNumber() + "\n" +
+                        "详情：" + res.toString();
+            } else if (res instanceof RhinoException) {
                 RhinoException rhinoException = (RhinoException) res;
                 re = "\n来源：" + rhinoException.sourceName() + "\n" +
+                        "代码：" + rhinoException.lineSource() + "\n" +
                         "行数：" + rhinoException.lineNumber() + "\n" +
                         "详情：" + res.toString();
             } else if (res instanceof IdScriptableObject) {
                 IdScriptableObject scriptableObject = (IdScriptableObject) res;
                 Object fileName = scriptableObject.get("fileName");
                 Object lineNumber = scriptableObject.get("lineNumber");
+                Object lineSource = scriptableObject.get("lineSource");
                 re = "\n来源：" + fileName + "\n" +
+                        "代码：" + lineSource + "\n" +
                         "行数：" + lineNumber + "\n" +
                         "详情：" + res.toString();
             } else if (res instanceof Exception) {
@@ -1658,7 +1759,7 @@ public class JSEngine {
         HttpHelper.cancelByTag(tag);
         try {
             if (!jsExecutorService.isShutdown() && !jsExecutorService.isTerminated()) {
-                jsExecutorService.shutdown();
+                jsExecutorService.shutdownNow();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -2581,6 +2682,20 @@ public class JSEngine {
         //4.父级类加载器，一般可以通过Context.getClassLoader获取到，也可以通过ClassLoader.getSystemClassLoader()取到。
         DexClassLoader classLoader = new DexClassLoader(desFile.getAbsolutePath(), dir.getAbsolutePath(), so, clazz.getClassLoader());
         try {
+            if(StringUtil.isNotEmpty(so)){
+                File soFile = new File(so);
+                String soDir = soFile.isDirectory() ? so : soFile.getParent();
+                try {
+                    RetroLoadLibrary.installNativeLibraryPath(classLoader, new File(soDir));
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+                try {
+                    RetroLoadLibrary.installNativeLibraryPath(getClass().getClassLoader(), new File(soDir));
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
             Class<?> cls = classLoader.loadClass(className);
             classloaders.add(classLoader);
             if (cls != null) {
