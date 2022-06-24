@@ -8,6 +8,7 @@ import com.example.hikerview.service.parser.HttpParser
 import com.example.hikerview.service.parser.JSEngine
 import com.example.hikerview.ui.Application
 import com.example.hikerview.ui.browser.model.DetectedMediaResult
+import com.example.hikerview.ui.browser.model.UrlDetector
 import com.example.hikerview.ui.video.PlayerChooser
 import com.example.hikerview.ui.video.VideoChapter
 import com.example.hikerview.ui.view.XiuTanResultPopup
@@ -56,14 +57,28 @@ object ThunderManager {
         errorCode[114101] = "无效链接"
     }
 
+    fun isMagnetOrTorrent(url: String): Boolean {
+        if (url.startsWith("magnet:") || url.split(";")[0].endsWith(".torrent")) {
+            return true
+        }
+        return false
+    }
+
     fun startDownloadMagnet(context: Context?, url: String?) {
+        startDownloadMagnet(context, url, null)
+    }
+
+    /**
+     * 下载磁力或者种子
+     */
+    fun startDownloadMagnet(context: Context?, url: String?, c: MagnetConsumer?) {
         if (url?.startsWith("magnet:") == false && url.split(";")[0].endsWith(".torrent")) {
-            startParseTorrent(context!!, url)
+            startParseTorrent(context!!, url, c)
             return
         }
-        parse(
-            context!!, url!!,
-            object : MagnetConsumer {
+        var consumer = c
+        if (consumer == null) {
+            consumer = object : MagnetConsumer {
                 override fun consume(
                     u: String,
                     name: String,
@@ -72,14 +87,23 @@ object ThunderManager {
                     if (list.size < 2) {
                         PlayerChooser.startPlayer(context, name, u, null)
                     } else {
-                        val chapters = toChapters(url, u, name, list)
+                        val chapters = toChapters(url!!, u, name, list)
                         PlayerChooser.startPlayer(context, chapters, "", url, null)
                     }
                 }
-            })
+            }
+        }
+        parse(context!!, url!!, consumer)
     }
 
     fun startParseTorrent(context: Context, path: String) {
+        startParseTorrent(context, path, null)
+    }
+
+    /**
+     * 下载种子
+     */
+    fun startParseTorrent(context: Context, path: String, consumer: MagnetConsumer?) {
         if (path.startsWith("http")) {
             toast("种子解析中，请稍候")
             val u = path.split(";")[0]
@@ -90,7 +114,7 @@ object ThunderManager {
                     override fun onSuccess(s: String?) {
                         s?.let {
                             val p = JSEngine.getFilePath(it)
-                            startParseTorrent0(context, p)
+                            startParseTorrent0(context, p, consumer)
                         }
                     }
 
@@ -100,27 +124,81 @@ object ThunderManager {
                 })
             }
         } else {
-            startParseTorrent0(context, path)
+            startParseTorrent0(context, path, consumer)
         }
     }
 
-    private fun startParseTorrent0(context: Context, path: String) {
+    fun isFTPOrEd2k(url: String?): Boolean {
+        if (url.isNullOrEmpty()) {
+            return false
+        }
+        return (url.startsWith("ftp:") && UrlDetector.isVideoOrMusic(url)) || url.startsWith("ed2k:")
+    }
+
+    fun startParseFTPOrEd2k(context: Context, url: String) {
+        startParseFTPOrEd2k(context, url, null)
+    }
+
+    /**
+     * 解析FTP或者电驴
+     */
+    fun startParseFTPOrEd2k(context: Context, url: String, c: MagnetConsumer?) {
+        if (!isFTPOrEd2k(url)) {
+            toast("仅支持FTP和ed2k格式")
+            return
+        }
         initXL(context)
-        release(path)
-        getTorrentInfo(context, path, File(path), object : MagnetConsumer {
-            override fun consume(
-                u: String,
-                name: String,
-                list: java.util.ArrayList<TorrentFileInfo>
-            ) {
-                if (list.size < 2) {
+        release()
+        val decode = URLDecoder.decode(url)
+        val p = Uri.parse(decode)
+        if (p == null) {
+            ToastMgr.longCenter(context, "链接出错")
+            return
+        }
+        var fileName = XLTaskHelper.instance().getFileName(decode)
+        if (TextUtils.isEmpty(fileName)) {
+            fileName = System.currentTimeMillis().toString() + ".mp4"
+        }
+
+        if (!fileName.contains(".")) {
+            fileName = "$fileName.mp4"
+        }
+        var consumer = c
+        if (consumer == null) {
+            consumer = object : MagnetConsumer {
+                override fun consume(
+                    u: String,
+                    name: String,
+                    list: java.util.ArrayList<TorrentFileInfo>
+                ) {
                     PlayerChooser.startPlayer(context, name, u, null)
-                } else {
-                    val chapters = toChapters(path, u, name, list)
-                    PlayerChooser.startPlayer(context, chapters, "", path, null)
                 }
             }
-        })
+        }
+        downloadFTP(url, fileName, consumer)
+    }
+
+    private fun startParseTorrent0(context: Context, path: String, c: MagnetConsumer? = null) {
+        initXL(context)
+        release(path)
+        var consumer = c
+        if (consumer == null) {
+            consumer = object : MagnetConsumer {
+                override fun consume(
+                    u: String,
+                    name: String,
+                    list: java.util.ArrayList<TorrentFileInfo>
+                ) {
+                    if (list.size < 2) {
+                        PlayerChooser.startPlayer(context, name, u, null)
+                    } else {
+                        val chapters = toChapters(path, u, name, list)
+                        PlayerChooser.startPlayer(context, chapters, "", path, null)
+                    }
+                }
+            }
+        }
+        getTorrentInfo(context, path, File(path), consumer!!)
     }
 
     private fun initXL(context: Context) {
@@ -135,7 +213,7 @@ object ThunderManager {
     /**
      * 解析磁力
      */
-    fun parse(context: Context, url: String, consumer: MagnetConsumer) {
+    private fun parse(context: Context, url: String, consumer: MagnetConsumer) {
         initXL(context)
         val decode = URLDecoder.decode(
             if (url.lowercase(Locale.getDefault())
@@ -151,11 +229,8 @@ object ThunderManager {
         val fileName = XLTaskHelper.instance().getFileName(decode)
         val file = File(path + File.separator + fileName)
         val dir = file.parentFile
-        if (file.exists()) {
-            file.deleteRecursively()
-        }
+        release()
 
-        stopTask()
         getActiveScope(true).launch(Dispatchers.IO) {
             taskId = XLTaskHelper.instance().addMagentTask(url, dir!!.absolutePath, fileName)
             var count = 0
@@ -174,7 +249,7 @@ object ThunderManager {
                         return@launch
                     }
                     i != 3 -> {
-                        if(!hasToast){
+                        if (!hasToast) {
                             toast("磁链解析中，请稍候")
                             hasToast = true
                         }
@@ -194,6 +269,7 @@ object ThunderManager {
     fun release() {
         release(null)
     }
+
     /**
      * 释放文件
      */
@@ -202,7 +278,7 @@ object ThunderManager {
         val files = File(path).listFiles()
         files?.let {
             for (file in it) {
-                if(exclude != null && file.absolutePath == exclude){
+                if (exclude != null && file.absolutePath == exclude) {
                     continue
                 }
                 file.deleteRecursively()
@@ -320,12 +396,12 @@ object ThunderManager {
         val savePath = sb.toString()
         taskId =
             XLTaskHelper.instance().addTorrentTask(file.absolutePath, savePath, info.mFileIndex)
-        var count = 0
         if (taskId < 0) {
             toast("磁链下载失败")
             return
         }
 
+        var count = 0
         getActiveScope().launch(Dispatchers.IO) {
             //解析中
             var downStatus = 3
@@ -361,7 +437,58 @@ object ThunderManager {
                 delay(300)
             }
         }
+    }
 
+
+    /**
+     * 提交下载，没有多文件
+     */
+    private fun downloadFTP(
+        url: String,
+        fileName: String,
+        consumer: MagnetConsumer
+    ) {
+        stopTask()
+        taskId =
+            XLTaskHelper.instance().addThunderTask(url, path, fileName)
+        if (taskId < 0) {
+            toast("提交下载失败")
+            return
+        }
+        var count = 0
+        getActiveScope().launch(Dispatchers.IO) {
+            var downStatus = 3
+            while (downStatus == 3 && isActive) {
+                count++
+                if (count > 17) {
+//                    toast("磁力链接解析超时")
+                    return@launch
+                }
+                val taskInfo: XLTaskInfo = XLTaskHelper.instance().getTaskInfo(taskId)
+                when (taskInfo.mTaskStatus) {
+                    3 -> {
+                        //下载失败
+                        if (errorCode.containsKey(taskInfo.mErrorCode)) {
+                            toast(errorCode[taskInfo.mErrorCode]!!)
+                        } else {
+                            toast("连接失败: ErrorCode=" + taskInfo.mErrorCode)
+                        }
+                        return@launch
+                    }
+                    1, 4 -> {
+                        //下载中
+                        downStatus = 4
+                        playFTP(fileName, consumer)
+                    }
+                    2 -> {
+                        //下载完成
+                        downStatus = 5
+                        playFTP(fileName, consumer)
+                    }
+                }
+                delay(300)
+            }
+        }
     }
 
     /**
@@ -379,6 +506,22 @@ object ThunderManager {
                 XLTaskHelper.instance().getLoclUrl(savePath + File.separator + info.mFileName),
                 info.mFileName,
                 arrayList
+            )
+        }
+    }
+
+    /**
+     * 边下边播
+     */
+    private fun playFTP(
+        fileName: String,
+        consumer: MagnetConsumer
+    ) {
+        ThreadTool.runOnUI {
+            consumer.consume(
+                XLTaskHelper.instance().getLoclUrl(path + File.separator + fileName),
+                fileName,
+                arrayListOf()
             )
         }
     }
