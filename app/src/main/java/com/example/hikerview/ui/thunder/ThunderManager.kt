@@ -175,7 +175,7 @@ object ThunderManager {
                 }
             }
         }
-        downloadFTP(url, fileName, consumer)
+        downloadFTP(context, url, fileName, consumer)
     }
 
     private fun startParseTorrent0(context: Context, path: String, c: MagnetConsumer? = null) {
@@ -352,19 +352,19 @@ object ThunderManager {
     ) {
         if (arrayList.size == 1) {
             val info0 = arrayList[0]
-            download(file, info0, arrayList, consumer)
+            download(context, magnetUrl, file, info0, arrayList, consumer)
             return
         }
         XPopup.Builder(context)
             .moveUpToKeyboard(false) //如果不加这个，评论弹窗会移动到软键盘上面
             .asCustom(
-                XiuTanResultPopup(context).with(
+                XiuTanResultPopup(context).withDismissOnClick(false).with(
                     arrayList.map { DetectedMediaResult(it.mFileIndex.toString(), it.mFileName) }
                 ) { url1: String, type: String ->
                     if ("play" == type) {
                         for (info in arrayList) {
                             if (info.mFileIndex.toString() == url1) {
-                                download(file, info, arrayList, consumer)
+                                download(context, magnetUrl, file, info, arrayList, consumer)
                                 break
                             }
                         }
@@ -382,6 +382,8 @@ object ThunderManager {
      * 提交下载
      */
     private fun download(
+        context: Context,
+        magnetUrl: String?,
         file: File,
         info: TorrentFileInfo,
         arrayList: ArrayList<TorrentFileInfo>,
@@ -416,10 +418,16 @@ object ThunderManager {
                 when (taskInfo.mTaskStatus) {
                     3 -> {
                         //下载失败
+                        val msg = if (magnetUrl == null) "" else "，用第三方软件试试吧"
                         if (errorCode.containsKey(taskInfo.mErrorCode)) {
-                            toast(errorCode[taskInfo.mErrorCode]!!)
+                            toast(errorCode[taskInfo.mErrorCode]!! + msg)
                         } else {
-                            toast("连接失败: ErrorCode=" + taskInfo.mErrorCode)
+                            toast("连接失败: ErrorCode=" + taskInfo.mErrorCode + msg)
+                        }
+                        if (magnetUrl != null) {
+                            ThreadTool.runOnUI {
+                                ShareUtil.findChooserToDeal(context, magnetUrl)
+                            }
                         }
                         return@launch
                     }
@@ -444,6 +452,7 @@ object ThunderManager {
      * 提交下载，没有多文件
      */
     private fun downloadFTP(
+        context: Context,
         url: String,
         fileName: String,
         consumer: MagnetConsumer
@@ -469,9 +478,12 @@ object ThunderManager {
                     3 -> {
                         //下载失败
                         if (errorCode.containsKey(taskInfo.mErrorCode)) {
-                            toast(errorCode[taskInfo.mErrorCode]!!)
+                            toast(errorCode[taskInfo.mErrorCode]!! + "，用第三方软件试试吧")
                         } else {
-                            toast("连接失败: ErrorCode=" + taskInfo.mErrorCode)
+                            toast("连接失败: ErrorCode=" + taskInfo.mErrorCode + "，用第三方软件试试吧")
+                        }
+                        ThreadTool.runOnUI {
+                            ShareUtil.findChooserToDeal(context, url)
                         }
                         return@launch
                     }
@@ -527,10 +539,11 @@ object ThunderManager {
     }
 
     fun playTorrentFile(
+        context: Context,
         info: TorrentFileInfo,
         consumer: MagnetVideoConsumer
     ) {
-        download(File(info.torrentPath), info, ArrayList(), object : MagnetConsumer {
+        download(context, null, File(info.torrentPath), info, ArrayList(), object : MagnetConsumer {
             override fun consume(
                 url: String,
                 name: String,
