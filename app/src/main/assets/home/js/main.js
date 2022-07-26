@@ -126,7 +126,7 @@ require(['jquery'], function ($) {
 				$(".logo").html('<img src="' + Storage.setData.logo + '" width="100%" />');
 			} else {
 				//$(".logo").html('<svg style="max-width:100px;max-height:100px" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><path d="M10.7,21.4c5.1-5.5,10.2-11,15.3-16.5c0.7,3.9,1.4,7.9,2.2,11.8C24.5,20.8,20.8,24.9,17,29  c-2.3,2.5-4.5,5-6.8,7.4c-0.2,0.3-0.6,0.4-1,0.3c-2.8-0.9-5.7-1.9-8.5-2.8c-0.4-0.1-0.7-0.5-0.6-0.9c0.1-0.2,0.2-0.4,0.4-0.5  C4,28.7,7.3,25,10.7,21.4z" fill="#FF3E00"></path><path d="M26.1,4.9c3.2,0.3,6.5,0.5,9.7,0.7c0.6,0.1,1,0.5,1.1,1c3.6,10.5,7.1,21.1,10.6,31.6c0.4,1-0.5,2.1-1.5,2.3  c-3.7,0.7-7.4,1.4-11.2,2.2c-0.5,0.1-1.1,0.1-1.5-0.2c-0.5-0.4-0.5-1.1-0.6-1.7c-1.5-8-3-16-4.5-24.1C27.5,12.8,26.7,8.8,26.1,4.9z" fill="#FFB700"></path><path d="M4.3,12.5c2.2-0.4,4.4-0.7,6.7-1c0.2-0.1,0.5,0.1,0.5,0.4c-0.2,3.2-0.5,6.4-0.7,9.6C7.3,25,4,28.7,0.6,32.4  c-0.2,0.2-0.3,0.3-0.4,0.5c0-0.5,0.1-1,0.2-1.5c1.1-6.1,2.2-12.2,3.3-18.4C3.7,12.8,4,12.5,4.3,12.5z" fill="#00A4F5"></path></svg>');
-				$(".logo").html('<img src="icon/logo.gif" height="110px" />');
+				$(".logo").html('<img src="icon/logo.png" height="110px" />');
 			}
 			// 夜间模式 和 壁纸
 			var nightMode = {
@@ -619,7 +619,7 @@ require(['jquery'], function ($) {
 			$(".suggestion").hide().html('');
 		} else {
 			$(".history").hide();
-			$(".empty-input").show();
+//			$(".empty-input").show();
 			$(".search-btn").html(/[\w\-_]+(\.[\w\-_]+)?([0-9a-z_!~*'().&=+$%-]+:)?([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?.*\.(?:(?!(aac|ai|aif|apk|arj|asp|aspx|atom|avi|bak|bat|bin|bmp|cab|cda|cer|cfg|cfm|cgi|class|cpl|cpp|cs|css|csv|cur|dat|db|dbf|deb|dll|dmg|dmp|doc|drv|ejs|eot|eps|exe|flv|fnt|fon|gif|gz|htm|icns|ico|img|ini|iso|jad|jar|java|jpeg|jpg|js|json|jsp|key|lnk|log|mdb|mid|midi|mkv|mov|mpa|mpeg|mpg|msi|odf|odp|ods|odt|ogg|otf|part|pdf|php|pkg|pls|png|pps|ppt|pptx|psd|py|rar|rm|rpm|rss|rtf|sav|sql|svg|svgz|swf|swift|sys|tar|tex|tgz|tif|tmp|toast|ttf|txt|vb|vcd|vob|wav|wbmp|webm|webp|wks|wma|wmv|woff|wpd|wpl|wps|wsf|xhtml|xlr|xls|xml|zip)).)+/.test(wd) ? "进入" : "搜索");
 			escape(wd).indexOf("%u") < 0 ? $(".shortcut2").show() : $(".shortcut3").show();
 			$.ajax({
@@ -648,8 +648,10 @@ require(['jquery'], function ($) {
 			});
 			$.ajax({
 				url: "https://quark.sm.cn/api/qs",
+				beforeSend: function(request) {
+                    request.setRequestHeader("Referer", "https://quark.sm.cn/");
+                },
 				type: "GET",
-				dataType: "jsonp",
 				data: { query: wd },
 				timeout: 5000,
 				success: function (res) {
@@ -860,11 +862,32 @@ require(['jquery'], function ($) {
 			});
 
 			// 地理位置|天气|气温|空气质量
+			requestAsync && requestAsync("https://ai.sm.cn/quark/1/api?format=json&method=weather&callback=weather",
+			{method: "GET", headers: {'Content-Type':'application/json;charset=utf8','Referer':'https://ai.sm.cn/'}},
+			function(key, r){
+			    var res = {};
+			    function weather(json){
+			        res = json;
+			    }
+			    eval(r);
+			    console.log("地理位置|天气|气温|空气质量11111111", res);
+                var data = res.data;
+                var color1 = data.color1;
+                var color2 = data.color2;
+                var location = data.location;
+                var temp = data.temp;
+                var air = data.air;
+                var weather = data.weather;
+                var html = '<div>' + temp + '</div><div>' + weather + '</div><div>' + location + ' · ' + air + '</div><div class="cmp-icon" id="lottie-box" style="background-image: url(' + data.lottie + ');"></div>';
+                $('.weather').html(html).css("background-image", "linear-gradient(-33deg," + color1 + " 0%," + color2 + " 99%)");
+			});
 			$.ajax({
 				url: "https://ai.sm.cn/quark/1/api?format=json&method=weather&callback=weather",
 				type: "get",
-				dataType: "jsonp",
+				jsonpCallback: "weather",
+				headers:{'Content-Type':'application/json;charset=utf8','Referer':'https://ai.sm.cn/'},
 				success: function (res) {
+					console.log("地理位置|天气|气温|空气质量", res);
 					var data = res.data;
 					var color1 = data.color1;
 					var color2 = data.color2;
@@ -897,7 +920,9 @@ require(['jquery'], function ($) {
 			$.ajax({
 				url: "https://quark.sm.cn/api/rest?method=Newstoplist.zhihu",
 				type: "get",
-				dataType: "jsonp",
+				beforeSend: function(request) {
+                    request.setRequestHeader("Referer", "https://quark.sm.cn/");
+                },
 				success: function (res) {
 					var data = res.data;
 					var html = '';
@@ -1029,7 +1054,7 @@ require(['jquery'], function ($) {
 				<li class="set-option">
 					<div class="set-text">
 						<p class="set-title">功能介绍</p>
-						<p class="set-description">一、点击Logo进入书签（适配Via、荟萃浏览器、X浏览器、海阔视界，如需适配更多浏览器请联系<a href="http://www.coolapk.com/u/696533">酷安@丨晓柏惜梦丨</a>）<br>二、长按Logo进入设置（适配所有浏览器）<br>三、长按主页图标管理快捷书签，图标还能拖动排序<br>四、适配市面上常用搜索引擎，若没有您使用的搜索引擎可以选择自定义搜索引擎<br>五、自定义主页壁纸、自定义主页Logo、设置夜间模式、设置深色浅色图标、是否记录搜索历史<br>六、导入导出主页数据，以便方便备份</p>
+						<p class="set-description">一、点击Logo进入书签（适配Via、荟萃浏览器、X浏览器、海阔视界）<br>二、长按Logo进入设置（适配所有浏览器）<br>三、长按主页图标管理快捷书签，图标还能拖动排序<br>四、适配市面上常用搜索引擎，若没有您使用的搜索引擎可以选择自定义搜索引擎<br>五、自定义主页壁纸、自定义主页Logo、设置夜间模式、设置深色浅色图标、是否记录搜索历史<br>六、导入导出主页数据，以便方便备份</p>
 					</div>
 				</li>
 				<li class="set-option">

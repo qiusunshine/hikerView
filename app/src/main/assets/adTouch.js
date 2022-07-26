@@ -37,6 +37,52 @@
         fy_bridge_app.setImgUrls(urls.join('&&'));
     };
 
+    window.getImgHref = function(url){
+        var videoElements = document.getElementsByTagName("img");
+        if(videoElements == null){
+            fy_bridge_app.setImgHref("");
+            return;
+        }
+        let s = "";
+        for(var i = 0;i < videoElements.length; i++) {
+            let src = videoElements[i].src;
+            if(src == null || src.length < 5 ){
+                continue;
+            }
+            if(src == url && videoElements[i].parentElement != null){
+                var ele = videoElements[i].parentElement;
+                while(ele != null){
+                    if(ele.href != null){
+                        s = ele.href;
+                        fy_bridge_app.setImgHref(s);
+                        return
+                    }
+                    ele = ele.parentElement;
+                }
+            }
+        }
+        fy_bridge_app.setImgHref(s);
+    };
+
+    window.getAText = function(url){
+        console.log('getAText', url);
+        var videoElements = document.getElementsByTagName("a");
+        if(videoElements == null){
+            return;
+        }
+        for(var i = 0;i < videoElements.length; i++) {
+            let href = videoElements[i].href;
+            if(href == null){
+                continue;
+            }
+            if(href == url){
+                console.log('getAText', videoElements[i]);
+                fy_bridge_app.copy(videoElements[i].innerText);
+                return
+            }
+        }
+    };
+
     /*改自m浏览器*/
 //    if (window.isAdTouchInject == "true") {
 //        return;
@@ -228,13 +274,107 @@
     window.touchParent = function() {
         bug_debug_setObj(window.cutSelectParent);
     }
-
+    //选中兄节点
+    window.touchLast = function() {
+        if(window.cutSelectObj && window.cutSelectObj.previousElementSibling){
+            bug_debug_setObj(window.cutSelectObj.previousElementSibling);
+        }
+    }
+    //选中弟节点
+    window.touchNext = function() {
+        if(window.cutSelectObj && window.cutSelectObj.nextElementSibling){
+            bug_debug_setObj(window.cutSelectObj.nextElementSibling);
+        }
+    }
+    //选中子节点
+    window.touchChild = function() {
+        if(window.cutSelectObj && window.cutSelectObj.firstElementChild){
+            bug_debug_setObj(window.cutSelectObj.firstElementChild);
+        }
+    }
     // window.fy_bridge_app = {};
     // window.fy_bridge_app.setAdBlock = function (html, rule) {
     //     console.log("html, ", html);
     //     console.log("rule, ", rule);
     // }
     // window.debug_state = true;
+
+    window.getTouchElement = function () {
+        let result = "";
+        try {
+            let tag = "";
+            let text = "";
+            let href = "";
+            let img = "";
+            let e1 = window.tempEvent; // 选中当前项
+            let obj = e1.srcElement ? e1.srcElement : e1.target;
+            obj = obj ? obj : e1;
+            if(obj.tagName == 'A'){
+                href = obj.href;
+            } else if(obj.tagName == 'IMG') {
+                  img = obj.src;
+                  let ele = obj.parentElement;
+                  while(ele != null){
+                      if(ele.href != null){
+                          href = ele.href;
+                          break
+                      }
+                      ele = ele.parentElement;
+                  }
+            } else if(obj.tagName == 'DIV') {
+                  if(obj.innerText && obj.innerText.length > 0){
+                        //有文本的不处理
+                        return "";
+                  }
+                  function getBgImg(obj){
+                     if(obj.tagName == 'IMG' && obj.src){
+                         return obj.src;
+                     }
+                     let img;
+                     try {
+                         let bg = document.defaultView.getComputedStyle(obj).backgroundImage;
+                         if(bg && bg.includes('url(')){
+                             img = bg.match(/url\(["']?([^"']*)["']?\)/)[1];
+                             img = new URL(img, document.location.href).href;
+                         }
+                     }catch(e){}
+                     return img;
+                  }
+                 img = getBgImg(obj) || '';
+                 if(img.length <= 0){
+                     //优先子元素，然后再子子元素
+                     function findImg(children){
+                          let next = [];
+                          if(children != null && children.length > 0){
+                             for(let i = 0; i < children.length; i++){
+                                  let g1 = getBgImg(children[i]);
+                                  if(g1 && g1.length > 0){
+                                      return g1;
+                                  }
+                                  if(children[i].children){
+                                      next = next.concat(children[i].children);
+                                  }
+                             }
+                             if(next && next.length > 0){
+                                  return findImg(next);
+                             }
+                         }
+                     }
+                     img = findImg(obj.children) || '';
+                 }
+            } else {
+                //其它的不处理
+                return obj.tagName.toLowerCase();
+            }
+            tag = obj.tagName.toLowerCase();
+            text = obj.innerText;
+            let sp = "@//@";
+            result = tag + sp + text + sp + href + sp + img + sp;
+        }catch(e){
+            return e.toString();
+        }
+        return result;
+    }
 
     //开始监听
     document.removeEventListener('touchstart', window.listener);
@@ -252,7 +392,7 @@
 
 
     //油猴脚本转换
-    const VERSION = '20.4.10';
+    const VERSION = '20.4.11';
     const DEBUG = false;
     const isTop = window.top === window.self;
     const isNotTop = !isTop;
@@ -305,6 +445,9 @@
     };
 
     async function fetchUrl(url, opts = {}) {
+      if(url.startsWith('hiker')){
+        return fy_bridge_app.fetch(url, "{}")
+      }
       let { name = url, version = VERSION } = opts;
 
       if (DEBUG) {
@@ -379,8 +522,18 @@
     opacity: 0 !important;
     pointer-events: none !important;`;
 
+    async function home() {
+      await addJs('hiker://files/jquery.min.js');
+      const $ = jQuery.noConflict(true);
+      $(function () {
+        $('#home-step-1 > h3').html(
+          `第一步：安装一个用户脚本管理器（注意：本软件已内置脚本管理器，不需要额外安装，其它软件才需要）`
+        );
+      });
+    }
+
     async function go() {
-      await addJs('https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js');
+      await addJs('hiker://files/jquery.min.js');
 
       const $ = jQuery.noConflict(true);
 
@@ -642,7 +795,28 @@
           const GM_getValue = Store.get;
           const GM_setValue = Store.set;
           const GM_deleteValue = Store.remove;
+          const GM_xmlhttpRequest = window.fbaHttpRequest;
+          const GM_setClipboard = function(s){
+            let r = $$$().lazyRule((s) => {
+                copy(s)
+            }, s);
+            fy_bridge_app.parseLazyRule(r);
+          };
+          const GM_download = function(dataUrl,fileName){
+             window.open(dataUrl, '_blank')
+          }
+          const GM_registerMenuCommand = function(name, fn, accessKey){
+            return 111
+          }
+          const GM_unregisterMenuCommand = function(name, fn, accessKey){
 
+          }
+          const GM_log = function(msg){
+              fy_bridge_app.log(msg);
+          }
+          const GM_openInTab = function(url, options){
+             window.open(url, '_blank')
+          }
           // CODE
         }
       } catch (error) {
@@ -703,7 +877,16 @@
 
             log('MATCH:', MATCH);
 
-            let requireCode = `let isRequire = ${!!meta.require},RequireStack = ${(meta.require && meta.require.length) || 0};`;
+            let requireCode = `
+            let isRequire = ${!!meta.require},RequireStack = ${(meta.require && meta.require.length) || 0};
+            function setInterval0(func, t){
+                setTimeout(() => {
+                    if(!func()){
+                        setInterval0(func, t);
+                    }
+                }, t);
+            }
+            `;
             const newline = '\n      ';
 
             if (meta.require) {
@@ -712,11 +895,11 @@
                 requestAsync("${v}", (key, result) => {
                   fy_bridge_app.putVar("${v}", result);
                 });
-                setInterval(() => {
+                setInterval0(() => {
                   if (fy_bridge_app.getVar("${v}") !== "undefined") {
                     eval(fy_bridge_app.getVar("${v}"));
                     RequireStack--;
-                    clearInterval(this);
+                    return true;
                   }
                 }, 100);
                 `)
@@ -728,16 +911,16 @@
               requestAsync("${url}", (key, result) => {
                 fy_bridge_app.putVar("${url}", result);
               });
-              setInterval(() => {
+              setInterval0(() => {
                 if (fy_bridge_app.getVar("${url}") !== "undefined" && RequireStack === 0) {
                   eval(fy_bridge_app.getVar("${url}"));
-                  clearInterval(this);
+                  return true;
                 }
               }, 100);`
-              : `setInterval(() => {
+              : `setInterval0(() => {
                 if (RequireStack === 0) {
-                  eval(decodeURIComponent("${encodeURIComponent(url)}"));
-                  clearInterval(this);
+                  eval(fy_bridge_app.base64Decode("${fy_bridge_app.base64Encode(url)}"));
+                  return true;
                 }
               }, 100);`;
 
@@ -789,9 +972,9 @@
         }
 
         $('#install-area').html(
-          `<a class="install-link is-hiker is-offline">安装（本地版）</a>
+          `<a class="install-link is-hiker is-offline">安装本地版</a>
           <span></span>
-          <a class="install-link is-hiker is-online">安装（网络版）</a>
+          <a class="install-link is-hiker is-online">安装网络版（不推荐）</a>
           <a class="install-help-link" title="如何安装" rel="nofollow" href="/zh-CN/help/installing-user-scripts">?</a><p class="install-hint"><strong>网络版</strong> 会每次加载当前脚本在油猴网站上的最新版代码，加载速度取决于你访问油猴网站的网络速度。</p>`
         );
 
@@ -871,7 +1054,7 @@
     }
 
     .install-link.is-online {
-      background-color: #7950f2 !important;
+      background-color: #AAAAAA !important;
     }
 
     #install-area.is-installing .install-link {
@@ -902,6 +1085,12 @@
       }
     }
 
-
+    if (isTop && Href.includes("greasyfork.org/zh-CN") && !Href.includes("scripts")) {
+        try {
+            ready(home);
+          } catch (error) {
+            console.error('油猴脚本转换错误：', error);
+          }
+    }
 
 })();

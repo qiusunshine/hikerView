@@ -2,41 +2,161 @@
   <head>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1">
-      <meta http-equiv="X-UA-Compatible" content="IE=9">
-      <title>新方圆影视</title>
-      <link rel="stylesheet" type="text/css" href="./DPlayer.min.css">
-      <link rel="stylesheet" type="text/css" href="./share.css">
+      <meta name="referrer" content="no-referrer">
+      <title>网页投屏</title>
+      <link href="./boot.css" rel="stylesheet">
+      <style type="text/css">
+          body {
+              margin: 0px;
+          }
+          #content {
+            width: 100vmin;
+            height: 56vmin;
+            background-color: black;
+            margin: auto;
+          }
+          #list {
+            margin: 20px 10px;
+          }
+          #title {
+            margin: 20px 10px 0 10px;
+          }
+          #list nav {
+            margin-top: 10px;
+          }
+          #list .row {
+            margin-top: 10px;
+          }
+          #list .btn-light {
+            width: 100%;
+            padding: .375rem 0rem !important;
+          }
+      </style>
   </head>
   <body>
-  <div id="a1"></div>
+  <div id="content">
+      <div id="a1"></div>
+      <div id="title"></div>
+      <div id="list">
+      </div>
+  </div>
+
   <script type="text/javascript" src="./jquery.min.js"></script>
-  <script type="text/javascript" src="./share.js"></script>
   <script type="text/javascript" src="./hls.min.js"></script>
   <script type="text/javascript" src="./DPlayer.min.js"></script>
   <script type="text/javascript">
         function checkUrl(){
-			$.get("playUrl", function(result){
-				if(obj.url!=result && result.indexOf('http')==0){
-					obj.url = result;
+			$.get("playUrl?enhance=true", function(result){
+			    if(result == null || result == ""){
+			        return;
+			    }
+			    result = JSON.parse(result);
+				window.headers = result.headers;
+				if(result && obj.url != result.url){
+				    obj.subtitle = result.subtitle;
+					obj.url = result.url;
+					$('#title').html(`<nav aria-label="breadcrumb">
+                      <ol class="breadcrumb">
+                        <li class="breadcrumb-item active" aria-current="page">当前播放：${result.title}</li>
+                      </ol>
+                    </nav>`);
+                    location.href = '#/title=' + result.title;
+				}
+			});
+			$.get("getPlayList", function(result){
+			    if(result == null || result == "" || obj.list == result){
+			        return;
+			    }
+				obj.list = result;
+			    result = JSON.parse(result);
+				if(result){
+				    let chapters = [];
+				    for(let i in result){
+				        let index = (i - i % 4) / 4;
+				        if(chapters.length < index + 1){
+				            chapters.push([]);
+				        }
+				        chapters[index].push(result[i] + "@@@" + i);
+				    }
+				    let html = [];
+				    for(let it of chapters){
+				        html.push(it.map(i => {
+				            let ii = i.split('@@@');
+				            let c = i.replace(/'/g, "￥1￥").replace(/"/g, "￥2￥");
+				            return '<div class="col"><button type="button" class="btn btn-light" onclick="play(\'' + c + '\')">' + ii[0] +'</button></div>'
+				        }).join(''));
+				    }
+				    let h = html.map(i => '<div class="row">' + i + '</div>').join("");
+				    $('#list').html(`<nav aria-label="breadcrumb">
+                      <ol class="breadcrumb">
+                        <li class="breadcrumb-item active" aria-current="page">选集</li>
+                        <li class="breadcrumb-item active"><a href="javascript:void(0)" onclick="playNext()">播放下一集</a></li>
+                      </ol>
+                    </nav>` + h);
 				}
 			});
 		}
-		function initPlayer(url){
+		function playNext(){
+		    $.get("playNext", function(result){
+			    if(result == "true"){
+			        player.notice('播放下一集')
+			    }
+			});
+		}
+
+		function play(c){
+		    c = c.replace(/￥1￥/g, "'").replace(/￥2￥/g, '"').split('@@@');
+		    $.get("playMe?title=" + c[0] + "&index=" + c[1], function(result){
+			    if(result == "true"){
+			        player.notice('播放' + c[0]);
+			    }
+			});
+		}
+		function initPlayer(url, subtitle){
 		    player = new DPlayer({
+		        theme: '#ed424b',
+		        screenshot: true,
 	            container: document.getElementById('a1'),
 	            video: {
 	                url: url,
 	                type: 'auto',
 	                autoplay: true,
 	                preload: 'auto'
-	            }
+	            },
+	            subtitle: subtitle && subtitle != '' ? {url: subtitle} : null,
+	            pluginOptions: {
+                    hls: {
+                        fetchSetup: function (context, initParams) {
+                            let uurl = context.url;
+                            console.log('fetchSetup, ', uurl);
+                            if(window.headers && Object.keys(window.headers).length > 0){
+                                if(uurl && uurl.includes('.m3u8') && !uurl.includes('#noProxy')){
+                                    uurl = new URL("/proxyM3u8", location.href).toString();
+                                }
+                                let h = initParams.headers;
+                                h = new Headers();
+                                if(initParams.headers != null)
+                                for(let it of Object.keys(initParams.headers)){
+                                    h.set(it, initParams.headers.get(it));
+                                }
+                                for(let it of Object.keys(window.headers)){
+                                    if(it == 'User-Agent' || it == "Cookie" || it == 'Origin'){
+                                        continue;
+                                    }
+                                    h.set(it, window.headers[it]);
+                                }
+                                initParams.headers = h;
+                            }
+                            return new Request(uurl, initParams);
+                        },
+                    },
+                },
 	        });
+	        window.player = player;
 	        player.on('canplay', function () {
                 console.log('player canplay');
                 player.play();
                 player.fullScreen.request();
-                player.notice('新方圆影视竭诚为您服务');
                 if(!hasShow){
                     var lastUrl = localStorage.getItem('last_url');
                     var lastPos = localStorage.getItem('last_pos');
@@ -64,32 +184,65 @@
                 }
           });
 		}
-		function switchPlayer(url){
-		    if(currentPos >= 0){
-                localStorage.setItem('last_url', url);
-            }
-		    player.switchVideo({
-	            url: url,
-	            type: 'auto',
-	            autoplay: true,
-	            preload: 'auto'
-	        }, {});
+		function switchPlayer(url, subtitle){
+		    if(url == null || url == ''){
+		        return;
+		    }
+		    if(player == null){
+		        initPlayer(url, subtitle)
+		    } else {
+                if(currentPos >= 0){
+                    localStorage.setItem('last_url', url);
+                }
+                player.switchVideo({
+                    url: url,
+                    type: 'auto',
+                    autoplay: true,
+                    preload: 'auto'
+                }, {});
+		    }
 		}
 		var player;
 	    var currentPos = -1;
-		initPlayer("");
 		var obj = {};
 		var hasShow = false;
+
+        let req = XMLHttpRequest;
+        (function(open, send) {
+          XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
+            let uurl = url;
+            if(window.headers && Object.keys(window.headers).length > 0){
+                if(uurl && uurl.includes('.m3u8') && !uurl.includes('#noProxy')){
+                    uurl = new URL("/proxyM3u8", location.href).toString();
+                }
+            }
+            open.apply(this, [method, uurl, async, user, password]);
+          }
+          XMLHttpRequest.prototype.send = function () {
+            if(window.headers){
+                for(let it of Object.keys(window.headers)){
+                    if(it == 'User-Agent' || it == "Cookie" || it == 'Origin'){
+                        continue;
+                    }
+                    try {
+                        this.setRequestHeader(it, window.headers[it]);
+                    } catch(e){console.log(e)}
+                }
+            }
+            send.apply(this, arguments);
+          }
+        })(req.prototype.open, XMLHttpRequest.prototype.send);
 		Object.defineProperty(obj, 'url', {
 			get: function () {
 				return url;
 			},
 			set: function (newValue) {
 				url = newValue;
-				try{switchPlayer(newValue)}catch(e){};
+				try{switchPlayer(newValue, obj.subtitle)}catch(e){};
 			}
 		});
-		obj.url="";
+		obj.url = "";
+		checkUrl();
 		window.setInterval(checkUrl,1000);
   </script>
  </body>
