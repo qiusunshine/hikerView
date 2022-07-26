@@ -6,10 +6,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,28 +24,52 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.annimon.stream.function.Consumer;
 import com.example.hikerview.R;
+import com.example.hikerview.constants.Media;
+import com.example.hikerview.constants.MediaType;
+import com.example.hikerview.service.parser.HttpParser;
+import com.example.hikerview.service.parser.JSEngine;
 import com.example.hikerview.ui.Application;
 import com.example.hikerview.ui.browser.model.AdBlockModel;
 import com.example.hikerview.ui.browser.model.AdUrlBlocker;
+import com.example.hikerview.ui.browser.model.DetectedMediaResult;
+import com.example.hikerview.ui.browser.model.DetectorManager;
 import com.example.hikerview.ui.browser.model.JSManager;
+import com.example.hikerview.ui.browser.model.UrlDetector;
+import com.example.hikerview.ui.browser.model.VideoDetector;
+import com.example.hikerview.ui.browser.model.VideoTask;
 import com.example.hikerview.ui.browser.util.CollectionUtil;
 import com.example.hikerview.ui.browser.view.IVideoWebView;
 import com.example.hikerview.ui.browser.view.VideoContainer;
+import com.example.hikerview.ui.browser.webview.AdblockHolder;
 import com.example.hikerview.ui.browser.webview.JsBridgeHolder;
 import com.example.hikerview.ui.browser.webview.JsPluginHelper;
 import com.example.hikerview.ui.browser.webview.WebViewWrapper;
 import com.example.hikerview.ui.download.DownloadDialogUtil;
+import com.example.hikerview.ui.home.ArticleListRuleEditActivity;
+import com.example.hikerview.ui.setting.model.SettingConfig;
+import com.example.hikerview.ui.video.FloatVideoController;
 import com.example.hikerview.ui.video.PlayerChooser;
 import com.example.hikerview.ui.view.EnhanceViewPager;
-import com.example.hikerview.ui.view.colorDialog.ColorDialog;
+import com.example.hikerview.ui.view.PopImageLoaderNoView;
+import com.example.hikerview.ui.view.popup.InputPopup;
+import com.example.hikerview.ui.view.popup.SimpleHintPopupWindow;
+import com.example.hikerview.utils.ClipboardUtil;
 import com.example.hikerview.utils.FilesInAppUtil;
+import com.example.hikerview.utils.HeavyTaskUtil;
+import com.example.hikerview.utils.HttpUtil;
+import com.example.hikerview.utils.ImgUtil;
+import com.example.hikerview.utils.ScreenUtil;
+import com.example.hikerview.utils.ShareUtil;
 import com.example.hikerview.utils.StringUtil;
 import com.example.hikerview.utils.ThreadTool;
+import com.example.hikerview.utils.ToastMgr;
+import com.example.hikerview.utils.WebUtil;
 import com.google.android.material.snackbar.Snackbar;
 import com.king.app.updater.http.HttpManager;
 import com.lxj.xpopup.XPopup;
 import com.tencent.smtt.export.external.extension.interfaces.IX5WebViewClientExtension;
 import com.tencent.smtt.export.external.extension.proxy.ProxyWebViewClientExtension;
+import com.tencent.smtt.export.external.interfaces.HttpAuthHandler;
 import com.tencent.smtt.export.external.interfaces.IX5WebChromeClient;
 import com.tencent.smtt.export.external.interfaces.JsPromptResult;
 import com.tencent.smtt.export.external.interfaces.JsResult;
@@ -52,28 +77,36 @@ import com.tencent.smtt.export.external.interfaces.SslError;
 import com.tencent.smtt.export.external.interfaces.SslErrorHandler;
 import com.tencent.smtt.export.external.interfaces.WebResourceRequest;
 import com.tencent.smtt.export.external.interfaces.WebResourceResponse;
+import com.tencent.smtt.sdk.CookieManager;
+import com.tencent.smtt.sdk.ValueCallback;
 import com.tencent.smtt.sdk.WebChromeClient;
 import com.tencent.smtt.sdk.WebSettings;
 import com.tencent.smtt.sdk.WebView;
 import com.tencent.smtt.sdk.WebViewCallbackClient;
 import com.tencent.smtt.sdk.WebViewClient;
 
+import org.adblockplus.libadblockplus.android.Utils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import timber.log.Timber;
 
 import static android.view.View.VISIBLE;
+import static com.example.hikerview.ui.browser.webview.WebViewHelper.RESPONSE_CHARSET_NAME;
+import static com.example.hikerview.ui.browser.webview.WebViewHelper.RESPONSE_MIME_TYPE;
 
 /**
  * 作者：By 15968
@@ -82,6 +115,7 @@ import static android.view.View.VISIBLE;
  */
 
 public class ArticleWebViewHolder extends IArticleWebHolder {
+    private static final String TAG = "ArticleWebViewHolder";
     private List<String> urls = Collections.synchronizedList(new ArrayList<>());
 
     public int getHeight() {
@@ -111,6 +145,14 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
     public ProgressListener getProgressListener() {
         return progressListener;
     }
+
+    private AdblockHolder adblockHolder;
+    private float focusX, focusY;
+    private FloatVideoController floatVideoController;
+    private VideoDetector videoDetector;
+    private Map<String, Map<String, String>> requestHeaderMap = new HashMap<>();
+    private String videoPlayingWebUrl;
+    private boolean videoPlayShow = false;
 
     public void setProgressListener(ProgressListener progressListener) {
         this.progressListener = progressListener;
@@ -200,7 +242,7 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
 
     private CallbackClient mCallbackClient = new CallbackClient();
 
-    public void loadUrlCheckReferer(String url){
+    public void loadUrlCheckReferer(String url) {
         if (x5Extra != null && StringUtil.isNotEmpty(x5Extra.getReferer())) {
             Map<String, String> headers = new HashMap<>();
             headers.put("Referer", x5Extra.getReferer());
@@ -210,7 +252,164 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
         }
     }
 
+    public void initAdBlock() {
+        adblockHolder = new AdblockHolder(reference.get(), new IVideoWebView() {
+            @Override
+            public void postTask(@NotNull Runnable task) {
+                webView.post(task);
+            }
+
+            @Override
+            public void useFastPlay(boolean use) {
+
+            }
+
+            @Override
+            public void evaluateJS(@NotNull String js, @Nullable Consumer<String> resultCallback) {
+                webView.evaluateJavascript(js, resultCallback == null ? null : new ValueCallback<String>() {
+                    @Override
+                    public void onReceiveValue(String s) {
+                        resultCallback.accept(s);
+                    }
+                });
+            }
+
+            @Override
+            public void addJSInterface(@NotNull Object obj, @NotNull String interfaceName) {
+                webView.addJavascriptInterface(obj, interfaceName);
+            }
+        });
+        adblockHolder.initAbp();
+    }
+
+    private void initVideoDetector() {
+        if (videoDetector != null) {
+            return;
+        }
+        videoDetector = new VideoDetector() {
+            private List<DetectedMediaResult> detectedMediaResults = new ArrayList<>();
+            private Set<String> taskUrlsSet = new HashSet<>();
+            private AtomicInteger videoNotify = new AtomicInteger(0);
+            private AtomicInteger videoLimit = new AtomicInteger(20);
+
+            @Override
+            public void putIntoXiuTanLiked(Context context, String dom, String url) {
+
+            }
+
+            @Override
+            public List<DetectedMediaResult> getDetectedMediaResults(MediaType mediaType) {
+                return DetectorManager.getDetectedMediaResults(new ArrayList<>(detectedMediaResults), new Media(mediaType));
+            }
+
+            @Override
+            public void addTask(VideoTask video) {
+                if (video == null) {
+                    return;
+                }
+                if (taskUrlsSet.contains(video.getUrl())) {
+                    return;
+                }
+                String[] urls = video.getUrl().split("url=");
+                if (urls.length > 1 && urls[1].startsWith("http")) {
+                    addTask(new VideoTask(video.getRequestHeaders(), video.getMethod(), video.getTitle(), HttpParser.decodeUrl(urls[1], "UTF-8")));
+                }
+                taskUrlsSet.add(video.getUrl());
+                video.setTimestamp(System.currentTimeMillis());
+                HeavyTaskUtil.executeNewTask(new MyRunnable(video));
+            }
+
+            @Override
+            public void startDetect() {
+                detectedMediaResults.clear();
+                taskUrlsSet.clear();
+                videoNotify.set(0);
+                videoLimit.set(20);
+            }
+
+            @Override
+            public synchronized void reset() {
+                videoLimit.getAndAdd(20);
+            }
+
+            class MyRunnable implements Runnable {
+                private VideoTask web;
+
+                MyRunnable(VideoTask web) {
+                    this.web = web;
+                }
+
+                @Override
+                public void run() {
+                    if (web != null) {
+                        try {
+                            DetectedMediaResult mediaResult = new DetectedMediaResult(web.getUrl());
+                            mediaResult.setMediaType(UrlDetector.getMediaType(web.getUrl(), web.getRequestHeaders(), web.getMethod()));
+                            mediaResult.setTimestamp(web.getTimestamp());
+                            String mediaName = mediaResult.getMediaType().getName();
+                            detectedMediaResults.add(mediaResult);
+                            //只有视频或者音乐才发通知，不然可能会阻塞主线程
+                            if ((mediaName.equals(MediaType.VIDEO.getName()) || mediaName.equals(MediaType.MUSIC.getName())) && videoNotify.get() < videoLimit.get()) {
+                                videoNotify.addAndGet(1);
+                                notifyVideoFind(mediaResult);
+                            }
+                        } catch (Throwable e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        };
+    }
+
+    public void initFloatVideo(boolean useFloatVideo, ViewGroup container) {
+        //todo 禁用
+        if (useFloatVideo) {
+            if (floatVideoController == null) {
+                initVideoDetector();
+                floatVideoController = new FloatVideoController(reference.get(), container, (pause, force) -> {
+                    if (pause) {
+                        String muteJs = JSManager.instance(getContext()).getJsByFileName("mute");
+                        if (webView != null && !TextUtils.isEmpty(muteJs)) {
+                            webView.evaluateJavascript(muteJs, null);
+                        }
+                    }
+                    if (force && webView != null) {
+                        if (pause) {
+                            webView.onPause();
+                        } else {
+                            webView.onResume();
+                        }
+                    }
+                    return 0;
+                }, videoDetector, () -> requestHeaderMap);
+            }
+        }
+    }
+
+    private void notifyVideoFind(DetectedMediaResult mediaResult) {
+        if (floatVideoController != null && mediaResult != null) {
+            runOnUiThread(() -> {
+                if (floatVideoController != null && webView != null && videoDetector != null) {
+                    String nowUrl = webView.getUrl();
+                    if (!StringUtils.equals(videoPlayingWebUrl, nowUrl)) {
+                        //说明是hash发生了变化，当成新页面处理，重新显示嗅探到视频
+                        videoPlayingWebUrl = nowUrl;
+                        videoPlayShow = false;
+                        videoDetector.reset();
+                    }
+                    if (!videoPlayShow) {
+                        videoPlayShow = true;
+                        mediaResult.setClicked(true);
+                        floatVideoController.show(mediaResult.getUrl(), webView.getUrl(), webView.getTitle(), true);
+                    }
+                }
+            });
+        }
+    }
+
     public void initWebView(Activity activity) {
+        setSystemUiVisibility = activity.getWindow().getDecorView().getSystemUiVisibility();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             String processName = Application.getProcessName();
             if (!activity.getPackageName().equals(processName)) {
@@ -227,7 +426,7 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
         bundle.putBoolean("supportLiteWnd", true);
         try {
             Bundle bundle1 = new Bundle();
-            bundle1.putBoolean("require", false);
+            bundle1.putBoolean("require", true);
             webView.getX5WebViewExtension().invokeMiscMethod("setVideoPlaybackRequiresUserGesture", bundle1);
             webView.getX5WebViewExtension().invokeMiscMethod("setVideoParams", bundle);
         } catch (Exception e) {
@@ -253,9 +452,23 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
                     callback.onCustomViewHidden();
                     return;
                 }
+                if (floatVideoController != null && floatVideoController.isFullScreen()) {
+                    callback.onCustomViewHidden();
+                    return;
+                }
                 reference.get().getWindow().getDecorView();
                 FrameLayout decor = (FrameLayout) reference.get().getWindow().getDecorView();
                 fullscreenContainer = new VideoContainer(reference.get(), new IVideoWebView() {
+                    @Override
+                    public void addJSInterface(@NotNull Object obj, @NotNull String interfaceName) {
+                        webView.addJavascriptInterface(obj, interfaceName);
+                    }
+
+                    @Override
+                    public void postTask(@NotNull Runnable task) {
+                        webView.post(task);
+                    }
+
                     @Override
                     public void useFastPlay(boolean use) {
                         webView.evaluateJavascript(FilesInAppUtil.getAssetsString(reference.get(), "fastPlay.js").replace("{playbackRate}", (use ? "2" : "1")), null);
@@ -276,7 +489,7 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
                 customViewCallback = callback;
                 webView.setVisibility(View.INVISIBLE);
                 reference.get().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                setStatusBarVisibility(false);
+                ScreenUtil.setStatusBarVisibility(reference.get(), setSystemUiVisibility, false);
                 reference.get().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 super.onShowCustomView(view, callback);
             }
@@ -287,7 +500,7 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
                     return;
                 }
                 reference.get().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                setStatusBarVisibility(true);
+                ScreenUtil.setStatusBarVisibility(reference.get(), setSystemUiVisibility, true);
                 FrameLayout decor = (FrameLayout) reference.get().getWindow().getDecorView();
                 fullscreenContainer.destroy();
                 decor.removeView(fullscreenContainer);
@@ -310,6 +523,9 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
                     if (x5Extra != null && StringUtil.isNotEmpty(x5Extra.getJs()) && x5Extra.isJsLoadingInject()) {
                         webView.evaluateJavascript(x5Extra.getJs(), null);
                     }
+                }
+                if (adblockHolder != null) {
+                    adblockHolder.injectJsOnProgress();
                 }
             }
 
@@ -359,14 +575,67 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
             }
 
             @Override
+            public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
+                String username = null;
+                String password = null;
+
+                boolean reuseHttpAuthUsernamePassword = handler
+                        .useHttpAuthUsernamePassword();
+
+                if (reuseHttpAuthUsernamePassword && view != null) {
+                    String[] credentials = view.getHttpAuthUsernamePassword(host,
+                            realm);
+                    if (credentials != null && credentials.length == 2) {
+                        username = credentials[0];
+                        password = credentials[1];
+                    }
+                }
+
+                if (username != null && password != null) {
+                    handler.proceed(username, password);
+                } else {
+                    if (view != null && reference.get() != null && !reference.get().isFinishing()) {
+                        InputPopup inputPopup = new InputPopup(reference.get())
+                                .bind("网页登录", "用户名", "", "密码", "", (title, code) -> {
+                                    if (StringUtil.isNotEmpty(title) && StringUtil.isNotEmpty(code)) {
+                                        view.setHttpAuthUsernamePassword(host, realm, title, code);
+                                    }
+                                    handler.proceed(title, code);
+                                }).setCancelListener(handler::cancel);
+                        new XPopup.Builder(reference.get())
+                                .dismissOnBackPressed(false)
+                                .dismissOnTouchOutside(false)
+                                .asCustom(inputPopup)
+                                .show();
+                    } else {
+                        handler.cancel();
+                    }
+                }
+            }
+
+            @Override
             public void onPageStarted(WebView webView, String s, Bitmap bitmap) {
                 if (progressListener != null) {
                     progressListener.onPageStarted(s);
                 }
+                videoPlayShow = false;
+                requestHeaderMap.clear();
                 urls.clear();
                 hasLoadJsOnProgress.set(false);
                 hasLoadJsOnPageEnd.set(false);
+                if (adblockHolder != null) {
+                    if (adblockHolder.isLoading()) {
+                        adblockHolder.stopAbpLoading();
+                    }
+                    adblockHolder.startAbpLoading(s);
+                }
                 checkUa(s);
+                if (floatVideoController != null && StringUtil.isNotEmpty(s) && s.startsWith("http")) {
+                    floatVideoController.loadUrl(s);
+                }
+                if (videoDetector != null) {
+                    videoDetector.startDetect();
+                }
                 super.onPageStarted(webView, s, bitmap);
             }
 
@@ -382,7 +651,7 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
                 if (x5Extra != null && StringUtil.isNotEmpty(x5Extra.getJs())) {
                     webView.evaluateJavascript(x5Extra.getJs(), null);
                 }
-                if(finishPageConsumer != null){
+                if (finishPageConsumer != null) {
                     finishPageConsumer.accept(s);
                 }
                 super.onPageFinished(webView, s);
@@ -391,9 +660,19 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
             @Override
             public boolean shouldOverrideUrlLoading(WebView webView, WebResourceRequest request) {
                 String url = request.getUrl().toString();
+                if (x5Extra != null && StringUtil.isNotEmpty(x5Extra.getUrlInterceptor())) {
+                    String result = JSEngine.getInstance().evalJS(x5Extra.getUrlInterceptor(), url);
+                    if (StringUtil.isNotEmpty(result) && !"null".equals(result) && !"undefined".equals(result) && !"false".equals(result)) {
+                        if (!"true".equals(result)) {
+                            //有代码执行
+                            webView.evaluateJavascript(result, null);
+                        }
+                        return true;
+                    }
+                }
                 if (url.startsWith("http")) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        if(request.isRedirect() && x5Extra != null && !x5Extra.isRedirect()){
+                        if (request.isRedirect() && x5Extra != null && !x5Extra.isRedirect()) {
                             return true;
                         }
                     }
@@ -412,6 +691,7 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
             public WebResourceResponse shouldInterceptRequest(WebView webView, WebResourceRequest request) {
                 String url = request.getUrl().toString();
                 urls.add(url);
+                requestHeaderMap.put(url, request.getRequestHeaders());
                 long id = AdUrlBlocker.instance().shouldBlock(lastDom, url);
                 Timber.d("ad block, url:%s, id:%d", url, id);
                 if (id >= 0) {
@@ -422,6 +702,22 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
                         //x5自带的拦截
                         return new WebResourceResponse(null, null, null);
                     }
+                }
+                try {
+                    if (adblockHolder != null) {
+                        final AdblockHolder.AbpShouldBlockResult abpBlockResult = adblockHolder.shouldAbpBlockRequest(toWebkitRequest(request));
+                        if (AdblockHolder.AbpShouldBlockResult.BLOCK_LOAD.equals(abpBlockResult)) {
+                            if (reference.get() == null || reference.get().isFinishing()) {
+                                return super.shouldInterceptRequest(webView, request);
+                            }
+                            return WebResponseResult.BLOCK_LOAD;
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                if (videoDetector != null && !ArticleListRuleEditActivity.hasBlockDom(lastDom)) {
+                    videoDetector.addTask(new VideoTask(request.getRequestHeaders(), request.getMethod(), request.getUrl().toString(), request.getUrl().toString()));
                 }
                 return super.shouldInterceptRequest(webView, request);
             }
@@ -438,19 +734,33 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
                 Snackbar.make(webView, "是否允许网页中的下载请求？", Snackbar.LENGTH_LONG)
                         .setAction("允许", v -> DownloadDialogUtil.showEditDialog(reference.get(), finalFileName, url, null, mimetype)).show();
             } else {
-                new ColorDialog(webView.getContext()).setTheTitle("温馨提示")
-                        .setContentText("是否允许网页中的下载请求？（点击空白处拒绝操作，点击播放可以将链接作为音视频地址直接播放）")
-                        .setPositiveListener("下载", dialog -> {
-                            dialog.dismiss();
-                            if (reference.get() == null || reference.get().isFinishing()) {
-                                return;
-                            }
-                            DownloadDialogUtil.showEditDialog(reference.get(), finalFileName, url);
-                        }).setNegativeListener("播放", dialog -> {
-                    dialog.dismiss();
-                    startPlayVideo(url);
-                }).show();
+                new XPopup.Builder(webView.getContext())
+                        .asConfirm("温馨提示", "是否允许网页中的下载请求？（点击空白处拒绝操作，点击播放可以将链接作为视频地址直接播放）",
+                                "播放", "下载", () -> {
+                                    if (reference.get() == null || reference.get().isFinishing()) {
+                                        return;
+                                    }
+                                    DownloadDialogUtil.showEditDialog(reference.get(), finalFileName, url);
+                                }, () -> startPlayVideo(url), false).show();
             }
+        });
+        webView.setOnLongClickListener(v -> {
+            WebView.HitTestResult result = webView.getHitTestResult();
+            int type = result.getType();
+            Log.d(TAG, "initWebView: setOnLongClickListener--type=" + type + ",url=" + result.getExtra());
+            if (type == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE
+                    || type == WebView.HitTestResult.IMAGE_TYPE) {
+                chooseOperationForImageUrl(webView, result.getExtra(), type == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE);
+            } else if (type == WebView.HitTestResult.SRC_ANCHOR_TYPE) {
+                if (UrlDetector.isImage(result.getExtra())) {
+                    chooseOperationForImageUrl(webView, result.getExtra(), true);
+                } else {
+                    chooseOperationForUrl(result.getExtra());
+                }
+            } else if (type == WebView.HitTestResult.UNKNOWN_TYPE) {
+//                chooseOperationForUnknown(webView);
+            }
+            return false;
         });
         if (reference != null) {
             reference.clear();
@@ -474,22 +784,9 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
 
             @Override
             public String getMyUrl() {
-                if (Thread.currentThread() == Looper.getMainLooper().getThread()) {
-                    return webView.getUrl();
-                }
-                CountDownLatch countDownLatch = new CountDownLatch(1);
-                UrlHolder urlHolder = new UrlHolder();
-                urlHolder.url = "";
-                ThreadTool.INSTANCE.runOnUI(() -> {
-                    urlHolder.url = webView.getUrl();
-                    countDownLatch.countDown();
+                return ThreadTool.INSTANCE.getStrOnUIThread(urlHolder -> {
+                    urlHolder.setUrl(webView.getUrl());
                 });
-                try {
-                    countDownLatch.await(5, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                return urlHolder.url;
             }
 
             @Override
@@ -504,7 +801,9 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
 
             @Override
             public String getUserAgentString() {
-                return webView.getSettings().getUserAgentString();
+                return ThreadTool.INSTANCE.getStrOnUIThread(urlHolder -> {
+                    urlHolder.setUrl(webView.getSettings().getUserAgentString());
+                });
             }
 
             @Override
@@ -541,6 +840,21 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
             public void addJavascriptInterface(Object obj, String interfaceName) {
                 webView.addJavascriptInterface(obj, interfaceName);
             }
+
+            @Override
+            public Map<String, Map<String, String>> getRequestHeaderMap() {
+                return requestHeaderMap;
+            }
+
+            @Override
+            public String getCookie(String url) {
+                try {
+                    return CookieManager.getInstance().getCookie(url);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
         });
         if (webView.getX5WebViewExtension() != null) {
             webView.getX5WebViewExtension().setWebViewClientExtension(mWebViewClientExtension);
@@ -548,6 +862,158 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
         if (webView.getSettingsExtension() != null) {
             webView.getSettingsExtension().setPageCacheCapacity(5);
         }
+    }
+
+    private void chooseOperationForUrl(final String url) {
+        List<View.OnClickListener> clickList = new ArrayList<>();
+        clickList.add(v -> runOnUiThread(() -> WebUtil.goWeb(reference.get(), url, true)));
+        clickList.add(v -> ClipboardUtil.copyToClipboard(getContext(), url));
+        clickList.add(v -> customCopy(url));
+        clickList.add(v -> runOnUiThread(() -> ShareUtil.findChooserToDeal(getContext(), url, "text/html")));
+        SimpleHintPopupWindow simpleHintPopupWindow = new SimpleHintPopupWindow(reference.get(), Arrays.asList("打开网页", "复制链接", "复制文本", "外部打开"), clickList);
+        simpleHintPopupWindow.showPopupWindow(focusX, focusY);
+    }
+
+    private void customCopy(String url) {
+        webView.evaluateJavascript("(function(){window.getAText('" + Utils.escapeJavaScriptString(url) + "')})();", null);
+    }
+
+    private void chooseOperationForImageUrl(View view, final String url, boolean anchor) {
+        List<View.OnClickListener> clickList = new ArrayList<>();
+        if (anchor) {
+            JSEngine.getInstance().clearVar("#setImgHref");
+            webView.evaluateJavascript("(function(){window.getImgHref('" + Utils.escapeJavaScriptString(url) + "')})();", null);
+            clickList.add(v -> runOnUiThread(() -> goImgHref(url)));
+        }
+        clickList.add(v -> showBigPic(url));
+        clickList.add(v -> savePic(url));
+        clickList.add(v -> runOnUiThread(() -> ClipboardUtil.copyToClipboard(reference.get(), url)));
+        String[] names;
+        if (anchor) {
+            names = new String[]{"打开网页", "全屏查看", "保存图片", "复制图片链接"};
+        } else {
+            names = new String[]{"全屏查看", "保存图片", "复制链接"};
+        }
+        SimpleHintPopupWindow simpleHintPopupWindow = new SimpleHintPopupWindow(reference.get(), Arrays.asList(names), clickList);
+        simpleHintPopupWindow.showPopupWindow(focusX, focusY);
+    }
+
+    private void chooseOperationForUnknown(View view) {
+        webView.evaluateJavascript("(function(){\n" +
+                        "    return window.getTouchElement()\n" +
+                        "})()",
+                value -> {
+                    if (StringUtil.isNotEmpty(value) && value.length() > 2) {
+                        String result = value.substring(1, value.length() - 1);
+                        String[] strings = result.split("@//@", -1);
+                        if (strings.length < 2) {
+                            return;
+                        }
+                        runOnUiThread(() -> {
+                            List<View.OnClickListener> clickList = new ArrayList<>();
+                            List<String> names = new ArrayList<>();
+                            if (strings.length > 2 && StringUtil.isNotEmpty(strings[2]) && strings[2].startsWith("http")) {
+                                names.add(0, "打开网页");
+                                clickList.add(0, v -> WebUtil.goWeb(reference.get(), strings[2], true));
+                                names.add("复制链接");
+                                clickList.add(v -> ClipboardUtil.copyToClipboardForce(getContext(), strings[2]));
+                            }
+                            if (strings.length > 3 && StringUtil.isNotEmpty(strings[3]) && strings[3].startsWith("http")) {
+                                names.add("全屏查看");
+                                String pic = strings[3];
+                                clickList.add(v -> showBigPic(pic));
+                                names.add("保存图片");
+                                clickList.add(v -> savePic(pic));
+                            }
+                            if (CollectionUtil.isEmpty(names)) {
+                                return;
+                            }
+                            SimpleHintPopupWindow simpleHintPopupWindow = new SimpleHintPopupWindow(reference.get(), names, clickList);
+                            simpleHintPopupWindow.showPopupWindow(focusX, focusY);
+                        });
+                    }
+                }
+        );
+    }
+
+    private void savePic(String url) {
+        ImgUtil.savePic2Gallery(getContext(), url, webView.getUrl(), new ImgUtil.OnSaveListener() {
+            @Override
+            public void success(List<String> paths) {
+                runOnUiThread(() -> ToastMgr.shortBottomCenter(getContext(), "保存成功"));
+            }
+
+            @Override
+            public void failed(String msg) {
+                runOnUiThread(() -> ToastMgr.shortBottomCenter(getContext(), msg));
+            }
+        });
+    }
+
+    private Context getContext() {
+        return reference.get();
+    }
+
+    private void showBigPic(String pic) {
+        new XPopup.Builder(reference.get())
+                .asImageViewer(null, pic, new PopImageLoaderNoView(webView.getUrl()))
+                .show();
+    }
+
+    private void goImgHref(String url) {
+        String imgHref = JSEngine.getInstance().getVar("#setImgHref", "");
+        if (StringUtil.isEmpty(imgHref)) {
+            webView.evaluateJavascript("(function(){window.getImgHref('" + Utils.escapeJavaScriptString(url) + "')})();", null);
+            webView.postDelayed(() -> {
+                if (StringUtil.isEmpty(imgHref)) {
+                    ToastMgr.shortBottomCenter(reference.get(), "获取图片跳转地址失败");
+                } else {
+                    WebUtil.goWeb(reference.get(), HttpUtil.getRealUrl(webView.getUrl(), imgHref), true);
+                }
+            }, 300);
+        } else {
+            WebUtil.goWeb(reference.get(), HttpUtil.getRealUrl(webView.getUrl(), imgHref), true);
+        }
+    }
+
+    private void runOnUiThread(Runnable task) {
+        if (reference.get() != null) {
+            ThreadTool.INSTANCE.runOnUI(task);
+        }
+    }
+
+    private android.webkit.WebResourceRequest toWebkitRequest(WebResourceRequest request) {
+        return new android.webkit.WebResourceRequest() {
+            @Override
+            public Uri getUrl() {
+                return request.getUrl();
+            }
+
+            @Override
+            public boolean isForMainFrame() {
+                return request.isForMainFrame();
+            }
+
+            @Override
+            public boolean isRedirect() {
+                return request.isRedirect();
+            }
+
+            @Override
+            public boolean hasGesture() {
+                return request.hasGesture();
+            }
+
+            @Override
+            public String getMethod() {
+                return request.getMethod();
+            }
+
+            @Override
+            public Map<String, String> getRequestHeaders() {
+                return request.getRequestHeaders();
+            }
+        };
     }
 
     private void startPlayVideo(String videoUrl) {
@@ -583,6 +1049,8 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
 
         // 1
         public boolean onInterceptTouchEvent(MotionEvent ev, View view) {
+            focusX = ev.getRawX();
+            focusY = ev.getRawY();
             return mCallbackClient.onInterceptTouchEvent(ev, view);
         }
 
@@ -616,17 +1084,6 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
             mCallbackClient.computeScroll(view);
         }
     };
-
-    private void setStatusBarVisibility(boolean visible) {
-        if (!visible) {
-            setSystemUiVisibility = reference.get().getWindow().getDecorView().getSystemUiVisibility();
-            reference.get().getWindow().getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-        } else {
-            reference.get().getWindow().getDecorView().setSystemUiVisibility(setSystemUiVisibility);
-        }
-    }
 
     private void loadAllJs(WebView webView, String url, boolean pageEnd) {
         JsPluginHelper.loadMyJs(reference.get(), js -> webView.evaluateJavascript(js, null), url, () -> "", pageEnd, false);
@@ -676,6 +1133,10 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
                 } else if ("100%".equals(s)) {
                     if (desc.contains("float")) {
                         height = ViewGroup.LayoutParams.MATCH_PARENT;
+                    }
+                } else if ("top".equals(s)) {
+                    if (desc.contains("float")) {
+                        height = -1000;
                     }
                 } else {
                     try {
@@ -739,6 +1200,8 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
 
         @Override
         public boolean onTouchEvent(MotionEvent event, View view) {
+            focusX = event.getRawX();
+            focusY = event.getRawY();
             if (event.getActionMasked() == MotionEvent.ACTION_DOWN || event.getPointerCount() > 1) {
                 ViewParent parent = getPagerParent(webView);
                 if (parent != null) {
@@ -824,5 +1287,48 @@ public class ArticleWebViewHolder extends IArticleWebHolder {
 
     private static class UrlHolder {
         String url;
+    }
+
+    private static class WebResponseResult {
+        static final WebResourceResponse ALLOW_LOAD = null;
+        static final WebResourceResponse BLOCK_LOAD =
+                new WebResourceResponse(RESPONSE_MIME_TYPE, RESPONSE_CHARSET_NAME, null);
+    }
+
+    public void release() {
+        if (adblockHolder != null) {
+            SettingConfig.saveAdblockPlusCount(reference.get());
+        }
+        getWebView().onPause();
+        getWebView().destroy();
+        if (floatVideoController != null) {
+            floatVideoController.destroy();
+        }
+    }
+
+
+    public void onPause() {
+        if (floatVideoController != null) {
+            floatVideoController.onPause();
+        }
+    }
+
+    public void onResume() {
+        if (floatVideoController != null) {
+            floatVideoController.onResume();
+        }
+    }
+
+    public boolean onBackPressed() {
+        if (floatVideoController != null && floatVideoController.onBackPressed()) {
+            return true;
+        }
+        if (getWebView() != null && getWebView().canGoBack()) {
+            if (getX5Extra() != null && getX5Extra().isCanBack()) {
+                getWebView().goBack();
+                return true;
+            }
+        }
+        return false;
     }
 }

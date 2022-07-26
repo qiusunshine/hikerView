@@ -5,8 +5,9 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.net.http.SslError;
 import android.os.Build;
-import android.os.Looper;
 import android.text.TextUtils;
+import android.webkit.CookieManager;
+import android.webkit.HttpAuthHandler;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.SslErrorHandler;
@@ -25,6 +26,7 @@ import com.example.hikerview.ui.browser.util.CollectionUtil;
 import com.example.hikerview.ui.browser.webview.JsBridgeHolder;
 import com.example.hikerview.ui.browser.webview.JsPluginHelper;
 import com.example.hikerview.ui.browser.webview.WebViewWrapper;
+import com.example.hikerview.ui.view.popup.InputPopup;
 import com.example.hikerview.utils.StringUtil;
 import com.example.hikerview.utils.ThreadTool;
 import com.lxj.xpopup.XPopup;
@@ -32,9 +34,9 @@ import com.lxj.xpopup.XPopup;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import timber.log.Timber;
@@ -47,6 +49,7 @@ import timber.log.Timber;
 
 public class ArticleWebkitHolder extends IArticleWebHolder {
     private List<String> urls = Collections.synchronizedList(new ArrayList<>());
+    private Map<String, Map<String, String>> requestHeaderMap = new HashMap<>();
 
     public int getHeight() {
         return height;
@@ -202,10 +205,50 @@ public class ArticleWebkitHolder extends IArticleWebHolder {
             }
 
             @Override
+            public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
+                String username = null;
+                String password = null;
+
+                boolean reuseHttpAuthUsernamePassword = handler
+                        .useHttpAuthUsernamePassword();
+
+                if (reuseHttpAuthUsernamePassword && view != null) {
+                    String[] credentials = view.getHttpAuthUsernamePassword(host,
+                            realm);
+                    if (credentials != null && credentials.length == 2) {
+                        username = credentials[0];
+                        password = credentials[1];
+                    }
+                }
+
+                if (username != null && password != null) {
+                    handler.proceed(username, password);
+                } else {
+                    if (view != null && reference.get() != null && !reference.get().isFinishing()) {
+                        InputPopup inputPopup = new InputPopup(reference.get())
+                                .bind("网页登录", "用户名", "", "密码", "", (title, code) -> {
+                                    if (StringUtil.isNotEmpty(title) && StringUtil.isNotEmpty(code)) {
+                                        view.setHttpAuthUsernamePassword(host, realm, title, code);
+                                    }
+                                    handler.proceed(title, code);
+                                }).setCancelListener(handler::cancel);
+                        new XPopup.Builder(reference.get())
+                                .dismissOnBackPressed(false)
+                                .dismissOnTouchOutside(false)
+                                .asCustom(inputPopup)
+                                .show();
+                    } else {
+                        handler.cancel();
+                    }
+                }
+            }
+
+            @Override
             public void onPageStarted(WebView webView, String s, Bitmap bitmap) {
                 if (progressListener != null) {
                     progressListener.onPageStarted(s);
                 }
+                requestHeaderMap.clear();
                 urls.clear();
                 hasLoadJsOnProgress.set(false);
                 hasLoadJsOnPageEnd.set(false);
@@ -254,6 +297,7 @@ public class ArticleWebkitHolder extends IArticleWebHolder {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView webView, WebResourceRequest request) {
                 String url = request.getUrl().toString();
+                requestHeaderMap.put(url, request.getRequestHeaders());
                 urls.add(url);
                 long id = AdUrlBlocker.instance().shouldBlock(lastDom, url);
                 Timber.d("ad block, url:%s, id:%d", url, id);
@@ -291,22 +335,9 @@ public class ArticleWebkitHolder extends IArticleWebHolder {
 
             @Override
             public String getMyUrl() {
-                if (Thread.currentThread() == Looper.getMainLooper().getThread()) {
-                    return webView.getUrl();
-                }
-                CountDownLatch countDownLatch = new CountDownLatch(1);
-                UrlHolder urlHolder = new UrlHolder();
-                urlHolder.url = "";
-                ThreadTool.INSTANCE.runOnUI(() -> {
-                    urlHolder.url = webView.getUrl();
-                    countDownLatch.countDown();
+                return ThreadTool.INSTANCE.getStrOnUIThread(urlHolder -> {
+                    urlHolder.setUrl(webView.getUrl());
                 });
-                try {
-                    countDownLatch.await(5, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                return urlHolder.url;
             }
 
             @Override
@@ -321,7 +352,9 @@ public class ArticleWebkitHolder extends IArticleWebHolder {
 
             @Override
             public String getUserAgentString() {
-                return webView.getSettings().getUserAgentString();
+                return ThreadTool.INSTANCE.getStrOnUIThread(urlHolder -> {
+                    urlHolder.setUrl(webView.getSettings().getUserAgentString());
+                });
             }
 
             @Override
@@ -358,6 +391,21 @@ public class ArticleWebkitHolder extends IArticleWebHolder {
             @Override
             public void addJavascriptInterface(Object obj, String interfaceName) {
                 webView.addJavascriptInterface(obj, interfaceName);
+            }
+
+            @Override
+            public Map<String, Map<String, String>> getRequestHeaderMap() {
+                return requestHeaderMap;
+            }
+
+            @Override
+            public String getCookie(String url) {
+                try {
+                    return CookieManager.getInstance().getCookie(url);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
             }
         });
     }
