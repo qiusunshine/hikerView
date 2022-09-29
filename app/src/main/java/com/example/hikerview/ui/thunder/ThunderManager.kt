@@ -3,9 +3,13 @@ package com.example.hikerview.ui.thunder
 import android.content.Context
 import android.net.Uri
 import android.text.TextUtils
+import com.alibaba.fastjson.JSON
+import com.example.hikerview.constants.UAEnum
 import com.example.hikerview.service.http.CodeUtil
 import com.example.hikerview.service.parser.HttpParser
 import com.example.hikerview.service.parser.JSEngine
+import com.example.hikerview.service.parser.RetroLoadLibrary
+import com.example.hikerview.ui.ActivityManager
 import com.example.hikerview.ui.Application
 import com.example.hikerview.ui.browser.model.DetectedMediaResult
 import com.example.hikerview.ui.browser.model.UrlDetector
@@ -33,11 +37,16 @@ import kotlin.collections.HashMap
  */
 object ThunderManager {
 
+    //磁力引擎，0代表迅雷，1代表TorrentStream
+    val engine: String
+        get() = PreferenceMgr.getString(context, "magnet", "")
+
     var taskId: Long = 0
     var path: String = ""
     var scope: CoroutineScope? = null
     val errorCode = HashMap<Int, String>()
     var savePathNow: String = ""
+    var plugin: TorrentEngine? = null
 
     init {
         errorCode[9125] = "文件名太长"
@@ -57,6 +66,79 @@ object ThunderManager {
         errorCode[114101] = "无效链接"
     }
 
+    fun globalInit(context: Context) {
+        scanPlugins(context)
+        plugin?.initConfig()
+    }
+
+    private fun scanPlugins(context: Context) {
+        plugin = scanPlugin(context, engine)
+    }
+
+    fun scanPlugin(context: Context, engine: String): TorrentEngine? {
+        if (engine == "") {
+            return null
+        }
+        val p = UriUtils.getRootDir(context) + File.separator + "plugins"
+        val f = File(p)
+        if (!f.exists() && !f.mkdirs()) {
+            return null
+        }
+        val json = File(p + File.separator + "magnet.json")
+        if (json.exists()) {
+            val magnets = JSON.parseArray(
+                FileUtil.fileToString(json.absolutePath),
+                TorrentEngineBean::class.java
+            )
+            if (!magnets.isNullOrEmpty()) {
+                for (magnet in magnets) {
+                    if (magnet.name == engine) {
+                        return loadPlugin(magnet)
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+    private fun loadPlugin(bean: TorrentEngineBean): TorrentEngine? {
+        try {
+            val soDir = Application.getContext().getDir("libs", Context.MODE_PRIVATE)
+            if (bean.soFile.isNotEmpty()) {
+                val soFile = File(soDir.toString(), "lib" + bean.soFile + ".so")
+                if (!soFile.exists()) {
+                    return null
+                }
+            }
+            try {
+                RetroLoadLibrary.installNativeLibraryPath(javaClass.classLoader, soDir)
+            } catch (throwable: Throwable) {
+                throwable.printStackTrace()
+            }
+            try {
+                RetroLoadLibrary.installNativeLibraryPath(
+                    javaClass.classLoader,
+                    soDir
+                )
+            } catch (throwable: Throwable) {
+                throwable.printStackTrace()
+            }
+            val instance1: Any? = JSEngine.getInstance().loadJavaInstance(bean.checkClass)
+            if (instance1 == null) {
+                return null
+            }
+            val instance: Any? = JSEngine.getInstance().loadJavaInstance(bean.className)
+            if (instance != null) {
+                val te = instance as TorrentEngine
+                te.setContextProvider { context }
+                return te
+            }
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+        return null
+    }
+
     fun isMagnetOrTorrent(url: String): Boolean {
         if (url.startsWith("magnet:") || url.split(";")[0].endsWith(".torrent")) {
             return true
@@ -72,6 +154,10 @@ object ThunderManager {
      * 下载磁力或者种子
      */
     fun startDownloadMagnet(context: Context?, url: String?, c: MagnetConsumer?) {
+        if (url.isNullOrEmpty()) {
+            toast("链接不能为空")
+            return
+        }
         if (url?.startsWith("magnet:") == false && url.split(";")[0].endsWith(".torrent")) {
             startParseTorrent(context!!, url, c)
             return
@@ -107,7 +193,10 @@ object ThunderManager {
         if (path.startsWith("http")) {
             toast("种子解析中，请稍候")
             val u = path.split(";")[0]
-            val headers = HttpParser.getHeaders(path)
+            val headers = HttpParser.getHeaders(path) ?: HashMap<String, String>()
+            if (!headers.containsKey("User-Agent")) {
+                headers["User-Agent"] = UAEnum.MOBILE.content
+            }
             getActiveScope(true).launch(Dispatchers.IO) {
                 CodeUtil.download(u, "hiker://files/magnet/t.torrent", headers, object :
                     CodeUtil.OnCodeGetListener {
@@ -179,6 +268,13 @@ object ThunderManager {
     }
 
     private fun startParseTorrent0(context: Context, path: String, c: MagnetConsumer? = null) {
+        if (plugin != null) {
+            plugin?.initEngine()
+            plugin?.stopTask()
+            plugin?.parse("file://$path")
+            toast("种子加载中，请稍候")
+            return
+        }
         initXL(context)
         release(path)
         var consumer = c
@@ -201,8 +297,7 @@ object ThunderManager {
         getTorrentInfo(context, path, File(path), consumer!!)
     }
 
-    private fun initXL(context: Context) {
-        XLTaskHelper.init(context, XL.getA(), XL.getB())
+    private fun initDir(context: Context) {
         path = UriUtils.getRootDir(context) + File.separator + "magnet"
         val dir = File(path)
         if (!dir.exists()) {
@@ -210,10 +305,85 @@ object ThunderManager {
         }
     }
 
+    private fun initXL(context: Context) {
+        XLTaskHelper.init(context, XL.getA(), XL.getB())
+        initDir(context)
+    }
+
+    fun isWorking(): Boolean {
+        if (isDownloadFinished()) {
+            return true
+        }
+        if (plugin != null) {
+            return plugin?.isDownloading == true
+        }
+        return taskId > 0
+    }
+
+    fun isDownloadFinished(): Boolean {
+        if (plugin != null) {
+            return plugin?.isDownloadFinished == true
+        }
+        if (taskId > 0) {
+            val taskInfo = XLTaskHelper.instance().getTaskInfo(taskId)
+            if (taskInfo != null) {
+                return taskInfo.mTaskStatus == 2
+            }
+        }
+        return false
+    }
+
+    fun getDownloaded(): String {
+        if (plugin != null) {
+            return plugin?.progress ?: ""
+        }
+        if (taskId > 0) {
+            val taskInfo = XLTaskHelper.instance().getTaskInfo(taskId)
+            if (taskInfo != null) {
+                return FileUtil.getFormatedFileSize(taskInfo.mDownloadSize) + "/" +
+                        FileUtil.getFormatedFileSize(taskInfo.mFileSize)
+            }
+        }
+        return ""
+    }
+
+    fun getVideoFile(url: String): String {
+        if (url.startsWith("/")) {
+            return url
+        }
+        if (url.startsWith("http://")) {
+            if (url.contains("#file=")) {
+                val fileName = HttpParser.decodeUrl(url.split("#file=")[1], "UTF-8")
+                return findVideoFile(path + File.separator + fileName).absolutePath
+            }
+            val p = StringUtil.listToString(
+                url.replace("http://", "").split("/").toList(),
+                1,
+                "/"
+            )
+            var path = HttpParser.decodeUrl(p, "UTF-8")
+            if (path.startsWith("%2F")) {
+                path = HttpParser.decodeUrl(path, "UTF-8")
+            }
+            return findVideoFile(path).absolutePath
+        }
+        return ""
+    }
+
+    private val context: Context
+        get() = ActivityManager.instance.currentActivity
+
     /**
      * 解析磁力
      */
     private fun parse(context: Context, url: String, consumer: MagnetConsumer) {
+        if (plugin != null) {
+            plugin?.initEngine()
+            plugin?.stopTask()
+            plugin?.parse(url)
+            toast("磁链解析中，请稍候")
+            return
+        }
         initXL(context)
         val decode = URLDecoder.decode(
             if (url.lowercase(Locale.getDefault())
@@ -232,12 +402,13 @@ object ThunderManager {
         release()
 
         getActiveScope(true).launch(Dispatchers.IO) {
-            taskId = XLTaskHelper.instance().addMagentTask(url, dir!!.absolutePath, fileName)
+            val taskId = XLTaskHelper.instance().addMagentTask(url, dir!!.absolutePath, fileName)
+            this@ThunderManager.taskId = taskId
             var count = 0
             var hasToast = false
             while (isActive) {
                 count++
-                if (count > 120) {
+                if (count > 240) {
                     toast("磁力链接解析超时")
                     return@launch
                 }
@@ -253,7 +424,7 @@ object ThunderManager {
                             toast("磁链解析中，请稍候")
                             hasToast = true
                         }
-                        delay(1000)
+                        delay(500)
                     }
                     else -> {
                         XLTaskHelper.instance().stopTask(taskId)
@@ -263,6 +434,40 @@ object ThunderManager {
                 }
             }
         }
+    }
+
+    suspend fun parseMagnetToTorrent(context: Context, url: String): File? {
+        initXL(context)
+        val decode = URLDecoder.decode(url)
+        val fileName = XLTaskHelper.instance().getFileName(decode)
+        val file = File(path + File.separator + fileName)
+        val dir = file.parentFile
+        val taskId = XLTaskHelper.instance().addMagentTask(url, dir!!.absolutePath, fileName)
+        this@ThunderManager.taskId = taskId
+        var count = 0
+        while (count < 12) {
+            count++
+            val i = XLTaskHelper.instance().getTaskInfo(taskId).mTaskStatus
+            when {
+                i == 2 -> {
+                    XLTaskHelper.instance().stopTask(taskId)
+                    return file
+                }
+                i != 3 -> {
+                    delay(300)
+                }
+                else -> {
+                    XLTaskHelper.instance().stopTask(taskId)
+                    return null
+                }
+            }
+        }
+        try {
+            XLTaskHelper.instance().stopTask(taskId)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return null
     }
 
 
@@ -281,7 +486,15 @@ object ThunderManager {
                 if (exclude != null && file.absolutePath == exclude) {
                     continue
                 }
-                file.deleteRecursively()
+                try {
+                    if (file.isDirectory) {
+                        FileUtil.deleteDirs(file.absolutePath)
+                    } else {
+                        file.delete()
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
         }
         scope?.let {
@@ -292,6 +505,10 @@ object ThunderManager {
     private fun stopTask() {
         if (taskId > 0) {
             XLTaskHelper.instance().stopTask(taskId)
+            taskId = 0
+        }
+        if (plugin != null) {
+            plugin?.stopTask()
         }
     }
 
@@ -514,12 +731,90 @@ object ThunderManager {
     ) {
         ThreadTool.runOnUI {
             savePathNow = savePath
+            val file = findVideoFile(savePath + File.separator + info.mFileName)
+            val u: String? = XLTaskHelper.instance().getLoclUrl(file.absolutePath)
+            if (u == null) {
+                toast("当前文件格式不支持云播，试试第三方播放器吧")
+                ShareUtil.findChooserToDeal(
+                    ActivityManager.instance.currentActivity,
+                    "file://" + file.absoluteFile
+                )
+                return@runOnUI
+            }
             consumer.consume(
-                XLTaskHelper.instance().getLoclUrl(savePath + File.separator + info.mFileName),
+                u!!,
                 info.mFileName,
                 arrayList
             )
         }
+    }
+
+    private fun findVideoFile(path: String): File {
+        val file = File(path)
+        if (file.exists() && !file.isDirectory) {
+            return file
+        }
+        val dir = file.parentFile
+        if (dir == null || !dir.exists()) {
+            return file
+        }
+        val name = file.name
+        //优先通过文件名找
+        val file1 = findFile({
+            it.name == name
+        }, dir)
+        if (file1 != null) {
+            return file1
+        }
+        //找不到就随便找个视频文件
+        val file2 = findFile({
+            UrlDetector.isVideoOrMusic(it.name)
+        }, dir)
+        if (file2 != null) {
+            return file2
+        }
+        //还找不到就往根目录找
+        val file3 = findFile({
+            it.name == name
+        }, File(UriUtils.getRootDir(context) + File.separator + "magnet"))
+        if (file3 != null) {
+            return file3
+        }
+        //还找不到就往根目录随便找个视频文件
+        val file4 = findFile({
+            UrlDetector.isVideoOrMusic(it.name)
+        }, File(UriUtils.getRootDir(context) + File.separator + "magnet"))
+        if (file4 != null) {
+            return file4
+        }
+        //都找不到，没辙了
+        return file
+    }
+
+    /**
+     * 遍历找文件
+     */
+    private fun findFile(found: (file: File) -> Boolean, dir: File): File? {
+        if (!dir.exists() || !dir.isDirectory) {
+            return null
+        }
+        val files = dir.listFiles()
+        if (files == null || files.isEmpty()) {
+            return null
+        }
+        for (file in files) {
+            if (!file.isDirectory) {
+                if (found(file)) {
+                    return file
+                }
+            } else {
+                val f = findFile(found, file)
+                if (f != null) {
+                    return f
+                }
+            }
+        }
+        return null
     }
 
     /**
@@ -531,7 +826,8 @@ object ThunderManager {
     ) {
         ThreadTool.runOnUI {
             consumer.consume(
-                XLTaskHelper.instance().getLoclUrl(path + File.separator + fileName),
+                XLTaskHelper.instance()
+                    .getLoclUrl(findVideoFile(path + File.separator + fileName).absolutePath),
                 fileName,
                 arrayListOf()
             )
