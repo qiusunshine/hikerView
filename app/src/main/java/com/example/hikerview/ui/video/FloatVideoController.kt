@@ -38,8 +38,14 @@ import com.example.hikerview.utils.*
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Format
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.analytics.AnalyticsListener.EventTime
+import com.google.android.exoplayer2.source.TrackGroupArray
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.google.android.exoplayer2.trackselection.MappingTrackSelector
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.material.snackbar.Snackbar
 import com.lxj.xpopup.XPopup
 import com.qingfeng.clinglibrary.service.manager.ClingManager
@@ -49,6 +55,7 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
+import java.util.*
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -69,6 +76,7 @@ class FloatVideoController(
     private var webUrl: String = ""
     private var title: String = ""
     private var position: Long = 0
+    private var initPlayPos: Long = 0
     private var showing = false
     private var holderView: View? = null
 
@@ -86,12 +94,18 @@ class FloatVideoController(
     private var descView: android.widget.TextView? = null
     private var listScrollView: ScrollView? = null
     private var video_str_view: TextView? = null
-    private var audio_str_view: android.widget.TextView? = null
     private var video_address_view: android.widget.TextView? = null
     private var dlanListPop: DlanListPop? = null
     private var webDlanPlaying: Boolean = false
     private var analyticsListener: SimpleAnalyticsListener? = null
     private var vaildTicket: Long = 0
+    private var trackListener: Player.Listener? = null
+    private var autoSelectAudioTextFinished = false
+    private var audio_tracks: LinearLayout? = null
+    private var subtitle_tracks: LinearLayout? = null
+    private var jumpStartView: TextView? = null
+    private var jumpStartDuration = 0
+
 
     /**
      * 初始化View
@@ -146,7 +160,10 @@ class FloatVideoController(
             }
             playerView?.enterFullScreen()
         }
-        pv.rightAnimateView = exo_pip
+
+        //片头片尾
+        jumpStartView = pv.findViewById(R.id.jump_start)
+        pv.rightAnimateView = jumpStartView
         pv.exoControlsBack.setOnClickListener {
             if (layoutNow != VideoPlayerView.Layout.VERTICAL) {
                 playerView?.exoFullscreen?.performClick()
@@ -270,7 +287,13 @@ class FloatVideoController(
         }
         val realUrl = HttpParser.getRealUrlFilterHeaders(url)
         //恢复播放进度
-        position = HeavyTaskUtil.getPlayerPos(context, getMemoryId()).toLong()
+        initPlayPos = HeavyTaskUtil.getPlayerPos(context, getMemoryId()).toLong()
+        val extraData = HeavyTaskUtil.findJumpPos(context, null, null)
+        jumpStartDuration = extraData.jumpStartDuration
+        if (jumpStartDuration > 0 && initPlayPos < jumpStartDuration * 1000) {
+            initPlayPos = (jumpStartDuration * 1000).toLong()
+        }
+        position = initPlayPos
         player = VideoPlayerManager.Builder(VideoPlayerManager.TYPE_PLAY_MANUAL, playerView!!)
             .setTitle("")
             .setPosition(position)
@@ -284,6 +307,13 @@ class FloatVideoController(
                             vaildTicket = System.currentTimeMillis()
                             val count = max(5, (it.duration / 2000).toInt() + 1)
                             autoChangeXiuTanVideo(count, vaildTicket)
+                        } else if (it.duration > 200000) {
+                            if (initPlayPos > 0 && it.duration - initPlayPos < 10000) {
+                                //跳过片头后视频长度不足5分钟，或者上次播放位置已经到最后5分钟
+                                initPlayPos = 0
+                                it.seekTo(0)
+                                ToastMgr.shortBottomCenter(getContext(), "上次播放剩余时长不足10秒，已重新播放");
+                            }
                         }
                     }
                 }
@@ -303,6 +333,7 @@ class FloatVideoController(
         player?.setPlaybackParameters(VideoPlayerManager.PLAY_SPEED, 1f)
         player?.setPlayerGestureOnTouch(true)
         addFormatListener()
+        initTrackListener()
         player?.setVerticalMoveGestureListener { dx, dy ->
             if (abs(dy) > abs(dx) && player != null) {
                 //竖向滑动
@@ -339,6 +370,35 @@ class FloatVideoController(
                 pauseWebDelay()
             }
         }, 1000)
+        if (jumpStartDuration > 0) {
+            jumpStartView!!.text = TimeUtil.secToTime(jumpStartDuration)
+        }
+        jumpStartView!!.setOnClickListener { v: View? ->
+            if (player == null || player!!.duration < 1) {
+                return@setOnClickListener
+            }
+            val now = player!!.currentPosition
+            if (now > 1000 * 60 * 10) {
+                ToastMgr.shortBottomCenter(
+                    getContext(),
+                    "点击我会将当前进度设置为片头，当前进度超过10分钟，不能设为片头"
+                )
+                return@setOnClickListener
+            }
+            jumpStartDuration = (now / 1000).toInt()
+            val str =
+                TimeUtil.secToTime(jumpStartDuration)
+            jumpStartView!!.text = str
+            HeavyTaskUtil.updateJumpPos(null, null, jumpStartDuration, 0)
+            ToastMgr.shortBottomCenter(getContext(), "全局片头已设置为$str")
+        }
+        jumpStartView!!.setOnLongClickListener { v: View? ->
+            jumpStartDuration = 0
+            jumpStartView!!.text = "片头"
+            HeavyTaskUtil.updateJumpPos(null, null, jumpStartDuration, 0)
+            ToastMgr.shortBottomCenter(getContext(), "全局片头已清除")
+            true
+        }
     }
 
     /**
@@ -358,6 +418,7 @@ class FloatVideoController(
      */
     fun onResume() {
         player?.onResume()
+        initTrackListener()
     }
 
     /**
@@ -428,7 +489,7 @@ class FloatVideoController(
                         if (trackType == C.TRACK_TYPE_VIDEO) {
                             video_str_view!!.text = "视频格式：" + getVideoString(format)
                         } else if (trackType == C.TRACK_TYPE_AUDIO) {
-                            audio_str_view!!.text = "音频格式：" + getAudioString(format)
+//                            audio_str_view!!.text = "音频格式：" + getAudioString(format)
                         }
 //                        if (format.width > format.height) {
 //                            val layoutParams = it.layoutParams as FrameLayout.LayoutParams
@@ -504,6 +565,7 @@ class FloatVideoController(
         }
         player!!.reset()
         try {
+            initTrackListener()
             player!!.setPlayUri(HttpParser.getRealUrlFilterHeaders(url), HttpParser.getHeaders(url))
             player!!.setPosition(position)
             player!!.startPlayer<ExoUserPlayer>()
@@ -517,7 +579,13 @@ class FloatVideoController(
             return
         }
         if (reGetPos) {
-            position = HeavyTaskUtil.getPlayerPos(context, getMemoryId()).toLong()
+            initPlayPos = HeavyTaskUtil.getPlayerPos(context, getMemoryId()).toLong()
+            val extraData = HeavyTaskUtil.findJumpPos(context, null, null)
+            jumpStartDuration = extraData.jumpStartDuration
+            if (jumpStartDuration > 0 && initPlayPos < jumpStartDuration * 1000) {
+                initPlayPos = (jumpStartDuration * 1000).toLong()
+            }
+            position = initPlayPos
         }
         playNow()
     }
@@ -837,6 +905,8 @@ class FloatVideoController(
         speed_1_5.setTextColor(white)
         val speed_2 = listCard!!.findViewById<TextView>(R.id.speed_2)
         speed_2.setTextColor(white)
+        val speed_25 = listCard!!.findViewById<TextView>(R.id.speed_25)
+        speed_25.setTextColor(white)
         val speed_p8 = listCard!!.findViewById<TextView>(R.id.speed_p8)
         speed_p8.setTextColor(white)
         val speed_p5 = listCard!!.findViewById<TextView>(R.id.speed_p5)
@@ -860,6 +930,7 @@ class FloatVideoController(
             12 -> speed_1_2.setTextColor(green)
             15 -> speed_1_5.setTextColor(green)
             20 -> speed_2.setTextColor(green)
+            25 -> speed_25.setTextColor(green)
             8 -> speed_p8.setTextColor(green)
             5 -> speed_p5.setTextColor(green)
             30 -> speed_3.setTextColor(green)
@@ -898,6 +969,7 @@ class FloatVideoController(
             it.findViewById<View>(R.id.speed_1_2).setOnClickListener(listener)
             it.findViewById<View>(R.id.speed_1_5).setOnClickListener(listener)
             it.findViewById<View>(R.id.speed_2).setOnClickListener(listener)
+            it.findViewById<View>(R.id.speed_25).setOnClickListener(listener)
             it.findViewById<View>(R.id.speed_p8).setOnClickListener(listener)
             it.findViewById<View>(R.id.speed_p5).setOnClickListener(listener)
             it.findViewById<View>(R.id.speed_3).setOnClickListener(listener)
@@ -905,7 +977,6 @@ class FloatVideoController(
             it.findViewById<View>(R.id.speed_5).setOnClickListener(listener)
             it.findViewById<View>(R.id.speed_6).setOnClickListener(listener)
             video_str_view = it.findViewById(R.id.video_str_view)
-            audio_str_view = it.findViewById(R.id.audio_str_view)
             video_address_view = it.findViewById(R.id.video_address_view)
             video_address_view?.setOnClickListener {
                 ClipboardUtil.copyToClipboardForce(getContext(), url.split(";")[0])
@@ -951,7 +1022,7 @@ class FloatVideoController(
                 val forward: Long = (v.tag as String).toLong()
                 fastPositionJump(forward)
             }
-            R.id.speed_1, R.id.speed_1_2, R.id.speed_1_5, R.id.speed_2, R.id.speed_p8, R.id.speed_p5, R.id.speed_3, R.id.speed_4, R.id.speed_5, R.id.speed_6 -> {
+            R.id.speed_1, R.id.speed_1_2, R.id.speed_1_5, R.id.speed_2, R.id.speed_25, R.id.speed_p8, R.id.speed_p5, R.id.speed_3, R.id.speed_4, R.id.speed_5, R.id.speed_6 -> {
                 val speed: Float = (v.tag as String).toFloat()
                 playFromSpeed(speed)
             }
@@ -967,6 +1038,15 @@ class FloatVideoController(
         descView!!.text =
             "速度×" + VideoPlayerManager.PLAY_SPEED + "/" + descView!!.text.toString().split("/")
                 .toTypedArray()[1]
+        val memoryPlaySpeed = PreferenceMgr.getBoolean(
+            getContext(),
+            PreferenceMgr.SETTING_CONFIG,
+            "memoryPlaySpeed",
+            false
+        )
+        if (memoryPlaySpeed) {
+            PreferenceMgr.put(getContext(), "ijkplayer", "playSpeed", VideoPlayerManager.PLAY_SPEED)
+        }
     }
 
     private fun getHeaders(
@@ -995,4 +1075,275 @@ class FloatVideoController(
         fun getRequestMap(): MutableMap<String, MutableMap<String, String?>?>?
     }
 
+    private fun initTrackListener() {
+        if (player == null || player?.player == null) {
+            return
+        }
+        autoSelectAudioTextFinished = false
+        showAudioSubtitleTracks(ArrayList(), ArrayList(), null)
+        if (trackListener == null) {
+            trackListener = object : Player.Listener {
+                override fun onTracksChanged(
+                    trackGroups: TrackGroupArray,
+                    trackSelections: TrackSelectionArray
+                ) {
+                    val trackSelector = player!!.player.trackSelector
+                    if (trackSelector is MappingTrackSelector) {
+                        val mappedTrackInfo = trackSelector.currentMappedTrackInfo
+                        if (mappedTrackInfo != null) {
+                            val audioFormats: MutableList<Format?> = ArrayList()
+                            val subtitleFormats: MutableList<Format?> = ArrayList()
+                            for (i in 0 until mappedTrackInfo.rendererCount) {
+                                val rendererTrackGroups = mappedTrackInfo.getTrackGroups(i)
+                                if (C.TRACK_TYPE_AUDIO == mappedTrackInfo.getRendererType(i)) { //判断是否是音轨
+                                    for (groupIndex in 0 until rendererTrackGroups.length) {
+                                        val trackGroup = rendererTrackGroups[groupIndex]
+                                        audioFormats.add(trackGroup.getFormat(0))
+                                        //                                        Timber.d("checkAudio, %s", trackGroup.getFormat(0).toString());
+                                    }
+                                } else if (C.TRACK_TYPE_TEXT == mappedTrackInfo.getRendererType(i)) { //判断是否是字幕
+                                    for (groupIndex in 0 until rendererTrackGroups.length) {
+                                        val trackGroup = rendererTrackGroups[groupIndex]
+                                        subtitleFormats.add(trackGroup.getFormat(0))
+                                        //                                        Timber.d("checkSubTitle, %s", trackGroup.getFormat(0).toString());
+                                    }
+                                }
+                            }
+                            if (!autoSelectAudioTextFinished) {
+                                autoSelectAudioTextFinished = true
+                                autoSelectAudioSubtitle(
+                                    audioFormats,
+                                    subtitleFormats,
+                                    trackSelections
+                                )
+                            }
+                            showAudioSubtitleTracks(audioFormats, subtitleFormats, trackSelections)
+                        }
+                    }
+                }
+            }
+        }
+        player?.player?.removeListener(trackListener!!)
+        player?.player?.addListener(trackListener!!)
+    }
+
+    /**
+     * 显示音频和字幕轨道
+     *
+     * @param audioFormats
+     * @param subtitleFormats
+     */
+    private fun showAudioSubtitleTracks(
+        audioFormats: List<Format?>,
+        subtitleFormats: List<Format?>,
+        trackSelections: TrackSelectionArray?
+    ) {
+        initTracksView()
+        if (audio_tracks!!.childCount != 1) {
+            audio_tracks!!.removeViews(1, audio_tracks!!.childCount - 1)
+        }
+        var audio: String? = null
+        var text: String? = null
+        if (trackSelections != null) {
+            for (i in 0 until trackSelections.length) {
+                if (trackSelections[i] != null) {
+                    for (j in 0 until trackSelections[i]!!.length()) {
+                        if (MimeTypes.isText(
+                                trackSelections[i]!!.getFormat(j).sampleMimeType
+                            )
+                        ) {
+                            text = trackSelections[i]!!.getFormat(j).id
+                        } else if (MimeTypes.isAudio(
+                                trackSelections[i]!!.getFormat(j).sampleMimeType
+                            )
+                            || trackSelections[i]!!.getFormat(j).channelCount != Format.NO_VALUE
+                        ) {
+                            audio = trackSelections[i]!!.getFormat(j).id
+                        }
+                    }
+                }
+            }
+        }
+        if (CollectionUtil.isNotEmpty(audioFormats)) {
+            for (audioFormat in audioFormats) {
+                val view = LayoutInflater.from(getContext())
+                    .inflate(R.layout.item_track_view, audio_tracks, false) as TextView
+                var label = if (StringUtil.isNotEmpty(
+                        audioFormat!!.label
+                    )
+                ) audioFormat.label else audioFormat.language
+                if ("zh" == label || "Chinese" == label) {
+                    label = "国语"
+                } else if ("Cantonese" == label) {
+                    label = "粤语"
+                } else if ("en" == label) {
+                    label = "英语"
+                }
+                val channel = buildAudioChannelString(audioFormat)
+                if (StringUtil.isNotEmpty(channel)) {
+                    label = "$label, $channel";
+                }
+                view.text = label
+                if (audio != null && audio == audioFormat.id) {
+                    view.setTextColor(context.resources.getColor(R.color.greenAction))
+                }
+                view.tag = audioFormat
+                view.setOnClickListener { v: View ->
+                    changeTrack(
+                        (v.tag as Format)
+                    )
+                }
+                audio_tracks!!.addView(view)
+            }
+        }
+        if (subtitle_tracks!!.childCount != 1) {
+            subtitle_tracks!!.removeViews(1, subtitle_tracks!!.childCount - 1)
+        }
+        if (CollectionUtil.isNotEmpty(subtitleFormats)) {
+            for (subtitleFormat in subtitleFormats) {
+                val view = LayoutInflater.from(getContext())
+                    .inflate(R.layout.item_track_view, subtitle_tracks, false) as TextView
+                var label = if (StringUtil.isNotEmpty(
+                        subtitleFormat!!.label
+                    )
+                ) subtitleFormat.label else subtitleFormat.language
+                if ("Chinese Simplified" == label) {
+                    label = "中文(简体)"
+                } else if ("Chinese Traditional" == label) {
+                    label = "中文(繁体)"
+                } else if ("en" == label) {
+                    label = "英语"
+                } else if ("Chinese" == label) {
+                    label = "中文"
+                }
+                view.text = label
+                if (text != null && text == subtitleFormat.id) {
+                    view.setTextColor(context.resources.getColor(R.color.greenAction))
+                }
+                view.tag = subtitleFormat
+                view.setOnClickListener { v: View ->
+                    changeTrack(
+                        (v.tag as Format)
+                    )
+                }
+                subtitle_tracks!!.addView(view)
+            }
+        }
+    }
+
+    private fun buildAudioChannelString(format: Format): String? {
+        val channelCount = format.channelCount
+        return if (channelCount < 1) {
+            null
+        } else when (channelCount) {
+            1 -> "单声道"
+            2 -> "立体声"
+            6, 7 -> "5.1 环绕声"
+            8 -> "7.1 环绕声"
+            else -> "环绕声"
+        }
+    }
+
+    private fun changeTrack(format: Format) {
+        val trackSelector = player!!.player.trackSelector
+        if (trackSelector is DefaultTrackSelector) {
+            val mappedTrackInfo = trackSelector.currentMappedTrackInfo
+            if (mappedTrackInfo != null) {
+                for (index in 0 until mappedTrackInfo.rendererCount) {
+                    val trackGroupArray = mappedTrackInfo.getTrackGroups(index)
+                    for (i in 0 until trackGroupArray.length) {
+                        val trackGroup = trackGroupArray[i]
+                        for (j in 0 until trackGroup.length) {
+                            if (StringUtils.equals(trackGroup.getFormat(j).id, format.id)) {
+                                trackSelector.setParameters(
+                                    trackSelector.parameters.buildUpon()
+                                        .setSelectionOverride(
+                                            index, trackGroupArray,
+                                            DefaultTrackSelector.SelectionOverride(i, j)
+                                        )
+                                )
+                                return
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun initTracksView() {
+        if (audio_tracks == null) {
+            audio_tracks = holderView?.findViewById(R.id.audio_tracks)
+        }
+        if (subtitle_tracks == null) {
+            subtitle_tracks = holderView?.findViewById(R.id.subtitle_tracks)
+        }
+    }
+
+    /**
+     * 自动选择字幕和音频轨道
+     *
+     * @param audioFormats
+     * @param subtitleFormats
+     * @param trackSelections
+     */
+    private fun autoSelectAudioSubtitle(
+        audioFormats: List<Format?>, subtitleFormats: List<Format?>,
+        trackSelections: TrackSelectionArray
+    ) {
+        if (audioFormats.size < 2 && subtitleFormats.size < 2) {
+            return
+        }
+        var audio: String? = null
+        var text: String? = null
+        for (i in 0 until trackSelections.length) {
+            if (trackSelections[i] != null) {
+                for (j in 0 until trackSelections[i]!!.length()) {
+                    if (MimeTypes.isText(trackSelections[i]!!.getFormat(j).sampleMimeType)) {
+                        text = trackSelections[i]!!.getFormat(j).language
+                    } else if (MimeTypes.isAudio(
+                            trackSelections[i]!!.getFormat(j).sampleMimeType
+                        )
+                        || trackSelections[i]!!.getFormat(j).channelCount != Format.NO_VALUE
+                    ) {
+                        audio = trackSelections[i]!!.getFormat(j).language
+                    }
+                }
+            }
+        }
+        if (audio != null && text != null) {
+            return
+        }
+        if (audio == null) {
+            for (i in audioFormats.indices) {
+                if (i == 0) {
+                    audio = audioFormats[i]!!.language
+                }
+                if ("zh" == audioFormats[i]!!.language) {
+                    audio = "zh"
+                    break
+                }
+            }
+        }
+        if (text == null) {
+            for (i in subtitleFormats.indices) {
+                if (i == 0) {
+                    text = subtitleFormats[i]!!.language
+                }
+                if ("zh" == subtitleFormats[i]!!.language) {
+                    text = "zh"
+                    break
+                }
+            }
+        }
+        val trackSelector = player!!.player.trackSelector
+        if (trackSelector is DefaultTrackSelector) {
+            val defaultTrackSelector = trackSelector
+            defaultTrackSelector.setParameters(
+                defaultTrackSelector.parameters.buildUpon()
+                    .setPreferredTextLanguage(text)
+                    .setPreferredAudioLanguage(audio)
+            )
+        }
+    }
 }

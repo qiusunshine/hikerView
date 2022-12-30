@@ -138,6 +138,11 @@ public class UrlDetector {
             mediaType.setType("html");
             return mediaType;
         }
+        if (url.contains("captcha")) {
+            Media mediaType = new Media(Media.OTHER);
+            mediaType.setType("captcha");
+            return mediaType;
+        }
         Media media = isVideo(url, requestHeaders);
         if (media != null) {
             return media;
@@ -215,7 +220,9 @@ public class UrlDetector {
                 "#readTheme#",
                 "#gameTheme#",
                 "#noRefresh#",
-                "#background#"
+                "#background#",
+                "#autoCache#",
+                "#cacheOnly#"
         };
         for (String tag : tagList) {
             url = StringUtils.replaceOnce(url, tag, "");
