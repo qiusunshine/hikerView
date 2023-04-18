@@ -24,6 +24,7 @@ import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.audio.AudioProcessor;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
 import com.google.android.exoplayer2.audio.AudioSink;
+import com.google.android.exoplayer2.audio.AudioSink.SinkFormatSupport;
 import com.google.android.exoplayer2.audio.DecoderAudioRenderer;
 import com.google.android.exoplayer2.audio.DefaultAudioSink;
 import com.google.android.exoplayer2.drm.ExoMediaCrypto;
@@ -36,20 +37,14 @@ import static com.google.android.exoplayer2.audio.AudioSink.SINK_FORMAT_SUPPORTE
 import static com.google.android.exoplayer2.audio.AudioSink.SINK_FORMAT_SUPPORTED_WITH_TRANSCODING;
 import static com.google.android.exoplayer2.audio.AudioSink.SINK_FORMAT_UNSUPPORTED;
 
-/**
- * Decodes and renders audio using FFmpeg.
- */
-public final class FfmpegAudioRenderer extends DecoderAudioRenderer<FfmpegDecoder> {
+/** Decodes and renders audio using FFmpeg. */
+public final class FfmpegAudioRenderer extends DecoderAudioRenderer<FfmpegAudioDecoder> {
 
   private static final String TAG = "FfmpegAudioRenderer";
 
-  /**
-   * The number of input and output buffers.
-   */
+  /** The number of input and output buffers. */
   private static final int NUM_BUFFERS = 16;
-  /**
-   * The default input buffer size.
-   */
+  /** The default input buffer size. */
   private static final int DEFAULT_INPUT_BUFFER_SIZE = 960 * 6;
 
   public FfmpegAudioRenderer() {
@@ -59,9 +54,9 @@ public final class FfmpegAudioRenderer extends DecoderAudioRenderer<FfmpegDecode
   /**
    * Creates a new instance.
    *
-   * @param eventHandler    A handler to use when delivering events to {@code eventListener}. May be
-   *                        null if delivery of events is not required.
-   * @param eventListener   A listener of events. May be null if delivery of events is not required.
+   * @param eventHandler A handler to use when delivering events to {@code eventListener}. May be
+   *     null if delivery of events is not required.
+   * @param eventListener A listener of events. May be null if delivery of events is not required.
    * @param audioProcessors Optional {@link AudioProcessor}s that will process audio before output.
    */
   public FfmpegAudioRenderer(
@@ -77,10 +72,10 @@ public final class FfmpegAudioRenderer extends DecoderAudioRenderer<FfmpegDecode
   /**
    * Creates a new instance.
    *
-   * @param eventHandler  A handler to use when delivering events to {@code eventListener}. May be
-   *                      null if delivery of events is not required.
+   * @param eventHandler A handler to use when delivering events to {@code eventListener}. May be
+   *     null if delivery of events is not required.
    * @param eventListener A listener of events. May be null if delivery of events is not required.
-   * @param audioSink     The sink to which audio will be output.
+   * @param audioSink The sink to which audio will be output.
    */
   public FfmpegAudioRenderer(
           @Nullable Handler eventHandler,
@@ -118,20 +113,20 @@ public final class FfmpegAudioRenderer extends DecoderAudioRenderer<FfmpegDecode
   }
 
   @Override
-  protected FfmpegDecoder createDecoder(Format format, @Nullable ExoMediaCrypto mediaCrypto)
+  protected FfmpegAudioDecoder createDecoder(Format format, @Nullable ExoMediaCrypto mediaCrypto)
           throws FfmpegDecoderException {
     TraceUtil.beginSection("createFfmpegAudioDecoder");
     int initialInputBufferSize =
             format.maxInputSize != Format.NO_VALUE ? format.maxInputSize : DEFAULT_INPUT_BUFFER_SIZE;
-    FfmpegDecoder decoder =
-            new FfmpegDecoder(
-                    NUM_BUFFERS, NUM_BUFFERS, initialInputBufferSize, format, shouldOutputFloat(format));
+    FfmpegAudioDecoder decoder =
+            new FfmpegAudioDecoder(
+                    format, NUM_BUFFERS, NUM_BUFFERS, initialInputBufferSize, shouldOutputFloat(format));
     TraceUtil.endSection();
     return decoder;
   }
 
   @Override
-  public Format getOutputFormat(FfmpegDecoder decoder) {
+  public Format getOutputFormat(FfmpegAudioDecoder decoder) {
     Assertions.checkNotNull(decoder);
     return new Format.Builder()
             .setSampleMimeType(MimeTypes.AUDIO_RAW)
@@ -156,7 +151,7 @@ public final class FfmpegAudioRenderer extends DecoderAudioRenderer<FfmpegDecode
       return true;
     }
 
-    @AudioSink.SinkFormatSupport
+    @SinkFormatSupport
     int formatSupport =
             getSinkFormatSupport(
                     Util.getPcmFormat(
