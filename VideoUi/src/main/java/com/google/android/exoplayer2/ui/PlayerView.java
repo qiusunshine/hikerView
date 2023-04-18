@@ -318,6 +318,27 @@ public class PlayerView extends FrameLayout implements AdViewProvider {
   private static final int PICTURE_TYPE_NOT_SET = -1;
   protected  FrameLayout contentFrameLayout;
 
+  public void setShowControllerIndefinitely(boolean showControllerIndefinitely) {
+    this.showControllerIndefinitely = showControllerIndefinitely;
+//    this.controllerHideOnTouch = !showControllerIndefinitely;
+    if(showControllerIndefinitely){
+      if(controller != null){
+        controller.setShowTimeoutMs(0);
+        showController(true);
+      }
+    }else {
+      if(controller != null){
+        controller.setShowTimeoutMs(5000);
+      }
+    }
+  }
+
+  public boolean isShowControllerIndefinitely() {
+    return showControllerIndefinitely;
+  }
+
+  private boolean showControllerIndefinitely = false;
+
   public PlayerView(Context context) {
     this(context, /* attrs= */ null);
   }
@@ -866,6 +887,9 @@ public class PlayerView extends FrameLayout implements AdViewProvider {
    * @param controllerHideOnTouch Whether the playback controls are hidden by touch events.
    */
   public void setControllerHideOnTouch(boolean controllerHideOnTouch) {
+    if(showControllerIndefinitely){
+      return;
+    }
     Assertions.checkStateNotNull(controller);
     this.controllerHideOnTouch = controllerHideOnTouch;
     updateContentDescription();
@@ -1206,7 +1230,7 @@ public class PlayerView extends FrameLayout implements AdViewProvider {
   }
 
   /** Shows the playback controls, but only if forced or shown indefinitely. */
-  protected void maybeShowController(boolean isForced) {
+  public void maybeShowController(boolean isForced) {
     if (isPlayingAd() && controllerHideDuringAds) {
       return;
     }
@@ -1220,23 +1244,24 @@ public class PlayerView extends FrameLayout implements AdViewProvider {
   }
 
   public boolean shouldShowControllerIndefinitely() {
-    if (player == null) {
+    if (player == null || showControllerIndefinitely) {
       return true;
     }
     int playbackState = player.getPlaybackState();
     return controllerAutoShow
-        && (playbackState == Player.STATE_IDLE
+            && (playbackState == Player.STATE_IDLE
             || playbackState == Player.STATE_ENDED
             || !player.getPlayWhenReady());
   }
 
-  private void showController(boolean showIndefinitely) {
+  public void showController(boolean showIndefinitely) {
     if (!useController()) {
       return;
     }
     controller.setShowTimeoutMs(showIndefinitely ? 0 : controllerShowTimeoutMs);
     controller.show();
   }
+
 
   private boolean isPlayingAd() {
     return player != null && player.isPlayingAd() && player.getPlayWhenReady();

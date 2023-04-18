@@ -45,7 +45,7 @@ public final class MyHlsExtractorFactory implements HlsExtractorFactory {
                     FileTypes.ADTS,
                     FileTypes.AC3,
                     FileTypes.AC4,
-                    FileTypes.MP3,
+                    FileTypes.MP3
             };
 
     @DefaultTsPayloadReaderFactory.Flags private final int payloadReaderFactoryFlags;

@@ -55,6 +55,7 @@ public final class VideoPlayerView extends BaseView {
     private List<View> topAnimateViews = new ArrayList<>();
 
     private View rightAnimateView;
+    private boolean errorRetryTag = false;
 
     /**
      * Instantiates a new Video player view.
@@ -355,6 +356,15 @@ public final class VideoPlayerView extends BaseView {
             }
         }
     };
+
+    public void showControllerForce() {
+        if (controllerView != null) {
+            controllerView.show();
+            controllerView.setInAnim();
+            playerView.maybeShowController(true);
+        }
+    }
+
     /****
      * 动画监听
      ***/
@@ -421,6 +431,7 @@ public final class VideoPlayerView extends BaseView {
                 activity.onBackPressed();
             } else if (v.getId() == R.id.exo_player_error_btn_id) {
                 if (VideoPlayUtils.isNetworkAvailable(getContext())) {
+                    errorRetryTag = true;
                     showErrorState(View.GONE);
                     if (mExoPlayerListener != null) {
                         mExoPlayerListener.onCreatePlayers();
@@ -494,6 +505,9 @@ public final class VideoPlayerView extends BaseView {
         @Override
         public void showLoadStateView(int visibility) {
             showLoadState(visibility);
+            if (visibility == View.GONE) {
+                clearErrorRetryTag();
+            }
         }
 
         @Override
@@ -562,7 +576,9 @@ public final class VideoPlayerView extends BaseView {
             if (isShowFulls) {
                 showFullscreenTempView(VISIBLE);
             }
-            getPlaybackControlView().setOutAnim();
+            if (!playerView.isShowControllerIndefinitely()) {
+                getPlaybackControlView().setOutAnim();
+            }
             setControllerHideOnTouch(false);
         }
 
@@ -734,6 +750,14 @@ public final class VideoPlayerView extends BaseView {
 
     public void setRightAnimateView(View rightAnimateView) {
         this.rightAnimateView = rightAnimateView;
+    }
+
+    public boolean isErrorRetryTag() {
+        return errorRetryTag;
+    }
+
+    public void clearErrorRetryTag() {
+        errorRetryTag = false;
     }
 
     public enum Layout {

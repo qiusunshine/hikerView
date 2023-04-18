@@ -42,9 +42,34 @@ public class WholeMediaSource extends MediaSourceBuilder {
         super(context, listener);
     }
 
+    private String getAudioUrl(Uri uri) {
+        try {
+            if (uri != null && audioUrls != null && !audioUrls.isEmpty()) {
+                String url = uri.toString();
+                if (videoUri != null && videoUri.size() == audioUrls.size()) {
+                    for (int i = 0; i < videoUri.size(); i++) {
+                        if (url.equals(videoUri.get(i))) {
+                            return audioUrls.get(i);
+                        }
+                    }
+                } else {
+                    return audioUrls.get(0);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @Override
     public MediaSource initMediaSource(@NonNull Uri uri) {
         MediaSource mediaSource = initMyMediaSource(uri);
+        MediaSource audioSource = null;
+        String audio = getAudioUrl(uri);
+        if (audio != null && !audio.isEmpty()) {
+            audioSource = initMyMediaSource(Uri.parse(audio));
+        }
         if (subtitle != null && subtitle.length() > 0) {
             Format textFormat;
             if (subtitle.contains(".vtt")) {
@@ -65,13 +90,23 @@ public class WholeMediaSource extends MediaSourceBuilder {
             }
             MediaSource textMediaSource = new SingleSampleMediaSource.Factory(getDataSource())
                     .createMediaSource(Uri.parse(subtitle), textFormat, C.TIME_UNSET);
+            if (audioSource != null) {
+                return new MergingMediaSource(mediaSource, textMediaSource, audioSource);
+            }
             return new MergingMediaSource(mediaSource, textMediaSource);
+        }
+        if (audioSource != null) {
+            return new MergingMediaSource(mediaSource, audioSource);
         }
         return mediaSource;
     }
 
     public MediaSource initMyMediaSource(@NonNull Uri uri) {
         int streamType = VideoPlayUtils.inferContentType(uri);
+        if (uriProxy != null) {
+            uri = uriProxy.proxy(uri, streamType);
+        }
+        playingUri = uri;
         switch (streamType) {
             case C.TYPE_SS:
                 return new SsMediaSource.Factory(new DefaultSsChunkSource.Factory(getDataSource()), new DefaultDataSourceFactory(context, null,
@@ -93,6 +128,7 @@ public class WholeMediaSource extends MediaSourceBuilder {
                 return new HlsMediaSource.Factory(new DefaultHlsDataSourceFactory(getDataSource()))
                         .setAllowChunklessPreparation(true)
                         .setExtractorFactory(new MyHlsExtractorFactory())
+                        .setPlaylistTrackerFactory(MyHlsPlaylistTracker.FACTORY)
                         .createMediaSource(uri);
             default:
                 throw new IllegalStateException(":Unsupported type: " + streamType);

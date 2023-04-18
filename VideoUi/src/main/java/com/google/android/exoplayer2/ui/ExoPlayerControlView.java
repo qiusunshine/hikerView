@@ -2,6 +2,7 @@ package com.google.android.exoplayer2.ui;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -73,6 +74,11 @@ public class ExoPlayerControlView extends PlayerControlView {
         if (exoFullscreen != null) {
             exoFullscreen.setButtonDrawable(icFullscreenSelector);
         }
+        controlsTitleText.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+        controlsTitleText.setSingleLine(true);
+        controlsTitleText.setSelected(true);
+        controlsTitleText.setFocusable(true);
+        controlsTitleText.setFocusableInTouchMode(true);
     }
 
     @Override

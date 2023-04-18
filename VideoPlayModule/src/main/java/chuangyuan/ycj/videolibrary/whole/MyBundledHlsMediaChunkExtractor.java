@@ -39,13 +39,15 @@ public class MyBundledHlsMediaChunkExtractor implements HlsMediaChunkExtractor {
         this.timestampAdjuster = timestampAdjuster;
     }
 
+    @Override
     public void init(ExtractorOutput extractorOutput) {
-        this.extractor.init(extractorOutput);
+        extractor.init(extractorOutput);
     }
 
+    @Override
     public boolean read(ExtractorInput extractorInput) throws IOException {
         try {
-            return this.extractor.read(extractorInput, POSITION_HOLDER) == 0;
+            return this.extractor.read(extractorInput, POSITION_HOLDER) == Extractor.RESULT_CONTINUE;
         } catch (IOException e) {
             e.printStackTrace();
             if(e instanceof com.google.android.exoplayer2.ParserException){
@@ -56,11 +58,15 @@ public class MyBundledHlsMediaChunkExtractor implements HlsMediaChunkExtractor {
     }
 
     public boolean isPackedAudioExtractor() {
-        return this.extractor instanceof AdtsExtractor || this.extractor instanceof Ac3Extractor || this.extractor instanceof Ac4Extractor || this.extractor instanceof Mp3Extractor;
+        return extractor instanceof AdtsExtractor
+                || extractor instanceof Ac3Extractor
+                || extractor instanceof Ac4Extractor
+                || extractor instanceof Mp3Extractor;
     }
 
+    @Override
     public boolean isReusable() {
-        return this.extractor instanceof TsExtractor || this.extractor instanceof FragmentedMp4Extractor;
+        return extractor instanceof TsExtractor || extractor instanceof FragmentedMp4Extractor;
     }
 
     @Override

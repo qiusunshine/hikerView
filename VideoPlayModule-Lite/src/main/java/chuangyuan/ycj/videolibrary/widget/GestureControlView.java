@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import chuangyuan.ycj.videolibrary.R;
+import chuangyuan.ycj.videolibrary.video.VideoPlayerManager;
 
 /**
  * author  yangc
@@ -161,7 +162,8 @@ class GestureControlView extends FrameLayout {
     public void showTempFast(float speedNow) {
         if (exoTempFastLayout != null) {
             exoTempFastLayout.setVisibility(View.VISIBLE);
-            tempFastTextView.setText(String.format("%.1fX", speedNow * 2));
+            float speed = VideoPlayerManager.FAST_PLAY_TIMES > 0 ? VideoPlayerManager.FAST_PLAY_TIMES * speedNow : -VideoPlayerManager.FAST_PLAY_TIMES;
+            tempFastTextView.setText(String.format("%.1fX", speed));
         }
     }
 

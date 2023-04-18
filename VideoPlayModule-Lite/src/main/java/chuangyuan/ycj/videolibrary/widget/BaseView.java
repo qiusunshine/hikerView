@@ -54,6 +54,7 @@ import chuangyuan.ycj.videolibrary.danmuku.JSONDanmukuParser;
 import chuangyuan.ycj.videolibrary.listener.ExoPlayerListener;
 import chuangyuan.ycj.videolibrary.utils.VideoPlayUtils;
 import chuangyuan.ycj.videolibrary.video.ExoUserPlayer;
+import chuangyuan.ycj.videolibrary.video.VideoPlayerManager;
 import master.flame.danmaku.controller.IDanmakuView;
 import master.flame.danmaku.danmaku.loader.ILoader;
 import master.flame.danmaku.danmaku.loader.IllegalDataException;
@@ -75,7 +76,7 @@ import master.flame.danmaku.ui.widget.DanmakuView;
  * E-Mail:yangchaojiang@outlook.com
  * Deprecated: 父类view 存放控件方法
  */
-abstract class BaseView extends FrameLayout {
+public abstract class BaseView extends FrameLayout {
     /*** The constant TAG.***/
     public static final String TAG = VideoPlayerView.class.getName();
     final Activity activity;
@@ -83,9 +84,9 @@ abstract class BaseView extends FrameLayout {
     protected final ExoPlayerView playerView;
     private static final int ANIM_DURATION = 400;
     /*** 加载速度显示*/
-    protected TextView videoLoadingShowText;
+    protected TextView videoLoadingShowText, custom_loading_text;
     /***视频加载页,错误页,进度控件,锁屏按布局,自定义预览布局,提示布局,播放按钮*/
-    protected View exoLoadingLayout, exoPlayPreviewLayout, exoPreviewPlayBtn, exoBarrageLayout;
+    protected View exoLoadingLayout, exoPlayPreviewLayout, exoPreviewPlayBtn, exoBarrageLayout, customLoadingLayout;
     /***水印,封面图占位,显示音频和亮度布图*/
     protected ImageView exoPlayWatermark, exoPreviewImage, exoPreviewBottomImage;
 
@@ -135,6 +136,16 @@ abstract class BaseView extends FrameLayout {
     protected boolean isLandLayout;
 
     private boolean networkNotifyUseDialog = false;
+
+    public SeekListener getSeekListener() {
+        return seekListener;
+    }
+
+    public void setSeekListener(SeekListener seekListener) {
+        this.seekListener = seekListener;
+    }
+
+    private SeekListener seekListener;
 
     /**
      * 流量提示时是否使用弹窗
@@ -286,6 +297,7 @@ abstract class BaseView extends FrameLayout {
             exoBarrageLayout = inflate(context, barrageLayoutId, null);
         }
         exoLoadingLayout = inflate(context, loadId, null);
+        customLoadingLayout = inflate(context, R.layout.simple_exo_custom_load, null);
         if (preViewLayoutId != 0) {
             exoPlayPreviewLayout = inflate(context, preViewLayoutId, null);
         }
@@ -304,10 +316,12 @@ abstract class BaseView extends FrameLayout {
         exoControlsBack.setId(R.id.exo_controls_back);
         exoControlsBack.setImageDrawable(ContextCompat.getDrawable(getContext(), icBackImage));
         exoControlsBack.setPadding(ss, ss, ss, ss);
+        exoControlsBack.setContentDescription("返回上一级");
         FrameLayout frameLayout = playerView.getContentFrameLayout();
         frameLayout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.exo_player_background_color));
         exoLoadingLayout.setVisibility(GONE);
-        exoLoadingLayout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.exo_player_background_color));
+        customLoadingLayout.setVisibility(GONE);
+//        exoLoadingLayout.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.exo_player_background_color));
 //        exoLoadingLayout.setClickable(true);
         frameLayout.addView(mGestureControlView, frameLayout.getChildCount());
         frameLayout.addView(mActionControlView, frameLayout.getChildCount());
@@ -316,6 +330,7 @@ abstract class BaseView extends FrameLayout {
             frameLayout.addView(exoPlayPreviewLayout, frameLayout.getChildCount());
         }
         frameLayout.addView(exoLoadingLayout, frameLayout.getChildCount());
+        frameLayout.addView(customLoadingLayout, frameLayout.getChildCount());
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(VideoPlayUtils.dip2px(getContext(), 35f), VideoPlayUtils.dip2px(getContext(), 35f));
         frameLayout.addView(exoControlsBack, frameLayout.getChildCount(), layoutParams);
         int index = frameLayout.indexOfChild(findViewById(R.id.exo_controller_barrage));
@@ -337,6 +352,26 @@ abstract class BaseView extends FrameLayout {
         setSystemUiVisibility = ((Activity) getContext()).getWindow().getDecorView().getSystemUiVisibility();
 
         exoPreviewPlayBtn = playerView.findViewById(R.id.exo_preview_play);
+
+
+        getTimeBar().addListener(new TimeBar.OnScrubListener() {
+            @Override
+            public void onScrubStart(TimeBar timeBar, long position) {
+
+            }
+
+            @Override
+            public void onScrubMove(TimeBar timeBar, long position) {
+
+            }
+
+            @Override
+            public void onScrubStop(TimeBar timeBar, long position, boolean canceled) {
+                if (seekListener != null) {
+                    seekListener.seek(position);
+                }
+            }
+        });
     }
 
     /**
@@ -635,6 +670,31 @@ abstract class BaseView extends FrameLayout {
         }
     }
 
+    public void showCustomLoad(boolean show) {
+        if (customLoadingLayout != null) {
+            if (show) {
+                customLoadingLayout.setVisibility(VISIBLE);
+                if (custom_loading_text == null) {
+                    custom_loading_text = customLoadingLayout.findViewById(R.id.custom_loading_text);
+                }
+                custom_loading_text.setText(("加载中，请稍候"));
+            } else {
+                customLoadingLayout.setVisibility(GONE);
+            }
+        }
+    }
+
+    public void showCustomLoadProgress(int progress) {
+        if (customLoadingLayout != null) {
+            if (customLoadingLayout.getVisibility() == VISIBLE) {
+                if (custom_loading_text == null) {
+                    custom_loading_text = customLoadingLayout.findViewById(R.id.custom_loading_text);
+                }
+                custom_loading_text.setText(("加载中，请稍候 " + progress + "%"));
+            }
+        }
+    }
+
     /***
      * 显示隐藏错误页
      *
@@ -848,7 +908,7 @@ abstract class BaseView extends FrameLayout {
      *
      * @return the name switch
      */
-    protected ArrayList<String> getNameSwitch() {
+    public ArrayList<String> getNameSwitch() {
         if (nameSwitch == null) {
             nameSwitch = new ArrayList<>();
         }
@@ -1257,6 +1317,12 @@ abstract class BaseView extends FrameLayout {
             danmakuView.setCallback(new master.flame.danmaku.controller.DrawHandler.Callback() {
                 @Override
                 public void updateTimer(DanmakuTimer timer) {
+                    if (playerView != null && VideoPlayerManager.PLAY_SPEED > 1f || VideoPlayerManager.tempFastPlay) {
+                        float speed = VideoPlayerManager.tempFastPlay ? VideoPlayerManager.PLAY_SPEED * 2 : VideoPlayerManager.PLAY_SPEED;
+                        if (speed > 1f) {
+                            timer.add((long) (timer.lastInterval() * (speed - 1)));
+                        }
+                    }
                 }
 
                 @Override
@@ -1421,6 +1487,9 @@ abstract class BaseView extends FrameLayout {
     public void seekFromPlayer(long pos) {
         Log.d(TAG, "xxxxxx-seekFromPlayer: ");
         resolveDanmakuSeek(pos);
+        if (seekListener != null) {
+            seekListener.seek(pos);
+        }
     }
 
     public void updateDanmuLines(int lineCount) {
@@ -1429,5 +1498,9 @@ abstract class BaseView extends FrameLayout {
             maxLinesPair.put(BaseDanmaku.TYPE_SCROLL_LR, lineCount);
             danmakuContext.setMaximumLines(maxLinesPair);
         }
+    }
+
+    public interface SeekListener {
+        void seek(long pos);
     }
 }

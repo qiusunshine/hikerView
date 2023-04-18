@@ -63,6 +63,21 @@ import chuangyuan.ycj.videolibrary.widget.VideoPlayerView;
  */
 public class ExoUserPlayer {
     private static final String TAG = ExoUserPlayer.class.getName();
+
+    private static int EXTENSION_MODE = DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON;
+
+    public static void setExtensionMode(@DefaultRenderersFactory.ExtensionRendererMode int mode) {
+        EXTENSION_MODE = mode;
+    }
+
+    public static int getExtensionMode(){
+        return EXTENSION_MODE;
+    }
+
+    public static void resetExtensionMode(){
+        EXTENSION_MODE = DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON;
+    }
+
     /***当前活动*/
     Activity activity;
     /*** 播放view实例***/
@@ -249,6 +264,7 @@ public class ExoUserPlayer {
      */
     @CallSuper
     public void onDestroy() {
+        resetExtensionMode();
         releasePlayers();
     }
 
@@ -266,6 +282,7 @@ public class ExoUserPlayer {
         }
         if (timer != null && !timer.isShutdown()) {
             timer.shutdown();
+            timer = null;
         }
         if (activity == null || activity.isFinishing()) {
             if (mediaSourceBuilder != null) {
@@ -335,7 +352,8 @@ public class ExoUserPlayer {
      **/
     public SimpleExoPlayer createFullPlayer() {
         setDefaultLoadModel();
-        DefaultRenderersFactory rf = new DefaultRenderersFactory(activity, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON);
+//        DefaultRenderersFactory rf = new MyDefaultRenderersFactory(activity, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON);
+        DefaultRenderersFactory rf = new DefaultRenderersFactory(activity, EXTENSION_MODE);
         SimpleExoPlayer player = new SimpleExoPlayer.Builder(activity, rf).build();
         getPlayerViewListener().setPlayer(player);
         return player;
@@ -417,6 +435,10 @@ public class ExoUserPlayer {
         mediaSourceBuilder.setHeaders(headers);
         mediaSourceBuilder.setSubtitle(subtitle);
         setPlaySwitchUri(index, videoUri, name);
+    }
+
+    public void setAudioUrls(List<String> audioUrls) {
+        mediaSourceBuilder.setAudioUrls(audioUrls);
     }
 
     /****
@@ -552,6 +574,7 @@ public class ExoUserPlayer {
     public void seekTo(int windowIndex, long positionMs) {
         if (player != null) {
             player.seekTo(windowIndex, positionMs);
+            videoPlayerView.seekFromPlayer(positionMs);
         }
     }
 
@@ -1192,7 +1215,19 @@ public class ExoUserPlayer {
 
         @Override
         public void onPlayerError(PlaybackException e) {
-            Log.e(TAG, "onPlayerError:" + e.getMessage());
+            Log.e(TAG, "onPlayerError:" + e.getMessage() + ", " + e.getErrorCodeName());
+            if (("ERROR_CODE_IO_BAD_HTTP_STATUS".equals(e.getErrorCodeName()))
+                    && getDuration() > 90000
+                    && mediaSourceBuilder != null
+                    && mediaSourceBuilder.getMediaSource() != null
+                    && "com.google.android.exoplayer2.source.hls.HlsMediaSource".equals(mediaSourceBuilder.getMediaSource().getClass().getName())) {
+                Log.e(TAG, "onPlayerError: " + mediaSourceBuilder.getMediaSource().getClass());
+                if (getCurrentPosition() < 90000) {
+                    setPosition(getCurrentPosition() + 10000);
+                    startVideo();
+                    return;
+                }
+            }
             updateResumePosition();
             if (e instanceof ExoPlaybackException) {
                 if (VideoPlayUtils.isBehindLiveWindow((ExoPlaybackException) e)) {

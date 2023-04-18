@@ -45,11 +45,29 @@ public class MediaSourceBuilder {
     protected MediaSourceEventListener sourceEventListener = null;
     private int indexType = -1;
 
-    private List<String> videoUri;
+    protected List<String> videoUri;
     private int loopingCount = 0;
 
-    protected Map<String ,String> headers;
+    protected Map<String, String> headers;
     protected String subtitle;
+
+    public List<String> getAudioUrls() {
+        return audioUrls;
+    }
+
+    public void setAudioUrls(List<String> audioUrls) {
+        this.audioUrls = audioUrls;
+    }
+
+    protected List<String> audioUrls;
+
+    protected UriProxy uriProxy;
+
+    protected Uri playingUri;
+
+    public void setUriProxy(UriProxy uriProxy) {
+        this.uriProxy = uriProxy;
+    }
 
     /***
      * 初始化
@@ -213,7 +231,7 @@ public class MediaSourceBuilder {
         if (listener != null) {
             return listener.getDataSourceFactory();
         } else {
-            return new HttpDefaultDataSourceFactory(context, headers);
+            return new HttpDefaultDataSourceFactory(context, headers, playingUri);
         }
     }
 
@@ -288,6 +306,10 @@ public class MediaSourceBuilder {
      */
     public MediaSource initMediaSource(Uri uri) {
         int streamType = VideoPlayUtils.inferContentType(uri);
+        if (uriProxy != null) {
+            uri = uriProxy.proxy(uri, streamType);
+        }
+        playingUri = uri;
         switch (streamType) {
             case C.TYPE_OTHER:
                 return new ProgressiveMediaSource.Factory(getDataSource())
@@ -313,5 +335,9 @@ public class MediaSourceBuilder {
 
     public void setSubtitle(String subtitle) {
         this.subtitle = subtitle;
+    }
+
+    public interface UriProxy {
+        Uri proxy(Uri uri, int streamType);
     }
 }
