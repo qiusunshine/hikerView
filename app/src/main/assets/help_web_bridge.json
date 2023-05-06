@@ -4,7 +4,8 @@
     {
       "date": "设置状态栏颜色",
       "records": [
-        "方法：fy_bridge_app.setAppBarColor('#ffffff')"
+        "方法：fy_bridge_app.setAppBarColor('#ffffff')",
+        "提示：fy_bridge_app可以简写为fba，即fba.setAppBarColor('#ffffff')"
       ]
     },
     {
@@ -16,7 +17,7 @@
     {
       "date": "播放多集视频或音乐",
       "records": [
-        "方法：fy_bridge_app.playVideos(\"[{title:'测试',url:'http://111.40.205.87/PLTV/88888888/224/3221225710/index.m3u8',use:true}]\")",
+        "方法：fy_bridge_app.playVideos(JSON.stringify([{\"title\":\"测试\",\"url\":\"http://111.40.205.87/PLTV/88888888/224/3221225710/index.m3u8\",\"use\":true}]))",
         "属性use为true代表是正在播放的，因为可能传的是完整的，但是正在播放不是第一个视频，那么支持上一集",
         "如果需要动态解析lazyRule的功能，那么还需要传属性codeAndHeader:\";get\"，和originalUrl属性，originalUrl为带动态解析规则的完整地址，use为true的那个视频必须设置url属性",
         "即需要立即播放的需要在调用播放器前自行解出播放地址，然后别的视频不需要立即解出，传带动态解析规则的originalUrl属性即可",
@@ -62,6 +63,7 @@
         "方法：request(url, {headers:{},body:'',method:'POST'})",
         "说明：第二个参数可以为空，即request(url)，返回格式为字符串，获取header和状态码的使用方法同JS里面发起请求",
         "url支持hiker://files/a.txt，或file://开头的绝对文件路径，但是文件必须在软件可读路径内，否则无法读取",
+        "注意事项：需要页面加载完成才能使用该方法（避免宿主页面中也定义了该方法），如果要立即使用可以用request00",
         "javascript:模式下使用见后文"
       ]
     },
@@ -79,7 +81,7 @@
     {
       "date": "存储全局变量",
       "records": [
-        "方法：putVar('key', 'value')",
+        "方法：fba.putVar('key', 'value')",
         "说明：两个参数都是字符串，可以在不同网页之间共享，变量只在软件本次运行时间内有效，重启后失效，永久存储请参考写入文件和同步请求",
         "并且首页、搜索引擎等规则里面，用js也能读写到，和规则的js里面用法一致"
       ]
@@ -87,9 +89,15 @@
     {
       "date": "读取全局变量",
       "records": [
-        "方法：getVar('key')",
+        "方法：fba.getVar('key')",
         "说明：可以在不同网页之间共享，变量只在软件本次运行时间内有效，重启后失效，永久存储请参考写入文件和同步请求",
         "并且首页、搜索引擎等规则里面，用js也能读写到，规则的js里面用法为getVar('key')，和网页里面一致"
+      ]
+    },
+    {
+      "date": "清除全局变量",
+      "records": [
+        "方法：fba.clearVar('key')"
       ]
     },
     {
@@ -135,15 +143,24 @@
     {
       "date": "保存图片到相册",
       "records": [
-        "方法：fy_bridge_app.saveImage('http://1.jpg')"
+        "方法：fy_bridge_app.saveImage('http://x.com/1.png||http://x.com/2.png','hiker://files/1.png')，会先下载1.png,如果下载失败会尝试下载第二个图片地址"
+      ]
+    },
+    {
+      "date": "网页跳转二级详情页面（视界原生界面，已废弃）",
+      "records": [
+        "方法：fy_bridge_app.toDetailPage(String title, String url, String group, String colType, String detailFindRule, String preRule)",
+        "detailFindRule如何优雅实现？var detailRule = 'js:' + $$$.toString((obj)=>{//你的代码}, obj)，原理就是把写的方法生成为字符串，注意你的代码里面不要用到外部变量，如要用到需要通过obj参数传进去",
+        "和“二级列表”说明里面的$().rule()类似，具体看“二级列表”里面的深层嵌套秘籍（如果javascript:模式下使用须先执行eval(fy_bridge_app.getInternalJs())）",
+        "url参数支持hiker://page/xxx格式即子页面链接，后面的group等参数传空字符串，同时url参数必须携带参数rule=xxx，即哪个规则的子页面"
       ]
     },
     {
       "date": "网页跳转二级详情页面（视界原生界面）",
       "records": [
-        "方法：fy_bridge_app.toDetailPage(String ruleTitle, String url, String group, String colType, String detailFindRule, String preRule)",
-        "detailFindRule如何优雅实现？var detailRule = 'js:' + $$$().toString((obj)=>{//你的代码}, obj)，原理就是把写的方法生成为字符串，注意你的代码里面不要用到外部变量，如要用到需要通过obj参数传进去",
-        "和“二级列表”说明里面的$().rule()类似，具体看“二级列表”里面的深层嵌套秘籍（如果javascript:模式下使用须先执行eval(fy_bridge_app.getInternalJs())）"
+        "方法：fba.open(JSON.stringify({rule: \"规则名称\", title: \"页面标题\", url: \"链接\", group: \"\", col_type: \"\", findRule: \"\", preRule: \"\", extra: {}}))",
+        "url参数支持hiker://page/xxx格式即子页面链接，后面的group等参数传空字符串，同时url参数必须携带参数rule=xxx，即哪个规则的子页面",
+        "注意open方法参数为一个对象的字符串，不是对象"
       ]
     },
     {
@@ -152,6 +169,63 @@
         "说明：因为X5里面不能返回，一按返回键整个界面就销毁了，因此网页里面打开新页面之后如果还是在当前界面就无法返回，可以在网页里面使a标签点击事件改为下面的方式，即用视界新开一个页面来加载链接",
         "重要提示：非特殊场景没必要用此方法，主要考虑是否有必要按返回键回之前的网页",
         "方法：fy_bridge_app.newPage(String title, String url)"
+      ]
+    },
+    {
+      "date": "解析动态解析规则",
+      "records": [
+        "使用方法：var url = fy_bridge_app.parseLazyRule('http://x.com@lazyRule=.js:input')",
+        "动态解析规则只支持.js:格式，不支持形如http://x.com@lazyRule=body&&a&&href的格式",
+        "注意：该方法会阻塞整个页面，如果在页面加载中就执行该方法，会导致所有资源的加载阻塞，该方法执行完才会继续加载"
+      ]
+    },
+    {
+      "date": "异步解析动态解析规则",
+      "records": [
+        "使用方法：fy_bridge_app.parseLazyRuleAsync('http://x.com@lazyRule=.js:input', $$$.toString(()=>console.log(input)))",
+        "动态解析规则只支持.js:格式，不支持形如http://x.com@lazyRule=body&&a&&href的格式",
+        "第一个参数为链接，和parseLazyRule一样，第二个参数为回调方法，不过得写成字符串，原理是视界后台异步解析，解析完赋予结果为input变量，然后eval传的第二个参数"
+      ]
+    },
+    {
+      "date": "解析云剪贴板",
+      "records": [
+        "使用方法：var content = fba.parsePaste('http://x.com')"
+      ]
+    },
+    {
+      "date": "获取带header的视频地址",
+      "records": [
+        "使用方法：var videoUrl = fba.getHeaderUrl('http://x.com/111.m3u8')，参数必须是使用_getUrls()加载过的链接，返回地址会自动加上请求时的header信息",
+        "如http://x.com/111.m3u8;{Cookie@xxx&&Referer=xxx}",
+        "可用于x5Rule、webRule和X5组件"
+      ]
+    },
+    {
+      "date": "获取请求时携带的header",
+      "records": [
+        "使用方法：var headers = getRequestHeaders('http://x.com/111.m3u8')，参数必须是使用_getUrls()加载过的链接",
+        "返回对象示例：{\"Cookie\": \"xxx\", \"Referer\": \"xxx\"}",
+        "可用于x5Rule、webRule和X5组件"
+      ]
+    },
+    {
+      "date": "获取当前网页UA",
+      "records": [
+        "使用方法：var ua = fba.getUa()"
+      ]
+    },
+    {
+      "date": "唤起第三方APP软件处理链接",
+      "records": [
+        "示例：fy_bridge_app.openThirdApp('legado://xxxxx')"
+      ]
+    },
+    {
+      "date": "移除M3U8广告片段",
+      "records": [
+        "示例：let url = fy_bridge_app.clearM3u8Ad('http://1.com/1.m3u8');",
+        "说明：使用和小程序JS引擎环境中的clearM3u8Ad方法类似，只是这里没有第二个参数，第二个参数会自动根据网页环境提取header"
       ]
     }
   ]

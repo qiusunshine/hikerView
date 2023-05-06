@@ -4,9 +4,10 @@
     {
       "date": "JS里面编解码",
       "records": [
-        "说明：JS处理规则支持base64和AES和utf-8、gbk、gb2312编解码",
+        "说明：JS处理规则支持base64和utf-8、gbk、gb2312编解码以及AES和RSA加解密",
         "示例：a&&href.js:base64Encode(input)，a&&href.js:base64Decode(input)，a&&href.js:aesDecode('key', input)，a&&href.js:aesEncode('key', input)",
         "示例：a&&href.js:decodeStr(input, 'UTF-8')， a&&href.js:encodeStr(input, 'GBK')",
+        "示例：rsaEncrypt(data, 'key', options), rsaDecrypt(encryptBase64Data, 'key', options)\n““解释””：\n1.options是加密的额外选项（可选参数），包含加密配置、类型、分段长度等，都是可选的，默认值：{config: \"RSA/ECB/PKCS1Padding\",type:1, long: 1, block: true}，long 加密方式，1 普通，2 分段（可选，默认 1），block 分段长度，false 固定117，true 自动（可选，默认 true ）\n2.rsaEncrypt: type为1时key填公钥，type为2则key填私钥\n  rsaDecrypt: 与rsaEncrypt相反，type为1时key填私钥，type为2则key填公钥",
         "‘‘注意’’：使用fetch发起请求不能直接使用该方法对请求后的内容进行解码，因为fetch返回的内容默认会用UTF-8解码，如果response本身不是UTF-8那么就已经乱码了，再次解码不能达到想要的结果，fetch使用方法请看后面“JS里面发起请求”"
       ]
     },
@@ -19,34 +20,74 @@
     {
       "date": "JS里面常用方法",
       "records": [
-        "使用规则解析，示例：js:parseDom('<html><body><a href='/'></body></html>', 'body&&a&&href')",
-        "使用规则解析获取网页内容，parseDomForHtml，和parseDom功能一致，但是parseDomForHtml不会对结果智能处理自动加上域名和http前缀，完全返回解析到的内容",
-        "使用规则解析获取网页内容，parseDomForArray，和parseDomForHtml功能类似，parseDomForHtml是获取一个块的内容，而parseDomForArray是获取列表，返回一个数组对象，示例：parseDomForArray('<body><a href='/'><a href='/'></body>', 'body&&li')，那么返回['<a href='/'>', '<a href='/'>']",
+        "使用规则解析，示例：js:parseDom('<html><body><a href='/'></body></html>', 'body&&a&&href')，缩写：pd，还可以传第三个参数，默认为MY_URL，也就是自动补全链接用到的地址",
+        "使用规则解析获取网页内容，parseDomForHtml（缩写：pdfh），和parseDom功能一致，但是parseDomForHtml不会对结果智能处理自动加上域名和http前缀，完全返回解析到的内容",
+        "使用规则解析获取网页内容，parseDomForArray（缩写：pdfa），和parseDomForHtml功能类似，parseDomForHtml是获取一个块的内容，而parseDomForArray是获取列表，返回一个数组对象，示例：parseDomForArray('<body><a href='/'><a href='/'></body>', 'body&&li')，那么返回['<a href='/'>', '<a href='/'>']",
         "获取当前规则，示例：.js:getRule()",
         "获取当前网络请求地址，示例：.js:setError(MY_URL)，将会打印出当前网络请求地址，即MY_URL是一个变量，在执行JS前会注入进去，旧版使用getUrl()方法获取，但是可能不是特别准确",
-        "显示内容到界面上或者输出错误信息，示例：.js:setError(getRule())",
-        "写入文件writeFile(String filePath, String content)，filePath可以为hiker://files/a.txt或者文件绝对路径，hiker://files/a.txt等效为软件根路径下的Documents文件夹下的a.txt",
-        "存储和读取全局变量，示例：.js:putVar('name', '张三');setError(getVar('name'))，获取不到就返回默认值：getVar(\"key\",\"default\")，该变量和插件里面的全局变量是一致的，重启软件后失效，如需长期有效，见文件存取"
+        "显示内容到界面上或者输出错误信息，示例：.js:setError(getRule())（缩写：error）",
+        "写入文件（后面会废弃，请用后面的saveFile和readFile，当前接口不支持写files目录）writeFile(String filePath, String content)，filePath可以为hiker://files/a.txt或者文件绝对路径，hiker://files/a.txt等效为软件根路径下的Documents文件夹下的a.txt，注意只有hiker://files/rules目录下的文件才会被备份和恢复备份，所以重要文件可放到rules目录，不重要的文件没必要放此目录。如果是私密内容请用setItem",
+        "存储和读取全局变量，示例：putVar('name', '张三');setError(getVar('name'))，获取不到就返回默认值：getVar(\"key\",\"default\")，该变量和插件里面的全局变量是一致的，重启软件后失效，如需长期有效，见文件存取",
+        "存储和读取规则内全局变量，示例：putMyVar('name', '张三');setError(getMyVar('name', 'defaultValue'))，用法同上，不同点仅同一个规则能读写，清除变量：clearMyVar('name')，列出所有key：listMyVarKeys()",
+        "全局变量接口优化：新增storage0对象来支持存储JSON对象，如storage0.putMyVar('a', {a: 1})，storage0.getMyVar('a')，同理还有storage0.putVar、storage0.getVar、storage0.setItem、storage0.getItem",
+        "清除全局变量，示例：clearVar('name')"
       ]
     },
     {
       "date": "JS里面发起请求",
       "records": [
-        "示例：fetch('http://www.a.cn', {headers:{'content-type':'application/json'},body:'a=1&b=2',method:'POST'})",
-        "编码问题：fetch('http://www.a.cn', {headers:{'content-type':'application/json; charst=GBK'},body:'a=1&b=2',method:'POST'})那么解析返回内容时时会使用GBK来解码，content-type里面没有设置charset默认使用UTF-8",
+        "示例：fetch('http://www.a.cn')，fetch('http://www.a.cn', {body: 'a=b&c=d',method:'POST'})",
+        "完整示例：fetch('http://www.a.cn', {headers:{'content-type':'application/json'},body:{},method:'POST'})",
+        "POST示例：post('http://www.a.cn', {body:{a:'xx', b: 1}})，软件会自动将body转成a=xx&b=1",
+        "JSON示例：fetch('http://www.a.cn', {body:{a:'xx', b: 1}})，软件会自动加application/json的Content-Type",
+        "编码问题：fetch('http://www.a.cn', {headers:{'content-type':'application/json; charset=GBK'},body:{\"a\":\"b\"},method:'POST'})那么解析返回内容时时会使用GBK来解码，content-type里面没有设置charset默认使用UTF-8",
         "如何获取返回的header：fetch('http://www.a.cn', {headers:{},body:'a=1&b=2',method:'POST',withHeaders:true})，那么返回的内容为'{body:'字符串内容',headers:{'Set-Cookie':['a=b','b=c']}}'，即返回的是个json字符串，注意是字符串，header里面每个key对应一个array",
         "如何获取返回的状态码：fetch('http://www.a.cn', {withStatusCode:true})，那么返回的内容为'{body:'字符串内容',headers:{},statusCode:200}'",
         "支持链接为hiker://files/a.txt的形式",
         "如何禁止重定向：fetch('http://www.a.cn', {redirect:false})",
-        "使用移动端UA：request代替fetch，其余使用方法和fetch完全一致",
+        "使用电脑端UA：fetchPC代替fetch，postPC代替post，其余使用方法和fetch/post完全一致",
         "设置超时时间：fetch('http://www.a.cn', {timeout:5000})，单位为毫秒，默认10秒超时",
-        "如何引用UA：fetch('http://www.a.cn', {headers:{\"User-Agent\":MOBILE_UA}})，fetch('http://www.a.cn', {headers:{\"User-Agent\":PC_UA}})，当然也可以自定义"
+        "如何引用UA：fetch('http://www.a.cn', {headers:{\"User-Agent\":MOBILE_UA}})，fetch('http://www.a.cn', {headers:{\"User-Agent\":PC_UA}})，当然也可以自定义",
+        "byte[]转16进制：fetch('http://www.a.cn', {toHex:true})",
+        "GET请求拼接参数：fetch(buildUrl('http://www.a.cn', {a:'b', c: 'd'}))",
+        "只获取header不获取body：fetch('http://www.a.cn', {onlyHeaders:true})",
+        "获取InputStream：let stream = fetch(url, {inputStream: true}); try { //执行逻辑 } catch(e){} closeMe(stream);//记住用完一定要关闭！ }",
+        "自定义DNS：let html = fetch(url, { dns: 'https://dns.alidns.com/dns-query' })，dns属性可以是DNS-over-HTTPS地址，也可以是多个用空格隔开的IP地址，也可以使用registerDNS方法批量注册"
+      ]
+    },
+    {
+      "date": "自定义DNS",
+      "records": [
+        "registerDNS({ 'www.themoviedb.org': '1.1.1.1 2.2.2.2' })，多个IP地址用空格隔开",
+        "也可以使用DNS-over-HTTPS地址，如registerDNS({ 'www.themoviedb.org': 'https://dns.alidns.com/dns-query' })",
+        "支持半匹配，比如所有themoviedb.org域名的包含www和image子域名：registerDNS({ '.themoviedb.org': '1.1.1.1' })",
+        "可一次性注册多个：registerDNS({ 'b.com': '1.1.1.1', 'a.com': '2.2.2.2' })",
+        "注意注册一次会全局生效，且该操作需要用户同意授权，否则执行无效果（第一次调用此方法，软件会自动弹出授权申请）"
+      ]
+    },
+    {
+      "date": "ipping，获得可用IP地址",
+      "records": [
+        "示例：let ok = ipping('1.1.1.1', 2000)，第一个参数为IP地址，第二个参数为超时毫秒数，默认3000可不传",
+        "批量检测：let ip = findReachableIP(['1.1.1.1', '2.2.2.2'], 2000);软件会多线程批量检测，找到一个即返回，第二个参数为单个检测超时毫秒数",
+        "可以配合registerDNS使用，如let ip = findReachableIP(['1.1.1.1', '2.2.2.2']); registerDNS({'a.com': ip})"
+      ]
+    },
+    {
+      "date": "JS里面发起请求类似ajax",
+      "records": [
+        "和ajax差远了，只是封装方便调用",
+        "示例：http.fetch('http://a.com/1.json', {}).headers({'X-Req-X', 'test'}).success(data=>{log(data.code)}).error(msg=>log(msg)).start()",
+        "连续发起请求：http.fetch('http://a.com').success(data=>{log(data)}).start().fetch('http://b.com').success(data=>{log(data)}).start()",
+        "如果返回数据为json会自动使用JSON.parse转成对象，即success的data为对象，如果使用了withHeaders则data.body为response对象",
+        "同时也支持post、request等方法，只是改成了http.post、http.request"
       ]
     },
     {
       "date": "JS里面发起批量请求",
       "records": [
         "示例：var data = batchFetch([{url:'http://www.a.cn', options:{headers:{},body:'a=1&b=2',method:'POST'}}, {url:'http://www.b.cn'}]);setError(data[0] + '=====' + data[1]);",
+        "缩写：bf",
         "说明：参数为一个数组，数组每一项是一个对象，每个对象包含url和options属性，分别对应fetch方法的第一二个参数，返回一个字符串数组对象，注意是对象，顺序和参数顺序严格一致",
         "注意：数组参数长度超过16时，会自动分批，同步循环执行，比如20个参数，那么会先16个并发请求，请求完再发起4个并发请求，最后再返回结果"
       ]
@@ -129,6 +170,461 @@
       "date": "获取常用历史规则",
       "records": [
         "getLastRules(count)，比如getLastRules(12)"
+      ]
+    },
+    {
+      "date": "获取小程序数量",
+      "records": [
+        "getRuleCount()，注意返回的是字符串"
+      ]
+    },
+    {
+      "date": "复制文本信息到剪贴板",
+      "records": [
+        "copy('text')，禁止频繁调用，正常使用copy://text的路由放在链接里面即可"
+      ]
+    },
+    {
+      "date": "获取所有可选首页样式",
+      "records": [
+        "getColTypes()，返回一个字符串数组"
+      ]
+    },
+    {
+      "date": "图片保存",
+      "records": [
+        "保存图片：saveImage('http://x.com/1.png||http://x.com/2.png','hiker://files/1.png')，会先下载1.png,如果下载失败会尝试下载第二个图片地址，检测图片是否存在: fileExist('hiker://files/1.png')"
+      ]
+    },
+    {
+      "date": "检测文件是否存在",
+      "records": [
+        "检测文件是否存在: fileExist('hiker://files/1.png')"
+      ]
+    },
+    {
+      "date": "修改页面标题",
+      "records": [
+        "默认软件会以当前页面标题加按钮title属性作为下一页的标题，如果希望定制下一页页面标题，可以在按钮的extra使用pageTitle属性，如：{extra: {pageTitle: 'xxx简介'}}",
+        "子页面定制页面标题：子页面可以在链接中使用pageTitle参数作为页面标题，如：{url: 'hiker://page/xx?pageTitle=简介'}，适用于lazyRule同时返回子页面地址和标题",
+        "不继承页面标题（默认当前页面标题加按钮title）：{extra: {inheritTitle: false}}，可用于不单独定制pageTitle，但又不希望使用当前页面标题",
+        "新页面代码里面动态修改：setPageTitle('主页')",
+        "获取当前页面标题：let t = getPageTitle();"
+      ]
+    },
+    {
+      "date": "修改页面图片地址",
+      "records": [
+        "setPagePicUrl('http://xxx.jpg')"
+      ]
+    },
+    {
+      "date": "修改页面附加参数",
+      "records": [
+        "setPageParams({a: '1'});"
+      ]
+    },
+    {
+      "date": "二级列表动态设置最新章节规则",
+      "records": [
+        "setLastChapterRule('最新章节规则')",
+        "““注意””：传入的参数是个字符串，支持 js",
+        "‘‘使用技巧’’：js 写法可配合 $.toString(()=>{ setResult('我是最新章节') }) 进行规则编写",
+        "‘‘示例’’：\n1. 普通写法：\nsetLastChapterRule('.myui-content__list&&a&&Text')\n2. js 写法：\nsetLastChapterRule('js:' + $.toString(()=>{ setResult('我是最新章节') }))\n““注：””js 写法不可以将选集列表进行传参，只能在 $.toString 里重新获取，否则会导致收藏永远无法获取最新章节！！！"
+      ]
+    },
+    {
+      "date": "记录日志",
+      "records": [
+        "log({key:'value'}})，只支持一个参数，参数类型可以为字符串、对象、数组等"
+      ]
+    },
+    {
+      "date": "获取页面链接(MY_URL)里面的参数",
+      "records": [
+        "getParam('key', 'defaultValue')，如MY_URL为http://1.com?type=mp4，那么getParam('type', 'mp3')的值为mp4"
+      ]
+    },
+    {
+      "date": "获取子页面的内容",
+      "records": [
+        "request('hiker://page/detail')，返回对象字符串，'{'name':'详情','path':'detail', 'rule':'js:xxx'}'"
+      ]
+    },
+    {
+      "date": "页面变成沉浸式",
+      "records": [
+        "只要页面链接包含#immersiveTheme#，那么页面就会沉浸，只能用于二级和子页面，不支持首页"
+      ]
+    },
+    {
+      "date": "$工具（LoyDglk大佬提供）",
+      "records": [
+        "““””在线文档：<a href=\"https://www.yuque.com/docs/share/d1b05e3b-6168-41be-b374-e87094dab126\">点击查看$工具完整使用说明</a>",
+        "$.exports导出模块，使用$.require可以获取该值，如$.exports={data:1}，引用的地方: let a = $.require(xxx).data",
+        "$.require获取模块（参数(path, force)，force为true即不使用缓存），类似node.js的模块，支持文件路径file://和hiker://page/xxx格式，支持不写hiker://page/，直接传子页面名称",
+        "$(url).rule(()=>{})生成二级规则链接，最后生成格式为url@rule=.js:(function(){})()",
+        "$(url).lazyRule(()=>{})生成动态解析规则链接",
+        "$(url).x5Rule(()=>{})生成javascript:链接",
+        "$(url).input(()=>{})生成输入框弹窗链接",
+        "$.toString(()=>{})将函数转成字符串",
+        "$(url,headers).image(function,s1,s2...)生成图片解密链接url@headers={}@js=(\n() => {\n}\n)()"
+      ]
+    },
+    {
+      "date": "页面生命周期监听（事件）",
+      "records": [
+        "目前只在首页和二级页面有效，搜索结果页面无效，且传递的方法内不能引用该函数外的变量",
+        "监听刷新事件（下一页和切换分类不算）：addListener('onRefresh', $.toString(()=>{log('refresh')}))",
+        "监听页面关闭事件：addListener('onClose', $.toString(()=>{}))"
+      ]
+    },
+    {
+      "date": "获取应用的版本号",
+      "records": [
+        "var v = getAppVersion();返回整型如1800"
+      ]
+    },
+    {
+      "date": "显示和隐藏Loading弹窗",
+      "records": [
+        "showLoading('加载中')",
+        "hideLoading()"
+      ]
+    },
+    {
+      "date": "显示确认弹窗",
+      "records": [
+        "特点：不用点击即可显示，比如一进入规则执行js过程中需要立即显示弹窗，那么可以使用此方法",
+        "示例：confirm({title:'更新提示', content:'检测到你的规则版本小于服务器版本，是否立即更新？', confirm:$.toString(()=>{refreshPage()}), cancel:$.toString(()=>{refreshPage()})})",
+        "说明：注意该代码无法直接引用当前js内的变量和方法"
+      ]
+    },
+    {
+      "date": "私有化存储和读取",
+      "records": [
+        "存储：setItem('key', 'value')，注意value只能是字符串",
+        "读取：getItem('key', 'defaultValue')，第二个参数为找不到时的默认值",
+        "接口优化：新增storage0对象来支持存储JSON对象，即storage0.setItem('a', {a: 1})，storage0.getItem('a')",
+        "移除：clearItem('key')",
+        "说明：如果规则删除重新导入数据也会丢失，更新规则数据不会改变。",
+        "私有文件写入：saveFile(String fileName, String content)，fileName形如a.txt，最终文件路径为软件根路径下的Documents/rules/files/${规则名}/a.txt，写入时不加密saveFile(fileName, content, 0)",
+        "私有文件读取：readFile(String fileName)，读取未加密文件readFile(fileName, 0)",
+        "私有文件删除：deleteFile(String fileName)",
+        "私有文件判断存在：fileExist(String fileName)",
+        "私有文件存储说明：写入和读取会自动加密和解密，规则删除时会自动删除这些文件，如果规则改名文件相当于不存在"
+      ]
+    },
+    {
+      "date": "公开存储和读取",
+      "records": [
+        "存储：setPublicItem('key', 'value')，注意value只能是字符串",
+        "读取：getPublicItem('key', 'defaultValue')，第二个参数为找不到时的默认值",
+        "接口优化：使用storage0对象来支持存储JSON对象，即storage0.setPublicItem('a', {a: 1})，storage0.getPublicItem('a')",
+        "移除：clearPublicItem('key')",
+        "说明：该系列接口对所有规则公开，且不会随着规则删除而删除，请勿存储私密内容"
+      ]
+    },
+    {
+      "date": "云剪贴板",
+      "records": [
+        "特点：使用内置接口即可快速分享、解析文本到云剪贴板",
+        "获取可以使用的云剪贴板：var pastes = getPastes()，返回数组['云剪贴板1', '云剪贴板2']",
+        "分享到云剪贴板：var url = sharePaste(content, paste)，paste参数为空则自动使用第一个可用的剪贴板，返回云剪贴板地址",
+        "解析云剪贴板：var content = parsePaste(url)，软件会自动匹配链接使用合适的云剪贴板来解析"
+      ]
+    },
+    {
+      "date": "页面单独窗口显示",
+      "records": [
+        "只要在点击项的extra属性加上newWindow:true即可",
+        "示例：{col_type:'text_1', title:'打开新窗口', url:'x5://http://1.cn', extra:{newWindow: true, windowId: MY_RULE.title}}",
+        "注意：新开窗口打开的页面内不支持back(true)，即退出当前页面同时刷新前一个页面",
+        "回到打开的新窗口：windowId为其标识，再次点击按钮时会回到相同windowId的窗口",
+        "新开的页面如何隐藏到后台：按钮url使用func://background即可"
+      ]
+    },
+    {
+      "date": "远程模块（代码块）引用",
+      "records": [
+        "示例：require('http://xxx/t.js?v=1'); header({标题:'a&&Text'})",
+        "http://xxx/t.js是一个远程代码块地址，内容：function header(rule){}",
+        "完整示例：require('http://xxx/t.js?v=1', {headers:{}}, 1); 即require(链接, 请求头等信息, 版本号)",
+        "原理：使用require软件会对链接取md5，然后判断文件是否存在，存在则直接取文件内容，不存在则fetch到本地，然后执行eval",
+        "注意：远程模块里面不要直接引用非顶层作用域的变量或者函数，比如在箭头函数()->{}里面定义变量然后require里面直接引用此变量名，应该使用传递参数来引用此变量",
+        "注意：如果远程文件有更新，同一个地址软件是不会更新文件的，推荐给链接加上?v=1这样的标志来缓存新版本的文件，这样不影响其它规则使用旧版本，如果非要更新缓存文件也可以增加版本号来强制更新",
+        "如果需要用到header：require('http://xxx/t.js?v=1', {headers:{}})，用法和fetch基本一致",
+        "临时缓存：requireCache('http://xxx/t.js', 24)，那么文件会缓存24小时，超过会重新下载，缩写：rc",
+        "临时缓存只获取不执行eval：fetchCache('http://xxx/t.js', 24)，那么文件会缓存24小时，超过会重新下载，缩写：fc",
+        "删除本地缓存、强制更新：deleteCache('http://xxx/t.js')，删除缓存到本地的文件，再次执行require则会重新下载，删除该规则下所有缓存：deleteCache()",
+        "强制更新：修改版本号就会无视时间强制刷新，版本号参数均为最后一个参数"
+      ]
+    },
+    {
+      "date": "全局模块引用",
+      "records": [
+        "即CommonJS规范的模块引用（只是使用requirejs，因为require被占用了）",
+        "示例：let {test} = requirejs('a');将会加载libs/a.js，并且一次加载全局生效",
+        "为方便使用，加载本地模块也可以使用require('a')，效果和requirejs('a')是完全一样的",
+        "加载远程模块：requirejs('http://xxx/t.js')，和require类似，会自动缓存文件到libs目录，只是两者作用域不同，require是在顶层作用域eval代码，而requirejs则是CommonJS规范",
+        "更新模块：首页长按规则名选择清除缓存，默认会全局缓存模块，即A页面读取文件加载了模块代码，再打开B页面不会再次读取文件执行"
+      ]
+    },
+    {
+      "date": "md5",
+      "records": [
+        "示例：const a = md5('xxx')",
+        "取文件MD5：md5('hiker://files/xxx.zip')"
+      ]
+    },
+    {
+      "date": "hexToBytes",
+      "records": [
+        "说明：将16进制字符串转成Uint8Array，可以搭配fetch(url, {toHex: true})使用",
+        "示例：const a = hexToBytes('aaa')"
+      ]
+    },
+    {
+      "date": "writeHexFile",
+      "records": [
+        "说明：将16进制字符串转成二进制写入文件，主要用来搭配fetch(url, {toHex: true})使用",
+        "示例：const hex = fetch(url, {toHex: true}); writeHexFile('hiker://files/cache/a.mp3', hex)"
+      ]
+    },
+    {
+      "date": "缓存m3u8索引文件",
+      "records": [
+        "说明：某些视频地址只能访问一次，避免后面无法播放，可以将索引文件缓存起来",
+        "示例：const a = cacheM3u8('http://xx.m3u8')",
+        "返回：file:///storage/Android/data/com.example.hikerview/files/Documents/cache/video.m3u8##http://xx.m3u8",
+        "高级用法：传入header：const a = cacheM3u8('http://xx.m3u8',{headers:{}})用法和fetch一致",
+        "高级用法：自定义文件名：const a = cacheM3u8('http://xx.m3u8',{}, 'video.m3u8')，注意options即第二个参数一定要传（无值就{}）",
+        "批量多线程缓存：var data = batchCacheM3u8([{url:'http://www.a.cn', options:{headers:{},body:'a=1&b=2',method:'POST'}}, {url:'http://www.b.cn'}]);用法和batchFetch差不多，返回字符串数组，缩写bcm",
+        "如果链接包含.mp4但是不包含m3u8那么认为不是m3u8格式，不支持缓存索引文件，可以给链接加上#m3u8强制识别为m3u8",
+        "强制识别：默认情况下会校验content-type的header，如果是mp4等格式直接返回原链接，可以给链接加上#isM3u8#，那么软件会忽略header校验"
+      ]
+    },
+    {
+      "date": "修正m3u8索引路径",
+      "records": [
+        "说明：用于在不能直接使用cacheM3u8来缓存m3u8文件，需要自行生成m3u8文件的场景，而m3u8文件里面的ts文件路径又不想自行拼接",
+        "示例：const a = fixM3u8('http://yy/xx.m3u8', '#EXT-X-KEY:xxx.key\nxxx.ts')",
+        "返回：修正后的文件内容，如#EXT-X-KEY:http://yy/xxx.key\nhttp://yy/xxx.ts"
+      ]
+    },
+    {
+      "date": "配置管理",
+      "records": [
+        "说明：封装的配置管理，管理个性设置、依赖版本、依赖地址等",
+        "写入配置：预处理里面使用initConfig({二级样式:'顺承天意', pako: 'https://cdn.com/v3.5.js'});",
+        "读取配置：config.pako"
+      ]
+    },
+    {
+      "date": "执行加密代码",
+      "records": [
+        "使用evalPrivateJS(code)直接运行",
+        "设置->开发者模式里面可以得到加密后的代码",
+        "不要直接引用非顶层作用域的变量或者函数，比如在箭头函数()->{}里面定义变量然后加密代码块里面直接引用此变量名，建议把变量定义一起加密，或者使用传参来引用"
+      ]
+    },
+    {
+      "date": "聚合搜索代理",
+      "records": [
+        "{col_type: 'input', url: \"'hiker://search?s=' + input\", extra: {rules: \"fetch('hiker://files/rules.json')\"}}",
+        "即使用extra的rules，来代理规则列表，注意：rules为一段JS代码，并非规则列表，rules代码里面最后返回一个规则列表的数组字符串即可",
+        "注意点1：rules字段为js代码，并非规则文件地址",
+        "注意点2：需要返回数组字符串，并非数组，比如可以JSON.stringify(data)",
+        "注意点3：软件自带搜索解析规则不能使用此功能，该功能仅能用于首页，但不限于输入样式"
+      ]
+    },
+    {
+      "date": "下载文件到本地",
+      "records": [
+        "示例：downloadFile('http://xxx.jar', 'hiker://files/cache/xxx.jar')",
+        "带headers：downloadFile('http://xxx.jar', 'hiker://files/cache/xxx.jar', {'User-Agent': 'xxx'})",
+        "仅下载一次：requireDownload('http://xxx.jar', 'hiker://files/cache/xxx.jar')"
+      ]
+    },
+    {
+      "date": "批量多线程任务",
+      "records": [
+        "方法：batchExecute(tasks, listener, successCount)（缩写be）",
+        "““””示例：<a href=\"https://github.com/qiusunshine/hiker-rules/blob/master/%E7%A4%BA%E4%BE%8B/batchExecute.js\">点击查看示例代码</a>",
+        "说明：第一个参数为任务对象数组，每个任务对象包含func执行方法、param参数、id任务ID，注意func方法内不能直接引用外部变量，需要通过param传入",
+        "说明：第二个参数为任务进度监听（可为空），包含func监听逻辑方法、param外部参数，func属性包含三个参数：第一个即param参数，第二个为任务ID，第三个为该任务失败原因，第四个为task返回值",
+        "说明：第三个参数为要求任务成功个数，不传则表示要求需等待所有任务完成，比如tasks传了5个任务，successCount传3，那么listener只会执行3次，3个任务完成后其余任务直接中断丢弃，继续执行be后面的逻辑",
+        "说明：在listener里面主动中断，只需要在listener里面return 'break' 即可",
+        "同步异步说明：任务为异步多线程执行，最大线程数16（任务数无限制），监听方法为同步执行不用担心并发问题，单个任务耗时不能超过30秒"
+      ]
+    },
+    {
+      "date": "同步锁定任务",
+      "records": [
+        "方法：syncExecute({ func: (param) => {}, param: { a: 1 } })",
+        "说明：该方法用于需要全局线程同步的情况，因为putVar、putMyVar、setItem等方法都是线程不安全的，比如batchExecute传入的多线程任务，如果在多线程任务里面读写putVar那么是无法保证数据准确的（不过be推荐在listener内读写，因为listener是当前be内线程同步的）"
+      ]
+    },
+    {
+      "date": "加载java字节码",
+      "records": [
+        "示例：requireDownload('https://gitee.com/qiusunshine233/hikerView/raw/master/rules/d.dex', 'hiker://files/cache/t.dex');",
+        "var test = loadJavaClass('hiker://files/cache/t.dex', 'com.test.code.TestCode'); log(test.hello());",
+        "携带so文件：loadJavaClass('hiker://files/cache/t.dex', 'com.test.code.TestCode', 'hiker://cache/dir/a.so')",
+        "携带多个so文件：loadJavaClass('hiker://files/cache/t.dex', 'com.test.code.TestCode', 'hiker://cache/dir')，so文件都放cache/dir目录",
+        "获取手机ABI：let abi = getCpuAbi();返回arm64-v8a、armeabi-v7a等",
+        "注意：该方法为高危险方法，需征得用户授权才能执行"
+      ]
+    },
+    {
+      "date": "动态刷新界面元素",
+      "records": [
+        "动态更新：updateItem('test_id1', {url:'hiker://files/cache/t.dex', extra: {id: 'test_id1'}});",
+        "支持刷新所有属性包含url、title、desc等，可以一起刷新，也可以只刷新某一项",
+        "注意：extra中的id必须全局唯一，如果多个页面有重复的，那么所有页面都会刷新，如果某个页面中有多行有重复ID，那么只会更新第一个",
+        "动态删除：deleteItem('test_id2');",
+        "批量删除：deleteItem(['test_id2', 'test_id3'])",
+        "按cls删除：deleteItemByCls('box123')，即删除extra:{cls: 'box123'}的所有元素，推荐cls相同的连续，不要有多段相同cls的元素，否则删除时没有动画和input组件失焦",
+        "动态新增：addItemAfter('test_id1', {url:'hiker://files/cache/t.dex', extra: {id: 'test_id2'}});",
+        "动态新增在前面：addItemBefore('test_id1', {url:'hiker://files/cache/t.dex', extra: {id: 'test_id2'}});",
+        "批量新增：addItemAfter('test_id1', [{url:'xxx', extra: {id: 'test_id2'}}]);",
+        "批量新增在前面：addItemBefore('test_id1', [{url:'xxx', extra: {id: 'test_id2'}}]);",
+        "查询界面元素信息：let obj = findItem('test_id1');log(obj.title)",
+        "根据cls查询界面元素信息：let arr = findItemsByCls('test_cls');log(arr)",
+        "cls支持多个，多个用空格分隔，比如cls: 'tab sel'，那么findItemsByCls('sel')也会查询到",
+        "““注意””：使用动态刷新界面接口时，尽量不要同时存在input和flex_button/scroll_button，因为刷新flex/scroll会全局刷新导致input失焦和数据混乱，同理在有input的界面也不要批量删除不连续的元素（可循环逐个删除）"
+      ]
+    },
+    {
+      "date": "消息提示",
+      "records": [
+        "示例：toast('点这里干啥呢');"
+      ]
+    },
+    {
+      "date": "获取文件绝对路径",
+      "records": [
+        "示例：getPath('hiker://files/a.txt')，返回file:///storage/emulated/0/xxx/xx/a.txt",
+        "推荐不要在规则里面直接把路径写为file:///storage/emulated/0/xxx，避免分身应用等情况下不可用"
+      ]
+    },
+    {
+      "date": "JS域内变量",
+      "records": [
+        "获取当前网络请求地址，示例：js: log(MY_URL)，将会打印出当前网络请求地址",
+        "获取主页地址，示例：js: log(MY_HOME)，该值由MY_URL计算而来，比如MY_URL为https://a.com/xxx/html，那么MY_HOME为https://a.com",
+        "动态获取主页地址，示例：js: log(getHome(MY_RULE.url))，如果不传值则自动传入MY_URL，适用于MY_URL会在JS里面修改的情况，比如轻合集",
+        "获取当前规则，示例：js: log(MY_RULE.title)",
+        "获取当前页数，示例：js: log(MY_PAGE)，第一页为1，第二页为2",
+        "移动端UA，示例：js: log(MOBILE_UA)",
+        "电脑端UA，示例：js: log(PC_UA)",
+        "获取页面类型，示例：js: log(MY_TYPE)，首页将打印home，搜索为search",
+        "获取上一级页面传过来的参数（上级页面点击元素的extra）：log(MY_PARAMS.a)，详情搜索子页面"
+      ]
+    },
+    {
+      "date": "获取手机IP",
+      "records": [
+        "示例：let ip = getIP()"
+      ]
+    },
+    {
+      "date": "执行XPath规则",
+      "records": [
+        "示例：let href = xpath(getResCode(), '//div[@id=root]/a[1]/@href'); log(href)",
+        "列表示例：let urls = xpathArray(getResCode(), '//div/a/@href'); log(urls)，返回字符串数组，缩写xpa"
+      ]
+    },
+    {
+      "date": "RC4加解密",
+      "records": [
+        "示例：let a = rc4.encode('aaaa', 'bbb', 'UTF-8'); let b = rc4.decode(a, 'bbb', 'UTF-8'); log(a); log(b)"
+      ]
+    },
+    {
+      "date": "使用WebView获取源码",
+      "records": [
+        "示例：let a = fetchCodeByWebView('http://a.com'); log(b)",
+        "复杂示例：let a = fetchCodeByWebView('http://a.com', {headers: {'Referer': 'http://b.com'}, 'blockRules': ['.png', '.jpg'], timeout: 5000}); log(b)",
+        "第一个参数为加载链接，第二个参数为对象，和fetch用法类似，headers即加载header，可以定义Referer和User-Agent等属性，blockRules是WebView加载过程中屏蔽链接的规则，timeout超时时间，默认30000即30秒",
+        "在中链接使用：只要链接前面加webview://即可，比如webview://http://a.com;get;UTF-8;{}，即webview://后面的和普通链接格式一致",
+        "高级用法：只有获取到内容才提取源码：fetchCodeByWebView('http://a.com', { checkJs: $.toString(() => { return document.querySelector('#main a') } )})，也就是只有checkJs执行返回内容不为null软件才会获取源码返回"
+      ]
+    },
+    {
+      "date": "base64、atob、btoa",
+      "records": [
+        "示例：let a = window0.btoa(code); let b = window0.atob(a);",
+        "可以用with来简化：with(window0){let a = btoa(code); let b = atob(a);}"
+      ]
+    },
+    {
+      "date": "图片转base64编码格式",
+      "records": [
+        "示例：let a = convertBase64Image(url)，返回格式：data:image/jpeg;base64,xxxxxx",
+        "查看实现原理：log(convertBase64Image.toString())"
+      ]
+    },
+    {
+      "date": "base64 byte数组",
+      "records": [
+        "示例：let bytes1 = _base64.decode(bytes, _base64.NO_WRAP)，快捷输入base64java",
+        "更多方法：decode(String str, int flags)，decodeToString(String str, int flags)，encodeToString(byte[] input, int flags)"
+      ]
+    },
+    {
+      "date": "精准搜索模式",
+      "records": [
+        "说明：获取搜索模式",
+        "示例：let mode = getSearchMode();返回值目前只有0和1，0为默认模式，1代表精准搜索模式",
+        "示例：if(mode == 1){//精准搜索模式，可以自行根据搜索关键词过滤搜索结果}",
+        "修改：setSearchMode(1);参数可选0和1",
+        "精准匹配封装：if(searchContains(text, key, false)){//精准匹配} 第三个参数为是否忽略大小写，软件默认不忽略，相比直接includes该方法会使用空格分词匹配，如文本“2022梦醒了”能匹配“22 梦醒”，但不匹配“梦2022”、“梦 2022”"
+      ]
+    },
+    {
+      "date": "执行定时周期性任务",
+      "records": [
+        "示例：let id = 'abc'; let time = 10000; let obj = {}; registerTask(id, time, $.toString((obj)=> { log('执行了') } , obj))",
+        "说明：id可传null，软件会自动生成uuid作为任务id，time为执行间隔，单位毫秒，最小值500，第三个参数为执行的JS代码字符串",
+        "说明：任务会自动绑定当前显示页面，离开页面时软件会自动删除任务，也可以手动删除任务：unRegisterTask(id)",
+        "注意事项1：定时任务间隔不一定完全准确，最大有500毫秒误差",
+        "注意事项2：任务执行耗时不要超过间隔时间，否则会延时执行，间隔时间误差增大"
+      ]
+    },
+    {
+      "date": "启动代理服务器",
+      "records": [
+        "示例：let url = startProxyServer($.toString(() => { return MY_PARAMS.a })) + '?a=b';",
+        "说明：参数为接受到请求时执行的JS代码字符串，需返回请求内容，也可以通过在startProxyServer返回链接上加参数后给播放器播放，然后在JS代码字符串中使用MY_PARAMS变量获取参数",
+        "示例：let url = startProxyServer($.toString(() => { return fetch(base64Decode(MY_PARAMS.u)) })); url = url + '?u=' + base64Encode('http://1.com')",
+        "扩展：在JS代码中支持返回状态码和Header，示例：startProxyServer($.toString(() => { return JSON.stringify({body:'aa',headers:{'Content-Type': 'text/html', 'Location': 'http://b.com'},statusCode: 302}); })",
+        "注意：如果未使用扩展自定义请求头，那么Content-Type固定为application/vnd.apple.mpegurl，也就是m3u8格式",
+        "注意：将代理地址传给播放器要在链接加参数来让地址唯一，否则可能播放进度会串，如果是m3u8要有m3u8字样，否则可能无法被播放器识别为m3u8格式"
+      ]
+    },
+    {
+      "date": "移除M3U8广告片段",
+      "records": [
+        "示例：let url = clearM3u8AdLazy('http://1.com/1.m3u8', {headers: {}});",
+        "说明：clearM3u8AdLazy方法会生成一个lazyRule动态解析字符串，在lazyRule方法中软件会缓存m3u8到本地，并检查和清理#EXT-X-DISCONTINUITY疑似广告的片段",
+        "示例：如果想立即清理AD片段而不是生成lazyRule，可以调用clearM3u8Ad('http://1.com/1.m3u8');那么会立即缓存m3u8到本地并返回可播放地址",
+        "说明：第二个参数可不传，参数类型和cacheM3u8第二个参数相同"
+      ]
+    },
+    {
+      "date": "16进制字符串转base64编码",
+      "records": [
+        "示例：let c = hexToBase64(a);",
+        "说明：可以和fetch联用，如hexToBase64(fetch(url, { toHex: true }))"
+      ]
+    },
+    {
+      "date": "播放image/png分段格式的m3u8",
+      "records": [
+        "示例：let path = cacheM3u8WithPngProxy(url, options, fileName);和cacheM3u8基本一样",
+        "示例2：content = convertM3u8WithPngProxy(content, { headers: {} })，这个方法可以直接转换m3u8内容，当不能用cacheM3u8WithPngProxy时可以用这个方法",
+        "说明：使用以上两个方法，软件会调用startProxyServer方法，并且将原png分段地址改成代理地址，在代理方法中软件会自动下载png并转成ts格式，可以执行log(convertM3u8WithPngProxy.toString())查看实现源码"
       ]
     }
   ]

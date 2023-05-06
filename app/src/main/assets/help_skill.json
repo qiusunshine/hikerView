@@ -2,6 +2,12 @@
   "version": 1,
   "records": [
     {
+      "date": "开发者手册在线文档",
+      "records": [
+        "““””在线文档：<a href=\"https://www.yuque.com/books/share/5cbafd9b-4a93-4087-863e-ae27447c3374\">点击查看在线文档</a>"
+      ]
+    },
+    {
       "date": "首页悬浮按钮",
       "records": [
         "上拉展开首页",

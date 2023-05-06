@@ -84,14 +84,47 @@
       "date": "广告拦截订阅",
       "records": [
         "标识：ad_subscribe_url",
-        "示例：海阔视界，广告拦截订阅￥ad_subscribe_url￥https://gitee.com/qiusunshine233/hikerView/raw/master/adSub.json"
+        "示例：海阔视界，广告拦截订阅￥ad_subscribe_url￥{\"urlV2\": \"https://cdn.jsdelivr.net/gh/qiusunshine/hiker-rules/ad-urls.txt\",\"domBlockRuleUrl\": \"https://cdn.jsdelivr.net/gh/qiusunshine/hiker-rules/ad-rules.txt\"}"
       ]
     },
     {
-      "date": "首页规则订阅",
+      "date": "小程序规则订阅",
       "records": [
         "标识：home_sub",
         "示例：海阔视界，合集规则订阅￥home_sub￥https://gitee.com/sub.json"
+      ]
+    },
+    {
+      "date": "云仓库账号密码设置",
+      "records": [
+        "标识：publish_account",
+        "示例：海阔视界，云仓库账号密码设置￥publish_account￥xiaomianao@12345678"
+      ]
+    },
+    {
+      "date": "更新依赖",
+      "records": [
+        "标识：require_url",
+        "示例：海阔视界，依赖更新￥require_url￥https://xxx.cn/test.js"
+      ]
+    },
+    {
+      "date": "剪贴板云口令自动识别",
+      "records": [
+        "标识：@import=js:",
+        "用途：从云盘导入规则、更新规则配置文件等",
+        "写入文件示例：",
+        "云口令，复制整条口令打开软件即可导入\nhttps://xxx.cn/test.js@import=js:writeFile('hiker://files/cache/test.js', fetch(input))",
+        "导入规则示例：即返回获取到的规则口令",
+        "云口令，复制整条口令打开软件即可导入\nhttps://xxx.cn/test.json@import=js:fetch(input)",
+        "注意事项：云口令等中文可以自定义或者不写，@import=js:和前面的换行符中间的内容为input变量的值，可以为任意内容（不能包含换行符）"
+      ]
+    },
+    {
+      "date": "浏览器代理规则",
+      "records": [
+        "标识：web-proxy",
+        "示例：海阔视界，浏览器代理规则，复制整条口令打开软件就会自动导入￥web-proxy￥{\"name\": \"test\", \"match\": \"test\"}，后面的内容支持数组"
       ]
     }
   ]
