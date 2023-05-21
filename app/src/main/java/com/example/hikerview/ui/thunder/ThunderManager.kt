@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import android.text.TextUtils
 import com.alibaba.fastjson.JSON
-import com.example.hikerview.constants.UAEnum
 import com.example.hikerview.service.http.CodeUtil
 import com.example.hikerview.service.parser.HttpParser
 import com.example.hikerview.service.parser.JSEngine
@@ -16,19 +15,28 @@ import com.example.hikerview.ui.browser.model.UrlDetector
 import com.example.hikerview.ui.video.PlayerChooser
 import com.example.hikerview.ui.video.VideoChapter
 import com.example.hikerview.ui.view.XiuTanResultPopup
-import com.example.hikerview.utils.*
+import com.example.hikerview.utils.ClipboardUtil
+import com.example.hikerview.utils.FileUtil
+import com.example.hikerview.utils.PreferenceMgr
+import com.example.hikerview.utils.ShareUtil
+import com.example.hikerview.utils.StringUtil
+import com.example.hikerview.utils.ThreadTool
+import com.example.hikerview.utils.ToastMgr
+import com.example.hikerview.utils.UriUtils
 import com.lxj.xpopup.XPopup
 import com.xunlei.downloadlib.XLDownloadManager
 import com.xunlei.downloadlib.XLTaskHelper
 import com.xunlei.downloadlib.parameter.TorrentFileInfo
 import com.xunlei.downloadlib.parameter.XLTaskInfo
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 import java.io.File
 import java.net.URLDecoder
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
+import java.util.Locale
 
 /**
  * 作者：By 15968
@@ -46,6 +54,7 @@ object ThunderManager {
     var scope: CoroutineScope? = null
     val errorCode = HashMap<Int, String>()
     var savePathNow: String = ""
+    var mFilePathNow: String = ""
     var plugin: TorrentEngine? = null
 
     init {
@@ -194,9 +203,6 @@ object ThunderManager {
             toast("种子解析中，请稍候")
             val u = path.split(";")[0]
             val headers = HttpParser.getHeaders(path) ?: HashMap<String, String>()
-            if (!headers.containsKey("User-Agent")) {
-                headers["User-Agent"] = UAEnum.MOBILE.content
-            }
             getActiveScope(true).launch(Dispatchers.IO) {
                 CodeUtil.download(u, "hiker://files/magnet/t.torrent", headers, object :
                     CodeUtil.OnCodeGetListener {
@@ -356,6 +362,9 @@ object ThunderManager {
                 val fileName = HttpParser.decodeUrl(url.split("#file=")[1], "UTF-8")
                 return findVideoFile(path + File.separator + fileName).absolutePath
             }
+            if (mFilePathNow.isNotEmpty() && File(mFilePathNow).exists()) {
+                return mFilePathNow
+            }
             val p = StringUtil.listToString(
                 url.replace("http://", "").split("/").toList(),
                 1,
@@ -479,6 +488,11 @@ object ThunderManager {
      * 释放文件
      */
     fun release(exclude: String? = null) {
+        try {
+            Application.application.stopMagnetStatusService()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
         stopTask()
         val files = File(path).listFiles()
         files?.let {
@@ -731,7 +745,8 @@ object ThunderManager {
     ) {
         ThreadTool.runOnUI {
             savePathNow = savePath
-            val file = findVideoFile(savePath + File.separator + info.mFileName)
+            mFilePathNow = savePath + File.separator + info.mFileName
+            val file = findVideoFile(mFilePathNow)
             val u: String? = XLTaskHelper.instance().getLoclUrl(file.absolutePath)
             if (u == null) {
                 toast("当前文件格式不支持云播，试试第三方播放器吧")
@@ -746,6 +761,11 @@ object ThunderManager {
                 info.mFileName,
                 arrayList
             )
+            try {
+                Application.application.startMagnetStatusService()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -754,9 +774,11 @@ object ThunderManager {
         if (file.exists() && !file.isDirectory) {
             return file
         }
-        val dir = file.parentFile
+        var dir = file.parentFile
         if (dir == null || !dir.exists()) {
-            return file
+            //去根目录找，可能是名字包含+等特殊字符
+            dir = File(UriUtils.getRootDir(context) + File.separator + "magnet")
+            //return file
         }
         val name = file.name
         //优先通过文件名找
@@ -831,6 +853,11 @@ object ThunderManager {
                 fileName,
                 arrayListOf()
             )
+            try {
+                Application.application.startMagnetStatusService()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 

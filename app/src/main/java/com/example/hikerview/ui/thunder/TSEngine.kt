@@ -3,12 +3,19 @@ package com.example.hikerview.ui.thunder
 import android.content.Context
 import com.example.hikerview.event.home.LoadingEvent
 import com.example.hikerview.service.parser.HttpParser
+import com.example.hikerview.ui.Application
 import com.example.hikerview.ui.browser.model.DetectedMediaResult
 import com.example.hikerview.ui.setting.office.MoreSettingOfficer
 import com.example.hikerview.ui.video.PlayerChooser
 import com.example.hikerview.ui.view.XiuTanResultPopup
 import com.example.hikerview.ui.webdlan.LocalServerParser
-import com.example.hikerview.utils.*
+import com.example.hikerview.utils.ClipboardUtil
+import com.example.hikerview.utils.FileUtil
+import com.example.hikerview.utils.PreferenceMgr
+import com.example.hikerview.utils.ShareUtil
+import com.example.hikerview.utils.ThreadTool
+import com.example.hikerview.utils.ToastMgr
+import com.example.hikerview.utils.UriUtils
 import com.github.se_bastiaan.torrentstream.StreamStatus
 import com.github.se_bastiaan.torrentstream.Torrent
 import com.github.se_bastiaan.torrentstream.TorrentOptions
@@ -16,14 +23,17 @@ import com.github.se_bastiaan.torrentstreamserver.TorrentServerListener
 import com.github.se_bastiaan.torrentstreamserver.TorrentStreamServer
 import com.lxj.xpopup.XPopup
 import com.xunlei.downloadlib.XLTaskHelper
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.joor.Reflect
 import org.libtorrent4j.AnnounceEntry
 import java.io.File
-import java.util.*
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.collections.ArrayList
 
 /**
  * 作者：By 15968
@@ -58,6 +68,11 @@ class TSEngine : TorrentEngine() {
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
+                    try {
+                        Application.application.startMagnetStatusService()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                     break
                 }
             }
@@ -82,6 +97,7 @@ class TSEngine : TorrentEngine() {
             } else if (files.size == 1) {
                 startDownloadNow(torrent, fileNames, files[0])
             } else {
+                torrent.pause()
                 XPopup.Builder(context)
                     .moveUpToKeyboard(false)
                     .asCustom(
@@ -167,7 +183,10 @@ class TSEngine : TorrentEngine() {
                     PlayerChooser.startPlayer(
                         context,
                         name,
-                        url + "#file=" + HttpParser.encodeUrl(name),
+                        url?.replace(
+                            "0.0.0.0",
+                            LocalServerParser.getIP(context)
+                        ) + "#file=" + HttpParser.encodeUrl(name),
                         null
                     )
                 }
@@ -195,19 +214,22 @@ class TSEngine : TorrentEngine() {
     override fun initEngine() {
         if (torrentStreamServer == null) {
             initDir(context)
-            val torrentOptions: TorrentOptions = TorrentOptions.Builder()
-                .saveLocation(ThunderManager.path)
-                .removeFilesAfterStop(true)
-                .autoDownload(false)
-                .prepareSize(1 * 1024L * 1024L)
-                .build()
             torrentStreamServer = TorrentStreamServer.getInstance()
-            torrentStreamServer?.setTorrentOptions(torrentOptions)
-            torrentStreamServer?.setServerHost(LocalServerParser.getIP(contextProvider.get()))
+            torrentStreamServer?.setTorrentOptions(buildOptions())
+            torrentStreamServer?.setServerHost("0.0.0.0")
             torrentStreamServer?.setServerPort(52121)
             torrentStreamServer?.startTorrentStream()
             torrentStreamServer?.addListener(torrentListener)
         }
+    }
+
+    private fun buildOptions(): TorrentOptions {
+        return TorrentOptions.Builder()
+            .saveLocation(UriUtils.getRootDir(context) + File.separator + "magnet")
+            .removeFilesAfterStop(true)
+            .autoDownload(false)
+            .prepareSize(1 * 1024L * 1024L)
+            .build()
     }
 
     override fun isDownloading(): Boolean {
