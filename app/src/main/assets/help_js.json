@@ -77,7 +77,7 @@
       "date": "JS里面发起请求类似ajax",
       "records": [
         "和ajax差远了，只是封装方便调用",
-        "示例：http.fetch('http://a.com/1.json', {}).headers({'X-Req-X', 'test'}).success(data=>{log(data.code)}).error(msg=>log(msg)).start()",
+        "示例：http.fetch('http://a.com/1.json', {}).headers({'X-Req-X': 'test'}).success(data=>{log(data.code)}).error(msg=>log(msg)).start()",
         "连续发起请求：http.fetch('http://a.com').success(data=>{log(data)}).start().fetch('http://b.com').success(data=>{log(data)}).start()",
         "如果返回数据为json会自动使用JSON.parse转成对象，即success的data为对象，如果使用了withHeaders则data.body为response对象",
         "同时也支持post、request等方法，只是改成了http.post、http.request"

@@ -258,7 +258,7 @@
         "不要显示进度条：extra: {showProgress: false}",
         "音视频自动播放：extra: {autoPlay: true}",
         "长按图片不显示菜单：extra: {imgLongClick: false}",
-        "浏览器代理替换：提前在解析规则JS代码里面执行addWebProxyRule({ name: 'test.com', match: '.*test\\\\.com/.*', replace: 'input.replace(\"1\", \"2\")', requestHeaders: {'dns': '192.1.1.122', 'x-requested-with': 'android'}, responseHeaders: [{ match: 'content-security-policy', replace: '' }] })"
+        "浏览器代理替换：提前在解析规则JS代码里面执行addWebProxyRule({ name: 'test.com', match: '.*test\\\\.com/.*', replace: 'input.replace(\"1\", \"2\")', requestHeaders: {'dns': '192.1.1.122', 'x-requested-with': 'android'}, responseHeaders: [{ match: 'content-security-policy', replace: '' }] })，移除规则removeWebProxyRule(name)"
       ]
     },
     {
