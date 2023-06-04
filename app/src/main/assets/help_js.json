@@ -225,12 +225,13 @@
       ]
     },
     {
-      "date": "二级列表动态设置最新章节规则",
+      "date": "修改最新章节规则",
       "records": [
-        "setLastChapterRule('最新章节规则')",
-        "““注意””：传入的参数是个字符串，支持 js",
-        "‘‘使用技巧’’：js 写法可配合 $.toString(()=>{ setResult('我是最新章节') }) 进行规则编写",
-        "‘‘示例’’：\n1. 普通写法：\nsetLastChapterRule('.myui-content__list&&a&&Text')\n2. js 写法：\nsetLastChapterRule('js:' + $.toString(()=>{ setResult('我是最新章节') }))\n““注：””js 写法不可以将选集列表进行传参，只能在 $.toString 里重新获取，否则会导致收藏永远无法获取最新章节！！！"
+        "如果有设置最新章节规则，软件在收藏界面会自动请求二级页面链接，执行最新章节规则，返回字符串如普通写法a&&Text或者纯JS写法js: setResult(pdfh(getResCode(), 'a&&Text'))",
+        "动态更新：最新章节规则可在编辑规则界面编写，也可以在二级界面动态修改，示例：setLastChapterRule(rule)",
+        "注意事项：该方法是修改规则，而非设置最新章节，目的是方便动态修改规则，比如在轻合集这种聚合规则里面不能写成简单的同一个最新章节规则时",
+        "使用技巧：传入的参数是个字符串，支持 js，js 写法可配合 $.toString(()=>{ setResult('我是最新章节') }) 进行规则编写",
+        "使用示例：\n1. 普通写法：\nsetLastChapterRule('.myui-content__list&&a&&Text')\n2. js 写法：\nsetLastChapterRule('js:' + $.toString(()=>{ setResult(pdfh(getResCode(), 'a&&Text')) }))\n““注：””js 写法不可以将选集列表进行传参，只能在 $.toString 里使用getResCode()或者fetch源码重新获取，否则会导致收藏永远无法获取最新章节！"
       ]
     },
     {
