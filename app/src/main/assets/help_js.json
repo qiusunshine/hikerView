@@ -545,8 +545,8 @@
     {
       "date": "使用WebView获取源码",
       "records": [
-        "示例：let a = fetchCodeByWebView('http://a.com'); log(b)",
-        "复杂示例：let a = fetchCodeByWebView('http://a.com', {headers: {'Referer': 'http://b.com'}, 'blockRules': ['.png', '.jpg'], timeout: 5000}); log(b)",
+        "示例：let a = fetchCodeByWebView('http://a.com'); log(a)",
+        "复杂示例：let a = fetchCodeByWebView('http://a.com', {headers: {'Referer': 'http://b.com'}, 'blockRules': ['.png', '.jpg'], timeout: 5000}); log(a)",
         "第一个参数为加载链接，第二个参数为对象，和fetch用法类似，headers即加载header，可以定义Referer和User-Agent等属性，blockRules是WebView加载过程中屏蔽链接的规则，timeout超时时间，默认30000即30秒",
         "在中链接使用：只要链接前面加webview://即可，比如webview://http://a.com;get;UTF-8;{}，即webview://后面的和普通链接格式一致",
         "高级用法：只有获取到内容才提取源码：fetchCodeByWebView('http://a.com', { checkJs: $.toString(() => { return document.querySelector('#main a') } )})，也就是只有checkJs执行返回内容不为null软件才会获取源码返回"
