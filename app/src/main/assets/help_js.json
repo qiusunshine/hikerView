@@ -263,7 +263,7 @@
       "records": [
         "““””在线文档：<a href=\"https://www.yuque.com/docs/share/d1b05e3b-6168-41be-b374-e87094dab126\">点击查看$工具完整使用说明</a>",
         "$.exports导出模块，使用$.require可以获取该值，如$.exports={data:1}，引用的地方: let a = $.require(xxx).data",
-        "$.require获取模块（参数(path, force)，force为true即不使用缓存），类似node.js的模块，支持文件路径file://和hiker://page/xxx格式，支持不写hiker://page/，直接传子页面名称",
+        "$.require获取模块（参数(path, importParam)，类似node.js的模块，支持文件路径file://、http/https地址和hiker://page/xxx格式，支持不写hiker://page/，直接传子页面名称",
         "$(url).rule(()=>{})生成二级规则链接，最后生成格式为url@rule=.js:(function(){})()",
         "$(url).lazyRule(()=>{})生成动态解析规则链接",
         "$(url).x5Rule(()=>{})生成javascript:链接",
@@ -626,6 +626,22 @@
         "示例：let path = cacheM3u8WithPngProxy(url, options, fileName);和cacheM3u8基本一样",
         "示例2：content = convertM3u8WithPngProxy(content, { headers: {} })，这个方法可以直接转换m3u8内容，当不能用cacheM3u8WithPngProxy时可以用这个方法",
         "说明：使用以上两个方法，软件会调用startProxyServer方法，并且将原png分段地址改成代理地址，在代理方法中软件会自动下载png并转成ts格式，可以执行log(convertM3u8WithPngProxy.toString())查看实现源码"
+      ]
+    },
+    {
+      "date": "禁止/覆写Cookie",
+      "records": [
+        "说明：软件默认会自动存储response的Set-Cookie值，下次请求时自动携带",
+        "如果想要自定义，直接手动携带即可，如fetch(url, {headers: { Cookie: xxx }})",
+        "如果要求header中无Cookie字段，使用#noCookie#，如fetch(url, {headers: { Cookie: '#noCookie#' }})"
+      ]
+    },
+    {
+      "date": "后台执行webRule的代码",
+      "records": [
+        "executeWebRule('http://1.com', $.toString(() => { return document.querySelector('a').getAttribute('href') }), {})，对应webRule://http://1.com@document.querySelector('a').getAttribute('href')",
+        "说明：该方法将使用WebView组件访问地址，第二个参数为执行的JS代码字符串，结尾请返回需要的内容，一旦返回内容不为空就会结束方法返回字符串，否则将会间隔250ms循环执行，第三个参数为扩展选项，可不传，可定制UA、拦截规则，如{ ua: 'windows', blockRules: [] }同webRule://的extra属性",
+        "附加：此方法为同步阻塞方法，超时时间默认为30秒，如需自定义，请在第三个参数使用timeout属性，如{ timeout: 10000 }代表10秒超时，默认每次执行JS代码间隔时间为250毫秒，如需自定义可在第三个参数使用checkTime属性，如{ checkTime: 100 }即每隔100毫秒执行一次"
       ]
     }
   ]
