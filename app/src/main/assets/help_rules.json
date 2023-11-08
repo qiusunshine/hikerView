@@ -212,7 +212,8 @@
       "date": "阅读模式",
       "records": [
         "给页面链接加上#readTheme#",
-        "正文列表项：{col_type:'rich_text', extra: {click: true}}，即点击/音量上下键翻页"
+        "正文列表项：{col_type:'rich_text', extra: {click: true}}，即点击/音量上下键翻页",
+        "附加说明：建议阅读模式的前一个页面，也就是章节页面的章节按钮url上加#autoPage#标识，那么正文阅读模式页面翻页时会自动加载章节页面的下一个章节按钮地址，软件会自动解显示章节标题和阅读进度"
       ]
     },
     {

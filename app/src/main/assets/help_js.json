@@ -2,6 +2,15 @@
   "version": 1,
   "records": [
     {
+      "date": "返回结果数据",
+      "records": [
+        "示例：setResult([{ title: \"标题\", url: \"资源地址或下一个页面的链接\", pic_url: \"图片地址，也可以使用img属性\", col_type: \"显示样式\", desc: \"描述\", extra: {} }])",
+        "说明：在所有解析规则包括搜索、二级、最新章节里面都用setResult方法返回数组即可，只是搜索解析结果项还可以有content属性扩充，最新章节解析里面只能返回字符串setResult('十一')",
+        "动态多次返回数据：不支持多次调用setResult，但是可以先调用setPreResult()返回优先显示的部分，继续发起网络请求，最后再调用setResult()返回需要追加显示的部分，不过要用setPreResult那么setPreResult和setResult就必须成对出现，且先后顺序不能变",
+        "动态多次返回数据：常用于顶部显示固定按钮元素，底部显示网络请求结果，这样可以打开页面就显示顶部固定元素，看起来有秒开的效果，注意此场景可能需要结合MY_PAGE变量判断仅在第一页使用setPreResult方法"
+      ]
+    },
+    {
       "date": "JS里面编解码",
       "records": [
         "说明：JS处理规则支持base64和utf-8、gbk、gb2312编解码以及AES和RSA加解密",
@@ -302,6 +311,12 @@
       ]
     },
     {
+      "date": "弹出下拉选择框",
+      "records": [
+        "用法：showSelectOptions({\"title\": \"选择性别\", \"options\" : [\"选项一\", \"选项二\"], col: 3, js: \"'toast://你点击的是' + input\"})，col为列数，默认为3"
+      ]
+    },
+    {
       "date": "私有化存储和读取",
       "records": [
         "存储：setItem('key', 'value')，注意value只能是字符串",
@@ -426,7 +441,8 @@
       "records": [
         "使用evalPrivateJS(code)直接运行",
         "设置->开发者模式里面可以得到加密后的代码",
-        "不要直接引用非顶层作用域的变量或者函数，比如在箭头函数()->{}里面定义变量然后加密代码块里面直接引用此变量名，建议把变量定义一起加密，或者使用传参来引用"
+        "不要直接引用非顶层作用域的变量或者函数，比如在箭头函数()->{}里面定义变量然后加密代码块里面直接引用此变量名，建议把变量定义一起加密，或者使用传参来引用",
+        "生成加密代码：getPrivateJS(code) 参数和返回类型均为字符串"
       ]
     },
     {
@@ -520,6 +536,11 @@
         "移动端UA，示例：js: log(MOBILE_UA)",
         "电脑端UA，示例：js: log(PC_UA)",
         "获取页面类型，示例：js: log(MY_TYPE)，首页将打印home，搜索为search",
+        "获取搜索关键词，示例：js: log(MY_KEYWORD)，仅在搜索页面可用",
+        "获取分类名称、替换词，示例：js: log(MY_CLASS_NAME); log(MY_CLASS_URL)，仅在首页且规则里写了替换词时可用",
+        "获取年代名称、替换词，示例：js: log(MY_YEAR_NAME); log(MY_YEAR_URL)，同上",
+        "获取地区名称、替换词，示例：js: log(MY_AREA_NAME); log(MY_AREA_URL)，同上",
+        "获取排序名称、替换词，示例：js: log(MY_SORT_NAME); log(MY_SORT_URL)，同上",
         "获取上一级页面传过来的参数（上级页面点击元素的extra）：log(MY_PARAMS.a)，详情搜索子页面"
       ]
     },
@@ -533,7 +554,11 @@
       "date": "执行XPath规则",
       "records": [
         "示例：let href = xpath(getResCode(), '//div[@id=root]/a[1]/@href'); log(href)",
-        "列表示例：let urls = xpathArray(getResCode(), '//div/a/@href'); log(urls)，返回字符串数组，缩写xpa"
+        "列表示例：let urls = xpathArray(getResCode(), '//div/a/@href'); log(urls)，返回字符串数组，缩写xpa",
+        "高级用法：xpath(Object item, String expression, String returnType)",
+        "高级示例：let node = xpath(html, '//div[@id=root]', 'node'); let a = xpath(node, '//a', 'node'); log(xpath(a, '@href', 'string'));",
+        "说明：返回值类型由returnType参数决定，returnType可取node、nodeset、number、boolean、string，分别对应Node节点、NodeList节点列表、数字、布尔和字符串类型，如果不传默认为string，而第一个参数item可为字符串、节点Node、节点列表NodeList几种类型，当为字符串时软件将会自动转成HTML根节点",
+        "说明2：如何遍历NodeList节点列表：let nodes = xpath(html, '//div/a', 'nodeset'); \nfor(let i = 0; i< nodes.getLength(); i++){\nlet node = nodes.item(i);\nlog(node.textContent);\n}"
       ]
     },
     {
@@ -642,6 +667,31 @@
         "executeWebRule('http://1.com', $.toString(() => { return document.querySelector('a').getAttribute('href') }), {})，对应webRule://http://1.com@document.querySelector('a').getAttribute('href')",
         "说明：该方法将使用WebView组件访问地址，第二个参数为执行的JS代码字符串，结尾请返回需要的内容，一旦返回内容不为空就会结束方法返回字符串，否则将会间隔250ms循环执行，第三个参数为扩展选项，可不传，可定制UA、拦截规则，如{ ua: 'windows', blockRules: [] }同webRule://的extra属性",
         "附加：此方法为同步阻塞方法，超时时间默认为30秒，如需自定义，请在第三个参数使用timeout属性，如{ timeout: 10000 }代表10秒超时，默认每次执行JS代码间隔时间为250毫秒，如需自定义可在第三个参数使用checkTime属性，如{ checkTime: 100 }即每隔100毫秒执行一次"
+      ]
+    },
+    {
+      "date": "刷新播放地址",
+      "records": [
+        "refreshVideoUrl('http://1.com/1.mp4', false)",
+        "说明：第一个参数为完整视频地址，包含header等信息，也可以传多线路对象，如refreshVideoUrl({ urls: ['http://1.com/1.mp4'], names: ['线路一']}, false)",
+        "说明：第二个参数为是否重头（重新获取进度）开始播放，false：接着当前进度继续播放，true：重新获取之前记忆的进度重新播放"
+      ]
+    },
+    {
+      "date": "切换倒序/顺序显示",
+      "records": [
+        "改为倒序显示：setPageReverse(true)",
+        "改为顺序显示：setPageReverse(false)",
+        "是否倒序显示：let reversed = isPageReversed()，注意此方法只能在解析规则中使用，不能在lazyRule中直接使用",
+        "原理说明：此倒序只会让列表中连续显示样式最多或者extra的cls属性包含playlist字符的元素倒序显示，且是否倒序仅记忆在params属性中，因此只有从历史记录或者收藏页面进入才会保持"
+      ]
+    },
+    {
+      "date": "提交规则到云仓库",
+      "records": [
+        "说明：publishRule(rule)，其中rule是一个拥有title等属性的对象或者相应的对象数组",
+        "示例：let rule = {title: 'JuYue1', rule: 'xxxx'}; publishRule(rule);",
+        "说明：调用后软件会弹窗提示用户，小程序想要提交云仓库，用户同意后才会真正执行提交上传逻辑"
       ]
     }
   ]

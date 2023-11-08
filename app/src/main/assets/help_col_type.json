@@ -100,7 +100,7 @@
     {
       "date": "rich_text",
       "records": [
-        "富文本，示例：<span>111<font color=\"#666666\"></font></span>",
+        "富文本，示例：<span>111<font color=\"#444444\"></font></span>",
         "高级用法：设置字体大小，示例：{col_type:'rich_text', extra: {textSize: 18}}，默认值16",
         "高级用法：设置行间距，示例：{col_type:'rich_text', extra: {lineSpacing: 10}}，阅读模式下以用户设置为准",
         "高级用法：小图片避免横向放大，只需在src链接后加个#originalSize#，示例：{col_type:'rich_text', title: '<img src=\"http://xx.com/1.png#originalSize#\">'}"
@@ -170,6 +170,18 @@
       "date": "icon_small_3",
       "records": [
         "一行三列，左边为图片，右边为标签，类似论坛列表中点赞、回复、浏览"
+      ]
+    },
+    {
+      "date": "icon_3_round_fill",
+      "records": [
+        "一行三列，左边为圆形图标，右边为文字，类似icon_2_round，只是一行三列"
+      ]
+    },
+    {
+      "date": "icon_3_fill",
+      "records": [
+        "一行三列，左边为图标，右边为文字，类似icon_2_round，只是一行三列"
       ]
     },
     {
@@ -304,6 +316,12 @@
       "date": "card_pic_3",
       "records": [
         "一行三列，图片为圆角矩形"
+      ]
+    },
+    {
+      "date": "card_pic_3_center",
+      "records": [
+        "一行三列，图片为圆角矩形，文字居中显示"
       ]
     },
     {
