@@ -334,7 +334,8 @@
         "高级用法：设置默认值，示例：{col_type:'input', extra: {defaultValue: 'test'}}",
         "高级用法：输入类型，示例：{col_type:'input', extra: {type: 'textarea'}}，可选值：textarea、password、number",
         "高级用法：设置高度，示例：{col_type:'input', extra: {type: 'textarea',height: -1}}，可选值：-1和正整数，这里高度为倍数，-1代表自适应，整数代表单行输入框的高度的倍速，默认为3",
-        "高级用法：高亮编辑，示例：{col_type:'input', extra: {type: 'textarea',highlight: true}}，注意此模式下title和url属性不生效"
+        "高级用法：高亮编辑，示例：{col_type:'input', extra: {type: 'textarea',highlight: true}}，注意此模式下title和url属性不生效",
+        "高级用法：自动加载搜索建议，示例：{col_type:'input', title: '搜索'}，也就是普通输入框只要title为搜索那么软件就会自动显示搜索建议"
       ]
     },
     {

@@ -693,6 +693,26 @@
         "示例：let rule = {title: 'JuYue1', rule: 'xxxx'}; publishRule(rule);",
         "说明：调用后软件会弹窗提示用户，小程序想要提交云仓库，用户同意后才会真正执行提交上传逻辑"
       ]
+    },
+    {
+      "date": "打开第三方软件",
+      "records": [
+        "说明：openAppIntent('com.test', 'com.test.MainActivity', {title: 'test', 'scan': true})，第一个参数为包名，第二个参数为activity class，第三个参数是json对象，值为传递的extra参数",
+        "说明：传递intent data只需在第三个参数增加intentData属性，如openAppIntent('com.test', 'com.test.MainActivity', {intentData: 'http://a.com/1.mp4'})"
+      ]
+    },
+    {
+      "date": "生成二维码",
+      "records": [
+        "说明：createQRCode(text, true)，第一个参数为初始文本，第二个参数为是否展示输入框，不传为默认值true",
+        "说明：当第一个参数有值第二个参数为false时会直接生成二维码展示给用户，当第二个参数为true时将展示输入框，允许用户手动修改或输入文本，然后再生成二维码"
+      ]
+    },
+    {
+      "date": "跳转二维码扫描界面",
+      "records": [
+        "说明：startQRScanPage()"
+      ]
     }
   ]
 }

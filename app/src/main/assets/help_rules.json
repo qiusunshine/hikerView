@@ -251,12 +251,13 @@
       ]
     },
     {
-      "date": "图片解密",
+      "date": "图片解密/失败处理",
       "records": [
         "pic_url: 'http://1.jpg@js=input'，注意这里的input对象为InputStream类型，返回也应该是InputStream类型",
         "如何使用byte[]解密：““””<a href=\"http://gh.haikuoshijie.cn/https://github.com/qiusunshine/hiker-rules/blob/master/%E7%A4%BA%E4%BE%8B/imageDecode.js\">点击查看示例代码</a>",
         "注意尽量不要把代码全写在图片链接上，而应该封装在规则子页面或者本地文件里面，比如'http://1.jpg@js=$.require(\"hiker://page/des?rule=示例\")'，不过代码没有规则环境，使用子页面需带上规则名?rule=示例",
-        "注意@js=需放在链接最后，即在@Referer=、@Cookie=、@headers=等标识的最后面，不能在前面"
+        "注意@js=需放在链接最后，即在@Referer=、@Cookie=、@headers=等标识的最后面，不能在前面",
+        "高级用法：当图片加载失败时显示错误占位图可这样使用http://1.com/1.png@js=if(input == null){ fetch('http://1.com/error.png', {inputStream: true}) } else input，js里面可用MY_HEADERS变量获取响应的请求头"
       ]
     },
     {
