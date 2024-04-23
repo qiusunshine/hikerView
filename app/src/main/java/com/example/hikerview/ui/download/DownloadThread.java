@@ -6,4 +6,6 @@ package com.example.hikerview.ui.download;
  * 时间：At 20:43
  */
 public abstract class DownloadThread extends Thread {
+
+    public abstract String getTempDir();
 }

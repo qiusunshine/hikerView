@@ -11,13 +11,14 @@ public enum DownloadStatusEnum {
     READY("ready", "队列中"),
     LOADING("loading", "计算文件大小"),
     RUNNING("running", "下载中"),
-    BREAK("break", "下载中断"),
+    BREAK("break", "下载暂停"),
     SAVING("saving", "保存中"),
     MERGING("merging", "合并中"),
     CANCEL("cancel", "下载取消"),
     SUCCESS("success", "下载完成"),
     ERROR("error", "下载失败"),
-    UNKNOWN("unknown", "未知状态");
+    UNKNOWN("unknown", "未知状态"),
+    DELETED("deleted", "已删除");
 
     DownloadStatusEnum(String code, String desc) {
         this.code = code;

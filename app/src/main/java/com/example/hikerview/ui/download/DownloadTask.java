@@ -1,5 +1,8 @@
 package com.example.hikerview.ui.download;
 
+import com.example.hikerview.service.parser.HttpParser;
+
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -24,16 +27,43 @@ public class DownloadTask {
     private long lastClearSpeedTime;//最后一次重置lastDurationDownloadSize的时间, 用于计算瞬时速度
     private AtomicLong lastDurationDownloadSize = new AtomicLong(0);//由WorkThread累加，由清零线程消除，清零线程计算速度放到currentSpeed并更新lastClearSpeedTime
     private String film;
+    /**
+     * 字幕地址
+     */
+    private String subtitle;
+
+    private String rootPath;
+
+    private Map<String, String> headers;
+
+    private String downloadUrl;
+
+    /**
+     * 断点续传
+     */
+    private boolean continueDownload;
+    /**
+     * 文件后缀
+     */
+    private String suffix;
+
+    private String contentType;
+    private String originalTitle;
+
+    private boolean ignoreError;
+
+    private int downloadThread;
 
     public DownloadTask(String taskId, String fileName, String videoType, String fileExtension, String url, String sourcePageUrl, String sourcePageTitle, Long size) {
         this.taskId = taskId;
         this.fileName = fileName;
         this.videoType = videoType;
         this.fileExtension = fileExtension;
-        this.url = url;
+        setUrl(url);
         this.sourcePageUrl = sourcePageUrl;
         this.sourcePageTitle = sourcePageTitle;
         this.size.set(size);
+        this.rootPath = DownloadConfig.rootPath;
     }
 
     public String getTaskId() {
@@ -138,6 +168,8 @@ public class DownloadTask {
 
     public void setUrl(String url) {
         this.url = url;
+        this.headers = HttpParser.getHeaders(url);
+        this.downloadUrl = HttpParser.getThirdDownloadSource(url);
     }
 
     public AtomicLong getTotalDownloaded() {
@@ -154,5 +186,85 @@ public class DownloadTask {
 
     public void setFilm(String film) {
         this.film = film;
+    }
+
+    public String getSubtitle() {
+        return subtitle;
+    }
+
+    public void setSubtitle(String subtitle) {
+        this.subtitle = subtitle;
+    }
+
+    public String getRootPath() {
+        return rootPath;
+    }
+
+    public void setRootPath(String rootPath) {
+        this.rootPath = rootPath;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(Map<String, String> headers) {
+        this.headers = headers;
+    }
+
+    public String getDownloadUrl() {
+        return downloadUrl;
+    }
+
+    public void setDownloadUrl(String downloadUrl) {
+        this.downloadUrl = downloadUrl;
+    }
+
+    public boolean isContinueDownload() {
+        return continueDownload;
+    }
+
+    public void setContinueDownload(boolean continueDownload) {
+        this.continueDownload = continueDownload;
+    }
+
+    public String getSuffix() {
+        return suffix;
+    }
+
+    public void setSuffix(String suffix) {
+        this.suffix = suffix;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    public String getOriginalTitle() {
+        return originalTitle;
+    }
+
+    public void setOriginalTitle(String originalTitle) {
+        this.originalTitle = originalTitle;
+    }
+
+    public boolean isIgnoreError() {
+        return ignoreError;
+    }
+
+    public void setIgnoreError(boolean ignoreError) {
+        this.ignoreError = ignoreError;
+    }
+
+    public int getDownloadThread() {
+        return downloadThread;
+    }
+
+    public void setDownloadThread(int downloadThread) {
+        this.downloadThread = downloadThread;
     }
 }

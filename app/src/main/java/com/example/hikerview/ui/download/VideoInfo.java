@@ -14,6 +14,7 @@ public class VideoInfo {
     private String sourcePageUrl;//原网页url
     private String sourcePageTitle;//原网页标题
     private String detectImageType = "";
+    private String contentType;
 
     public String getFileName() {
         return fileName;
@@ -91,5 +92,13 @@ public class VideoInfo {
 
     public void setDetectImageType(String detectImageType) {
         this.detectImageType = detectImageType;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 }

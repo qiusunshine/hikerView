@@ -7,8 +7,9 @@ package com.example.hikerview.ui.download.enums;
  */
 
 public enum SortType {
+    NAME(0, "按名称排序"),
     DEFAULT(1, "按时间排序"),
-    NAME(0, "按名称排序");
+    TIME_REVERSE(2, "按时间倒序");
 
 
     private int code;
